@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+@theme {
+  /* ==========================================================================
+     BRAND PRIMARY (Modern Indigo - 30% Brand Identity)
+     Classes: bg-primary, text-primary, border-primary, hover:bg-primary-hover...
+     ========================================================================== */
+  --color-primary: #4F46E5;
+  --color-primary-hover: #4338CA;
+  --color-primary-light: #EEF2FF;
+  --color-primary-foreground: #FFFFFF;
+
+  /* ==========================================================================
+     CTA / CONVERSION (Sunset Coral - 10% Purchase Trigger)
+     Classes: bg-cta, text-cta, border-cta, hover:bg-cta-hover, bg-cta-light...
+     ========================================================================== */
+  --color-cta: #FF5722;
+  --color-cta-hover: #E64A19;
+  --color-cta-light: #FFF1EE;
+  --color-cta-foreground: #FFFFFF;
+
+  /* ==========================================================================
+     PERKS & TRUST (Emerald Mint - Freeship, Delivery, Verified)
+     Classes: bg-perk, text-perk, border-perk, bg-perk-light...
+     ========================================================================== */
+  --color-perk: #10B981;
+  --color-perk-hover: #059669;
+  --color-perk-light: #ECFDF5;
+  --color-perk-foreground: #FFFFFF;
+
+  /* ==========================================================================
+     RATING & HIGHLIGHT (Warm Amber - Stars & Best Sellers)
+     Classes: text-star, bg-star, bg-star-light...
+     ========================================================================== */
+  --color-star: #FBBF24;
+  --color-star-hover: #F59E0B;
+  --color-star-light: #FFFBEB;
+
+  /* ==========================================================================
+     DANGER & CANCELLATION (Rose Red - Cancel, Errors, Delete)
+     Classes: bg-danger, text-danger, border-danger, bg-danger-light...
+     ========================================================================== */
+  --color-danger: #EF4444;
+  --color-danger-hover: #DC2626;
+  --color-danger-light: #FEF2F2;
+  --color-danger-foreground: #FFFFFF;
+
+  /* ==========================================================================
+     SURFACES & BACKGROUNDS (60% Clean Modern Slate Canvas)
+     Classes: bg-surface-bg, bg-surface-card, border-surface-border...
+     ========================================================================== */
+  --color-surface-bg: #F8FAFC;
+  --color-surface-card: #FFFFFF;
+  --color-surface-border: #E2E8F0;
+
+  /* ==========================================================================
+     TYPOGRAPHY COLORS
+     Classes: text-main, text-muted-foreground, text-placeholder...
+     ========================================================================== */
+  --color-main: #0F172A;
+  --color-muted-foreground: #64748B;
+  --color-placeholder: #94A3B8;
+
+  /* ==========================================================================
+     ADMIN DASHBOARD THEME
+     Classes: bg-admin-sidebar, hover:bg-admin-sidebar-hover, text-admin-sidebar-text...
+     ========================================================================== */
+  --color-admin-sidebar: #0F172A;
+  --color-admin-sidebar-hover: #1E293B;
+  --color-admin-sidebar-active: #334155;
+  --color-admin-sidebar-text: #F8FAFC;
+  --color-admin-sidebar-muted: #94A3B8;
+  --color-admin-sidebar-border: #1E293B;
+
+  /* Radius tokens */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+}
+
+:root {
+  --background: #F8FAFC;
+  --foreground: #0F172A;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
