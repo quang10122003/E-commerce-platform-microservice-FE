@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React from "react";
 import Link from "next/link";
 import {
   Smartphone,
@@ -22,6 +22,7 @@ import {
   MoveHorizontal,
 } from "lucide-react";
 import { Card } from "@/components/ui";
+import { useSuggestedCategories } from "@/hooks/useSuggestedCategories";
 
 const categories = [
   {
@@ -144,45 +145,15 @@ const categories = [
 ];
 
 export function SuggestedCategories() {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [isDown, setIsDown] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [scrollLeftState, setScrollLeftState] = useState(0);
-  const [hasMoved, setHasMoved] = useState(false);
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!scrollRef.current) return;
-    setIsDown(true);
-    setHasMoved(false);
-    setStartX(e.pageX - scrollRef.current.offsetLeft);
-    setScrollLeftState(scrollRef.current.scrollLeft);
-  };
-
-  const handleMouseLeave = () => {
-    setIsDown(false);
-  };
-
-  const handleMouseUp = () => {
-    setIsDown(false);
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDown || !scrollRef.current) return;
-    e.preventDefault();
-    const x = e.pageX - scrollRef.current.offsetLeft;
-    const walk = (x - startX) * 1.8;
-    if (Math.abs(walk) > 4) {
-      setHasMoved(true);
-    }
-    scrollRef.current.scrollLeft = scrollLeftState - walk;
-  };
-
-  const handleLinkClick = (e: React.MouseEvent) => {
-    if (hasMoved) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  };
+  const {
+    handleLinkClick,
+    handleMouseDown,
+    handleMouseLeave,
+    handleMouseMove,
+    handleMouseUp,
+    isDown,
+    scrollRef,
+  } = useSuggestedCategories();
 
   return (
     <Card variant="3d" className="overflow-hidden border-slate-200/90 bg-white shadow-3d">
