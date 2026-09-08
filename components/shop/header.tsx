@@ -35,6 +35,7 @@ export function ShopHeader() {
     canAccessSellerChannel,
     closeMenu,
     isAccountMenuOpen,
+    isAuthChecking,
     isAuthModalOpen,
     isMobileMenuOpen,
     mounted,
@@ -128,7 +129,15 @@ export function ShopHeader() {
               </Link>
 
               {/* Khu vực tài khoản và các thao tác nhanh của người dùng. */}
-              {user ? (
+              {isAuthChecking ? (
+                <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white/80 px-3 py-1.5" aria-label="Đang kiểm tra tài khoản">
+                  <div className="skeleton-shimmer h-7 w-7 rounded-full" />
+                  <div className="space-y-1.5">
+                    <div className="skeleton-shimmer h-2.5 w-20 rounded-full" />
+                    <div className="skeleton-shimmer h-2 w-12 rounded-full" />
+                  </div>
+                </div>
+              ) : user ? (
                 <div ref={accountMenuRef} className="relative">
                   <button
                     type="button"
@@ -260,19 +269,32 @@ export function ShopHeader() {
                 {/* User Auth Box */}
                 <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-50/90 via-slate-50 to-orange-50/40 border border-indigo-100 space-y-3 shadow-xs">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-indigo-700 text-white flex items-center justify-center shadow-md shadow-primary/20">
-                      <User className="w-5 h-5" />
-                    </div>
+                    {isAuthChecking ? (
+                      <div className="skeleton-shimmer h-10 w-10 rounded-full" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-indigo-700 text-white flex items-center justify-center shadow-md shadow-primary/20">
+                        <User className="w-5 h-5" />
+                      </div>
+                    )}
                     <div>
-                      <h4 className="font-bold text-sm text-main">
-                        {user ? user.fullName ?? "Xin chào bạn!" : "Chào mừng bạn!"}
-                      </h4>
-                      <p className="text-[11px] text-muted-foreground">
-                        {user ? user.email : "Đăng nhập nhận voucher 50.000đ"}
-                      </p>
+                      {isAuthChecking ? (
+                        <div className="space-y-2">
+                          <div className="skeleton-shimmer h-3 w-36 rounded-full" />
+                          <div className="skeleton-shimmer h-2.5 w-28 rounded-full" />
+                        </div>
+                      ) : (
+                        <>
+                          <h4 className="font-bold text-sm text-main">
+                            {user ? user.fullName ?? "Xin chào bạn!" : "Chào mừng bạn!"}
+                          </h4>
+                          <p className="text-[11px] text-muted-foreground">
+                            {user ? user.email : "Đăng nhập nhận voucher 50.000đ"}
+                          </p>
+                        </>
+                      )}
                     </div>
                   </div>
-                  {!user && (
+                  {!user && !isAuthChecking && (
                     <div className="grid grid-cols-2 gap-2 pt-1">
                       <Button
                         variant="gradient-primary"
@@ -302,7 +324,7 @@ export function ShopHeader() {
                       </Button>
                     </div>
                   )}
-                  {user && (
+                  {user && !isAuthChecking && (
                     <div className="grid grid-cols-2 gap-2 pt-1">
                       {canAccessSellerChannel && (
                         <Link href="/seller" onClick={closeMenu} className="flex items-center justify-center gap-1.5 rounded-xl bg-cta px-3 py-2 text-xs font-bold text-white">
