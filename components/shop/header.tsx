@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { createPortal } from "react-dom";
-import { useMounted } from "@/lib/hooks";
 import Link from "next/link";
 import {
   Search,
+  Camera,
   ShoppingCart,
   Store,
   LogIn,
@@ -15,66 +15,41 @@ import {
   HelpCircle,
   ShieldCheck,
   ChevronRight,
+  ChevronDown,
   Package,
+  LogOut,
+  Settings,
   Sparkles,
-  Zap,
 } from "lucide-react";
-import { Button, Input, Badge } from "@/components/ui";
+import { Button, Input } from "@/components/ui";
 import { cn } from "@/lib/utils";
-import { useAppSelector } from "@/lib/redux/hooks";
 import { AuthModal } from "./auth-modal";
+import { useShopHeader } from "@/hooks/useShopHeader";
 
 const HOT_KEYWORDS = ["iPhone 16", "Tai nghe ANC", "Bàn phím cơ", "Sạc 65W GaN", "Áo Polo"];
 
 export function ShopHeader() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const mounted = useMounted();
-  const user = useAppSelector((state) => state.auth.user);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [authModalTab, setAuthModalTab] = useState<"login" | "register">("login");
-
-  const closeMenu = () => setIsMobileMenuOpen(false);
-  const openMenu = () => setIsMobileMenuOpen(true);
-
-  // Lock body scroll when mobile drawer is open
-  useEffect(() => {
-    if (isMobileMenuOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [isMobileMenuOpen]);
+  const {
+    accountMenuRef,
+    authModalTab,
+    canAccessSellerChannel,
+    closeMenu,
+    isAccountMenuOpen,
+    isAuthModalOpen,
+    isMobileMenuOpen,
+    mounted,
+    openMenu,
+    searchQuery,
+    setAuthModalTab,
+    setIsAccountMenuOpen,
+    setIsAuthModalOpen,
+    setSearchQuery,
+    user,
+  } = useShopHeader();
 
   return (
     <>
-      {/* 1. TOP PROMOTIONAL STRIP */}
-      <div className="w-full bg-gradient-to-r from-primary via-indigo-600 to-indigo-800 text-white text-[11px] sm:text-xs py-1.5 px-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2 font-medium">
-            <span className="flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-[10px] font-bold">
-              <Zap className="w-3 h-3 text-amber-300 fill-amber-300 animate-pulse" />
-              HOT DEAL
-            </span>
-            <span className="hidden sm:inline">Miễn phí vận chuyển toàn quốc cho đơn từ 99k</span>
-            <span className="sm:hidden">Freeship đơn từ 99k</span>
-          </div>
-          <div className="flex items-center gap-4 text-white/80">
-            <Link href="/seller" className="hover:text-white transition-colors flex items-center gap-1">
-              <Store className="w-3 h-3 text-amber-300" />
-              <span>Kênh Người Bán</span>
-            </Link>
-            <Link href="/help" className="hover:text-white transition-colors hidden md:inline">
-              Trợ giúp 24/7
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. MAIN HEADER */}
+      {/* Khu vực header chính của trang mua sắm. */}
       <header className="sticky top-0 z-40 w-full glass-header border-b border-slate-200/80 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3">
           <div className="flex items-center justify-between gap-3 sm:gap-6">
@@ -106,9 +81,12 @@ export function ShopHeader() {
                 <Button
                   variant="gradient-cta"
                   size="sm"
-                  className="absolute right-1.5 h-7.5 px-3 sm:px-4 text-xs font-bold rounded-lg"
+                  type="button"
+                  aria-label="Tìm kiếm sản phẩm bằng hình ảnh"
+                  title="Tìm kiếm sản phẩm bằng hình ảnh"
+                  className="absolute right-1.5 h-7.5 w-8 p-0 rounded-lg"
                 >
-                  Tìm
+                  <Camera className="w-4 h-4" />
                 </Button>
               </div>
 
@@ -149,15 +127,47 @@ export function ShopHeader() {
                 </Button>
               </Link>
 
-              {/* Tài khoản / Đăng nhập */}
+              {/* Khu vực tài khoản và các thao tác nhanh của người dùng. */}
               {user ? (
-                <div className="flex items-center gap-2 bg-indigo-50/80 border border-indigo-100 rounded-xl px-3 py-1.5">
-                  <div className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center font-bold text-xs shadow-xs">
-                    {user.fullName ? user.fullName[0].toUpperCase() : "U"}
-                  </div>
-                  <span className="text-xs font-bold text-slate-800 max-w-[100px] truncate">
-                    {user.fullName ?? "Tài khoản"}
-                  </span>
+                <div ref={accountMenuRef} className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setIsAccountMenuOpen((isOpen) => !isOpen)}
+                    className="flex items-center gap-2 bg-indigo-50/80 border border-indigo-100 rounded-xl px-3 py-1.5 hover:bg-indigo-100/80 transition-colors"
+                    aria-expanded={isAccountMenuOpen}
+                    aria-haspopup="menu"
+                  >
+                    <div className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                      {user.fullName ? user.fullName[0].toUpperCase() : "U"}
+                    </div>
+                    <span className="text-xs font-bold text-slate-800 max-w-[100px] truncate">
+                      {user.fullName ?? "Tài khoản"}
+                    </span>
+                    <ChevronDown className={cn("w-3.5 h-3.5 text-slate-500 transition-transform", isAccountMenuOpen && "rotate-180")} />
+                  </button>
+
+                  {isAccountMenuOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl border border-slate-200 bg-white p-2 shadow-3d z-50" role="menu">
+                      <Link href="/user/profile" onClick={() => setIsAccountMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50" role="menuitem">
+                        <User className="w-4 h-4 text-primary" /> Tài khoản của tôi
+                      </Link>
+                      <Link href="/user/orders" onClick={() => setIsAccountMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50" role="menuitem">
+                        <Package className="w-4 h-4 text-primary" /> Đơn mua
+                      </Link>
+                      {canAccessSellerChannel && (
+                        <Link href="/seller" onClick={() => setIsAccountMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50" role="menuitem">
+                          <Store className="w-4 h-4 text-cta" /> Kênh người bán
+                        </Link>
+                      )}
+                      <Link href="/user/settings" onClick={() => setIsAccountMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50" role="menuitem">
+                        <Settings className="w-4 h-4 text-slate-500" /> Cài đặt
+                      </Link>
+                      <div className="my-1 border-t border-slate-100" />
+                      <button type="button" onClick={() => setIsAccountMenuOpen(false)} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50" role="menuitem">
+                        <LogOut className="w-4 h-4" /> Đăng xuất
+                      </button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <Button
@@ -292,6 +302,18 @@ export function ShopHeader() {
                       </Button>
                     </div>
                   )}
+                  {user && (
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      {canAccessSellerChannel && (
+                        <Link href="/seller" onClick={closeMenu} className="flex items-center justify-center gap-1.5 rounded-xl bg-cta px-3 py-2 text-xs font-bold text-white">
+                          <Store className="w-3.5 h-3.5" /> Người bán
+                        </Link>
+                      )}
+                      <button type="button" onClick={closeMenu} className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-red-600">
+                        <LogOut className="w-3.5 h-3.5" /> Đăng xuất
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Navigation Links */}
@@ -300,46 +322,33 @@ export function ShopHeader() {
                     Chức Năng Nổi Bật
                   </p>
 
-                  {/* Kênh Người Bán */}
+                  {/* Liên kết tài khoản và cài đặt cá nhân. */}
                   <Link
-                    href="/seller"
-                    onClick={closeMenu}
-                    className="flex items-center justify-between p-3 rounded-xl bg-orange-50/80 hover:bg-orange-100/70 text-cta border border-orange-200/80 transition-colors group"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-cta text-white flex items-center justify-center shadow-xs">
-                        <Store className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <span className="text-sm font-bold block leading-tight">
-                          Kênh Người Bán
-                        </span>
-                        <span className="text-[10px] text-orange-700/90">
-                          Quản lý gian hàng Shop
-                        </span>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-cta group-hover:translate-x-0.5 transition-transform" />
-                  </Link>
-
-                  {/* Giỏ hàng */}
-                  <Link
-                    href="/cart"
+                    href="/user/profile"
                     onClick={closeMenu}
                     className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 text-main transition-colors border border-surface-border/60"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-orange-50 text-cta flex items-center justify-center">
-                        <ShoppingCart className="w-4 h-4" />
+                      <div className="w-9 h-9 rounded-xl bg-indigo-50 text-primary flex items-center justify-center">
+                        <User className="w-4 h-4" />
                       </div>
-                      <div>
-                        <span className="text-sm font-semibold block leading-tight">Giỏ Hàng</span>
-                        <span className="text-[10px] text-muted-foreground">3 sản phẩm đang chờ</span>
-                      </div>
+                      <span className="text-sm font-semibold">Tài khoản của tôi</span>
                     </div>
-                    <Badge variant="cta" size="sm" className="h-5 px-2 font-bold">
-                      3
-                    </Badge>
+                    <ChevronRight className="w-4 h-4 text-slate-400" />
+                  </Link>
+
+                  <Link
+                    href="/user/settings"
+                    onClick={closeMenu}
+                    className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 text-main transition-colors border border-surface-border/60"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center">
+                        <Settings className="w-4 h-4" />
+                      </div>
+                      <span className="text-sm font-semibold">Cài đặt</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-slate-400" />
                   </Link>
 
                   {/* Đơn mua của tôi */}

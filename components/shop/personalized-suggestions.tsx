@@ -1,17 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
 import Link from "next/link";
 import {
   Flame,
   Zap,
   Star,
-  Heart,
   MapPin,
   ShoppingCart,
 } from "lucide-react";
 import { Button, Badge } from "@/components/ui";
 import { formatCurrency } from "@/lib/utils";
+import { usePersonalizedSuggestions } from "@/hooks/usePersonalizedSuggestions";
 
 interface Product {
   id: number;
@@ -179,34 +178,17 @@ const suggestionTabs = [
   { id: "all", label: "Gợi Ý Cho Bạn", icon: Flame, color: "text-cta" },
   { id: "sale", label: "Sale Giảm Sốc", icon: Zap, color: "text-cta" },
   { id: "bestseller", label: "Top Bán Chạy", icon: Star, color: "text-amber-500" },
-];
+] as const;
 
 export function PersonalizedSuggestions() {
-  const [activeTab, setActiveTab] = useState("all");
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [visibleCount, setVisibleCount] = useState(10);
-  const [likedProducts, setLikedProducts] = useState<Record<number, boolean>>({});
-
-  const toggleLike = (e: React.MouseEvent, id: number) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setLikedProducts((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  const filteredProducts = allSuggestedProducts.filter((product) => {
-    if (activeTab === "all") return true;
-    if (activeTab === "sale") return product.discount >= 35 || product.isFlashSale;
-    if (activeTab === "bestseller") return product.sold >= 2000;
-    return true;
-  });
-
-  const handleLoadMore = () => {
-    setIsLoadingMore(true);
-    setTimeout(() => {
-      setVisibleCount((prev) => prev + 5);
-      setIsLoadingMore(false);
-    }, 600);
-  };
+  const {
+    activeTab,
+    filteredProducts,
+    handleLoadMore,
+    isLoadingMore,
+    setActiveTab,
+    visibleCount,
+  } = usePersonalizedSuggestions(allSuggestedProducts);
 
   return (
     <div className="space-y-4">
@@ -282,22 +264,6 @@ export function PersonalizedSuggestions() {
                   </span>
                 </div>
 
-                {/* Like Button */}
-                <button
-                  onClick={(e) => toggleLike(e, product.id)}
-                  className={`absolute bottom-2 right-2 p-2 rounded-full backdrop-blur-md shadow-md transition-all duration-200 z-10 ${
-                    likedProducts[product.id]
-                      ? "bg-rose-50 text-rose-600"
-                      : "bg-white/80 hover:bg-white text-slate-500 hover:text-rose-500"
-                  }`}
-                  aria-label="Yêu thích"
-                >
-                  <Heart
-                    className={`w-3.5 h-3.5 ${
-                      likedProducts[product.id] ? "fill-rose-600" : ""
-                    }`}
-                  />
-                </button>
               </div>
 
               {/* Product Details */}
@@ -343,16 +309,23 @@ export function PersonalizedSuggestions() {
               </div>
             </div>
 
-            {/* Quick Action Button */}
-            <div className="p-3 sm:p-3.5 pt-0">
+            {/* Nhóm thao tác nhanh: mua ngay hoặc thêm sản phẩm vào giỏ hàng */}
+            <div className="flex items-center gap-2 p-3 sm:p-3.5 pt-0">
+              <Button
+                variant="gradient-cta"
+                size="sm"
+                className="min-w-0 flex-1 text-xs font-bold rounded-xl h-8.5 px-2"
+              >
+                Mua ngay
+              </Button>
               <Button
                 variant="cta-outline"
-                size="sm"
-                fullWidth
-                leftIcon={<ShoppingCart className="w-3.5 h-3.5" />}
-                className="text-xs font-bold rounded-xl h-8.5"
+                size="icon-sm"
+                className="shrink-0"
+                aria-label="Thêm vào giỏ hàng"
+                title="Thêm vào giỏ hàng"
               >
-                Thêm vào giỏ
+                <ShoppingCart className="w-4 h-4" />
               </Button>
             </div>
           </Link>
