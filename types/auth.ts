@@ -4,11 +4,14 @@ export interface LoginRequest {
   password: string;
 }
 
+// Các quyền xác thực được backend cấp cho người dùng.
+export type UserRole = "ROLE_USER" | "ROLE_SHOP" | "ROLE_ADMIN";
+
 // Dữ liệu xác thực backend trả về sau khi đăng nhập thành công.
 export interface AuthResponse {
   accessToken: string;
   refreshToken: string;
-  role: string[];
+  role: UserRole[];
   userId: number;
   email: string;
   fullName: string;

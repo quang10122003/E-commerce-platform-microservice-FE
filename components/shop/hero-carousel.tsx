@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React from "react";
 import Link from "next/link";
 import {
   ChevronLeft,
@@ -15,6 +15,7 @@ import {
   Tag,
 } from "lucide-react";
 import { Button } from "@/components/ui";
+import { useHeroCarousel } from "@/hooks/useHeroCarousel";
 
 interface SlideData {
   id: number;
@@ -93,25 +94,7 @@ const slides: SlideData[] = [
 ];
 
 export function HeroCarousel() {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-
-  const nextSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
-  }, []);
-
-  const prevSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
-  }, []);
-
-  useEffect(() => {
-    if (!isAutoPlaying) return;
-    const timer = setInterval(() => {
-      nextSlide();
-    }, 4500);
-
-    return () => clearInterval(timer);
-  }, [isAutoPlaying, nextSlide]);
+  const { currentSlide, nextSlide, prevSlide, selectSlide, setIsAutoPlaying } = useHeroCarousel(slides.length);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-4">
@@ -222,7 +205,7 @@ export function HeroCarousel() {
           {slides.map((_, index) => (
             <button
               key={index}
-              onClick={() => setCurrentSlide(index)}
+              onClick={() => selectSlide(index)}
               className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
                 index === currentSlide ? "w-6 bg-white" : "w-1.5 bg-white/50 hover:bg-white/80"
               }`}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React from "react";
 import { createPortal } from "react-dom";
 import {
   X,
@@ -16,12 +16,8 @@ import {
 } from "lucide-react";
 import { Button, Input } from "@/components/ui";
 import { cn } from "@/lib/utils";
-import { useMounted } from "@/lib/hooks";
-import { useLoginMutation } from "@/lib/redux/services/auth-api";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { setUser } from "@/lib/redux/slices/auth-slice";
+import { useAuthModal, type AuthTab } from "@/hooks/useAuthModal";
 
-type AuthTab = "login" | "register";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -34,75 +30,21 @@ export function AuthModal({
   onClose,
   initialTab = "login",
 }: AuthModalProps) {
-  const [activeTab, setActiveTab] = useState<AuthTab>(initialTab);
-  const mounted = useMounted();
-  const dispatch = useAppDispatch();
-  const [showPassword, setShowPassword] = useState(false);
-
-  const [loginError, setLoginError] = useState<string | null>(null);
-  const [login, { isLoading: isLoginLoading }] = useLoginMutation();
-
-  const [loginForm, setLoginForm] = useState({ email: "", password: "" });
-  const [registerForm, setRegisterForm] = useState({
-    fullName: "",
-    email: "",
-    phone: "",
-    password: "",
-    confirmPassword: "",
-  });
-
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [isOpen]);
-
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isOpen) onClose();
-    };
-    document.addEventListener("keydown", handleEscape);
-    return () => document.removeEventListener("keydown", handleEscape);
-  }, [isOpen, onClose]);
-
-  const handleLoginSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      setLoginError(null);
-
-      try {
-        const response = await login(loginForm).unwrap();
-        if (!response.success || !response.data) {
-          setLoginError(response.message || "Đăng nhập thất bại.");
-          return;
-        }
-        dispatch(setUser(response.data));
-        onClose();
-      } catch {
-        setLoginError("Đăng nhập thất bại. Vui lòng kiểm tra email và mật khẩu.");
-      }
-    },
-    [dispatch, login, loginForm, onClose]
-  );
-
-  const handleRegisterSubmit = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault();
-      console.log("Register:", registerForm);
-    },
-    [registerForm]
-  );
-
-  const switchTab = (tab: AuthTab) => {
-    setActiveTab(tab);
-    setShowPassword(false);
-    setLoginError(null);
-  };
+  const {
+    activeTab,
+    handleLoginSubmit,
+    handleRegisterSubmit,
+    isLoginLoading,
+    loginError,
+    loginForm,
+    mounted,
+    registerForm,
+    setLoginForm,
+    setRegisterForm,
+    setShowPassword,
+    showPassword,
+    switchTab,
+  } = useAuthModal({ initialTab, isOpen, onClose });
 
   if (!mounted) return null;
 
