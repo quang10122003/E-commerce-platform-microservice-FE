@@ -1,3 +1,4 @@
+//  tương tác với cooki chỉ qua server
 import "server-only";
 
 import { cookies } from "next/headers";
