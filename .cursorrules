@@ -1,0 +1,6 @@
+# Project Guidelines & Rules
+
+Please read and strictly follow the project rules in `.gemini/rules/`:
+1. `.gemini/rules/ui-guideline.md`: UI and design guidelines, color palette, responsiveness rules.
+2. `.gemini/rules/api-data-flow.md`: API architecture & token management flow (Server Component uses `serverFetch`, Client/Redux uses `/api/[...path]` route -> `serverFetch`).
+
