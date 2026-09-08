@@ -1,11 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit";
 
+import authReducer from "./slices/auth-slice";
 import { baseApi } from "./services/base-api";
 
 // Store trung tâm để quản lý state Redux và cache của RTK Query.
 export const makeStore = () =>
   configureStore({
     reducer: {
+      auth: authReducer,
       [baseApi.reducerPath]: baseApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
