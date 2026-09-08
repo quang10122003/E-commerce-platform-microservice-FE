@@ -10,7 +10,7 @@ type ApiRouteContext = {
 async function proxyRequest(request: Request, context: ApiRouteContext) {
   const { path } = await context.params;
   const requestUrl = new URL(request.url);
-  const endpointPath = `${path.join("/")}${requestUrl.search}`;
+  const endpointPath = `api/${path.join("/")}${requestUrl.search}`;
   const hasBody = !["GET", "HEAD"].includes(request.method);
 
   // Route chỉ chuyển tiếp request, toàn bộ logic gọi backend nằm trong serverFetch.

@@ -15,6 +15,7 @@ export function useShopHeader() {
   const accountMenuRef = useRef<HTMLDivElement>(null);
   const mounted = useMounted();
   const user = useAppSelector((state) => state.auth.user);
+  const isAuthChecking = useAppSelector((state) => state.auth.isCheckingAuth);
 
   // Kiểm tra quyền mở kênh quản lý dành riêng cho người bán.
   const canAccessSellerChannel = user?.role.includes("ROLE_SHOP") ?? false;
@@ -49,6 +50,7 @@ export function useShopHeader() {
     canAccessSellerChannel,
     closeMenu: () => setIsMobileMenuOpen(false),
     isAccountMenuOpen,
+    isAuthChecking,
     isAuthModalOpen,
     isMobileMenuOpen,
     mounted,

@@ -1,5 +1,9 @@
 import type { ApiResponse } from "@/types/common";
-import type { AuthenticatedUser, LoginRequest } from "@/types/auth";
+import type {
+  AccessTokenValidationResponse,
+  AuthenticatedUser,
+  LoginRequest,
+} from "@/types/auth";
 
 import { baseApi } from "./base-api";
 
@@ -8,12 +12,18 @@ export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     login: builder.mutation<ApiResponse<AuthenticatedUser>, LoginRequest>({
       query: (credentials) => ({
-        url: "/auth/login",
+        url: "/api/auth/login",
         method: "POST",
         body: credentials,
+      }),
+    }),
+    checkToken: builder.query<ApiResponse<AccessTokenValidationResponse>, void>({
+      query: () => ({
+        url: "/api/auth/check_token",
+        method: "GET",
       }),
     }),
   }),
 });
 
-export const { useLoginMutation } = authApi;
+export const { useCheckTokenQuery, useLoginMutation } = authApi;
