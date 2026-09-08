@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState, useCallback } from "react";
+import React, { useRef, useState } from "react";
 import Link from "next/link";
 import {
   Smartphone,
@@ -23,123 +23,123 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/ui";
 
-const shopeeCategories = [
+const categories = [
   {
     id: "cat-1",
     name: "Điện Thoại & Phụ Kiện",
     icon: Smartphone,
-    count: "12.5k sp",
+    count: "14.2k sp",
     tag: "Hot",
-    color: "bg-blue-500/10 text-blue-600 group-hover:bg-blue-600 group-hover:text-white",
+    gradient: "from-blue-500 to-indigo-600",
   },
   {
     id: "cat-2",
     name: "Máy Tính & Laptop",
     icon: Laptop,
-    count: "4.8k sp",
-    color: "bg-indigo-500/10 text-primary group-hover:bg-primary group-hover:text-white",
+    count: "5.8k sp",
+    gradient: "from-indigo-500 to-purple-600",
   },
   {
     id: "cat-3",
     name: "Thời Trang Nam",
     icon: Shirt,
-    count: "24.1k sp",
-    color: "bg-sky-500/10 text-sky-600 group-hover:bg-sky-600 group-hover:text-white",
+    count: "28.1k sp",
+    gradient: "from-sky-500 to-cyan-600",
   },
   {
     id: "cat-4",
     name: "Thời Trang Nữ",
     icon: ShoppingBag,
-    count: "38.6k sp",
+    count: "42.6k sp",
     tag: "Sale",
-    color: "bg-rose-500/10 text-rose-600 group-hover:bg-rose-600 group-hover:text-white",
+    gradient: "from-rose-500 to-pink-600",
   },
   {
     id: "cat-5",
     name: "Âm Thanh & Tai Nghe",
     icon: Headphones,
-    count: "6.2k sp",
-    color: "bg-amber-500/10 text-amber-600 group-hover:bg-amber-600 group-hover:text-white",
+    count: "7.2k sp",
+    gradient: "from-amber-500 to-orange-600",
   },
   {
     id: "cat-6",
     name: "Đồng Hồ Thông Minh",
     icon: Watch,
-    count: "3.4k sp",
-    color: "bg-emerald-500/10 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white",
+    count: "4.4k sp",
+    gradient: "from-emerald-500 to-teal-600",
   },
   {
     id: "cat-7",
     name: "Gaming & Console",
     icon: Gamepad2,
-    count: "2.9k sp",
+    count: "3.9k sp",
     tag: "New",
-    color: "bg-purple-500/10 text-purple-600 group-hover:bg-purple-600 group-hover:text-white",
+    gradient: "from-purple-600 to-violet-700",
   },
   {
     id: "cat-8",
     name: "Máy Ảnh & Quay Phim",
     icon: Camera,
-    count: "1.8k sp",
-    color: "bg-slate-500/10 text-slate-700 group-hover:bg-slate-800 group-hover:text-white",
+    count: "2.1k sp",
+    gradient: "from-slate-700 to-zinc-800",
   },
   {
     id: "cat-9",
     name: "Nhà Cửa & Đời Sống",
     icon: Home,
-    count: "18.3k sp",
-    color: "bg-teal-500/10 text-teal-600 group-hover:bg-teal-600 group-hover:text-white",
+    count: "21.3k sp",
+    gradient: "from-teal-500 to-emerald-600",
   },
   {
     id: "cat-10",
     name: "Sức Khỏe & Làm Đẹp",
     icon: HeartPulse,
-    count: "15.7k sp",
+    count: "18.7k sp",
     tag: "Hot",
-    color: "bg-pink-500/10 text-pink-600 group-hover:bg-pink-600 group-hover:text-white",
+    gradient: "from-pink-500 to-rose-600",
   },
   {
     id: "cat-11",
     name: "Giày Dép & Sneaker",
     icon: Footprints,
-    count: "9.6k sp",
-    color: "bg-orange-500/10 text-cta group-hover:bg-cta group-hover:text-white",
+    count: "11.6k sp",
+    gradient: "from-orange-500 to-red-600",
   },
   {
     id: "cat-12",
     name: "Phụ Kiện & Mắt Kính",
     icon: Glasses,
-    count: "5.1k sp",
-    color: "bg-violet-500/10 text-violet-600 group-hover:bg-violet-600 group-hover:text-white",
+    count: "6.1k sp",
+    gradient: "from-violet-500 to-purple-600",
   },
   {
     id: "cat-13",
     name: "Bách Hóa & Đồ Ăn",
     icon: Coffee,
-    count: "7.2k sp",
-    color: "bg-yellow-500/10 text-yellow-700 group-hover:bg-yellow-600 group-hover:text-white",
+    count: "8.9k sp",
+    gradient: "from-yellow-500 to-amber-600",
   },
   {
     id: "cat-14",
-    name: "Sách & Văn Phòng Phẩm",
+    name: "Sách & Văn Phòng",
     icon: BookOpen,
-    count: "4.3k sp",
-    color: "bg-cyan-500/10 text-cyan-700 group-hover:bg-cyan-600 group-hover:text-white",
+    count: "5.3k sp",
+    gradient: "from-cyan-500 to-blue-600",
   },
   {
     id: "cat-15",
-    name: "Phụ Kiện Ô Tô - Xe Máy",
+    name: "Phụ Kiện Xe Máy & Ô Tô",
     icon: Car,
-    count: "3.8k sp",
-    color: "bg-zinc-500/10 text-zinc-700 group-hover:bg-zinc-800 group-hover:text-white",
+    count: "4.8k sp",
+    gradient: "from-zinc-600 to-slate-800",
   },
   {
     id: "cat-16",
-    name: "Deal Độc Quyền",
+    name: "Siêu Deal Độc Quyền",
     icon: Sparkles,
     count: "Gợi ý",
     tag: "-50%",
-    color: "bg-cta-light text-cta group-hover:bg-cta group-hover:text-white",
+    gradient: "from-orange-500 to-cta-flame",
   },
 ];
 
@@ -150,7 +150,6 @@ export function SuggestedCategories() {
   const [scrollLeftState, setScrollLeftState] = useState(0);
   const [hasMoved, setHasMoved] = useState(false);
 
-  // Mouse Drag Handlers
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!scrollRef.current) return;
     setIsDown(true);
@@ -171,14 +170,13 @@ export function SuggestedCategories() {
     if (!isDown || !scrollRef.current) return;
     e.preventDefault();
     const x = e.pageX - scrollRef.current.offsetLeft;
-    const walk = (x - startX) * 1.8; // Scroll speed factor
+    const walk = (x - startX) * 1.8;
     if (Math.abs(walk) > 4) {
       setHasMoved(true);
     }
     scrollRef.current.scrollLeft = scrollLeftState - walk;
   };
 
-  // Prevent click on link if user was dragging
   const handleLinkClick = (e: React.MouseEvent) => {
     if (hasMoved) {
       e.preventDefault();
@@ -187,21 +185,20 @@ export function SuggestedCategories() {
   };
 
   return (
-    <Card className="overflow-hidden border-surface-border/80 shadow-xs">
+    <Card variant="3d" className="overflow-hidden border-slate-200/90 bg-white shadow-3d">
       {/* 1. HEADER */}
-      <div className="p-4 sm:p-5 border-b border-surface-border flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-5 rounded-full bg-primary" />
-          <h2 className="text-base sm:text-lg font-black text-main uppercase tracking-tight">
+      <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="w-2.5 h-6 rounded-full bg-gradient-to-b from-primary to-indigo-700 shadow-xs" />
+          <h2 className="text-base sm:text-lg font-black text-main uppercase tracking-tight flex items-center gap-2">
             Danh Mục Ngành Hàng
           </h2>
         </div>
 
-        {/* Drag Hint */}
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
           <MoveHorizontal className="w-3.5 h-3.5 text-primary" />
           <span className="hidden sm:inline">Giữ chuột kéo sang ngang để xem thêm</span>
-          <span className="sm:hidden">Vuốt sang ngang</span>
+          <span className="sm:hidden">Vuốt ngang xem thêm</span>
         </div>
       </div>
 
@@ -212,12 +209,12 @@ export function SuggestedCategories() {
         onMouseLeave={handleMouseLeave}
         onMouseUp={handleMouseUp}
         onMouseMove={handleMouseMove}
-        className={`p-3 sm:p-4 overflow-x-auto select-none scrollbar-none transition-colors ${
+        className={`p-3.5 sm:p-5 overflow-x-auto select-none scrollbar-none transition-colors ${
           isDown ? "cursor-grabbing" : "cursor-grab"
         }`}
       >
-        <div className="grid grid-rows-2 grid-flow-col auto-cols-[115px] sm:auto-cols-[135px] md:auto-cols-[145px] gap-2.5 sm:gap-3.5">
-          {shopeeCategories.map((cat) => {
+        <div className="grid grid-rows-2 grid-flow-col auto-cols-[120px] sm:auto-cols-[140px] md:auto-cols-[150px] gap-3 sm:gap-4">
+          {categories.map((cat) => {
             const Icon = cat.icon;
             return (
               <Link
@@ -225,14 +222,14 @@ export function SuggestedCategories() {
                 href={`/categories/${cat.id}`}
                 onClick={handleLinkClick}
                 draggable={false}
-                className="group relative flex flex-col items-center justify-center p-3 rounded-xl border border-surface-border/60 bg-white hover:border-primary/40 hover:shadow-md transition-all duration-200 text-center select-none"
+                className="group relative flex flex-col items-center justify-center p-3 sm:p-3.5 rounded-2xl border border-slate-200/80 bg-white hover:border-primary/50 hover:shadow-3d hover:-translate-y-1.5 transition-all duration-300 text-center select-none cursor-pointer"
               >
-                {/* Floating Tag (Hot/Sale) */}
+                {/* Floating Tag */}
                 {cat.tag && (
                   <span
-                    className={`absolute top-1.5 right-1.5 text-[9px] font-bold px-1.5 py-0.2 rounded-full pointer-events-none ${
+                    className={`absolute top-2 right-2 text-[9px] font-black px-1.5 py-0.5 rounded-full shadow-xs pointer-events-none ${
                       cat.tag === "Hot" || cat.tag === "-50%"
-                        ? "bg-cta text-white"
+                        ? "bg-gradient-to-r from-orange-500 to-red-600 text-white animate-pulse"
                         : "bg-primary text-white"
                     }`}
                   >
@@ -240,20 +237,20 @@ export function SuggestedCategories() {
                   </span>
                 )}
 
-                {/* Icon Wrapper */}
+                {/* 3D-Styled Icon Wrapper */}
                 <div
-                  className={`w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center mb-2 transition-all duration-200 pointer-events-none ${cat.color}`}
+                  className={`w-12 h-12 sm:w-13 sm:h-13 rounded-2xl bg-gradient-to-br ${cat.gradient} text-white flex items-center justify-center mb-2.5 shadow-md shadow-slate-900/10 group-hover:scale-110 group-hover:shadow-lg transition-all duration-300 pointer-events-none`}
                 >
-                  <Icon className="w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover:scale-110" />
+                  <Icon className="w-6 h-6 drop-shadow-sm" />
                 </div>
 
                 {/* Category Title */}
-                <h3 className="text-xs font-semibold text-main line-clamp-2 leading-snug group-hover:text-primary transition-colors pointer-events-none">
+                <h3 className="text-xs font-bold text-main line-clamp-2 leading-tight group-hover:text-primary transition-colors pointer-events-none min-h-[30px] flex items-center justify-center">
                   {cat.name}
                 </h3>
 
                 {/* Item Count Subtitle */}
-                <span className="text-[10px] text-muted-foreground mt-0.5 pointer-events-none">
+                <span className="text-[10px] text-muted-foreground font-medium mt-1 pointer-events-none">
                   {cat.count}
                 </span>
               </Link>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useMounted } from "@/lib/hooks";
 import Link from "next/link";
@@ -12,22 +12,25 @@ import {
   Menu,
   X,
   User,
-  UserPlus,
-  Bell,
   HelpCircle,
   ShieldCheck,
   ChevronRight,
   Package,
-  Heart,
+  Sparkles,
+  Zap,
 } from "lucide-react";
 import { Button, Input, Badge } from "@/components/ui";
 import { cn } from "@/lib/utils";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { AuthModal } from "./auth-modal";
+
+const HOT_KEYWORDS = ["iPhone 16", "Tai nghe ANC", "Bàn phím cơ", "Sạc 65W GaN", "Áo Polo"];
 
 export function ShopHeader() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const mounted = useMounted();
+  const user = useAppSelector((state) => state.auth.user);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalTab, setAuthModalTab] = useState<"login" | "register">("login");
 
@@ -48,96 +51,142 @@ export function ShopHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-surface-border shadow-2xs">
+      {/* 1. TOP PROMOTIONAL STRIP */}
+      <div className="w-full bg-gradient-to-r from-primary via-indigo-600 to-indigo-800 text-white text-[11px] sm:text-xs py-1.5 px-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2 font-medium">
+            <span className="flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-[10px] font-bold">
+              <Zap className="w-3 h-3 text-amber-300 fill-amber-300 animate-pulse" />
+              HOT DEAL
+            </span>
+            <span className="hidden sm:inline">Miễn phí vận chuyển toàn quốc cho đơn từ 99k</span>
+            <span className="sm:hidden">Freeship đơn từ 99k</span>
+          </div>
+          <div className="flex items-center gap-4 text-white/80">
+            <Link href="/seller" className="hover:text-white transition-colors flex items-center gap-1">
+              <Store className="w-3 h-3 text-amber-300" />
+              <span>Kênh Người Bán</span>
+            </Link>
+            <Link href="/help" className="hover:text-white transition-colors hidden md:inline">
+              Trợ giúp 24/7
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. MAIN HEADER */}
+      <header className="sticky top-0 z-40 w-full glass-header border-b border-slate-200/80 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3">
           <div className="flex items-center justify-between gap-3 sm:gap-6">
-            {/* 1. LOGO */}
-            <Link href="/" className="flex items-center gap-2.5 shrink-0">
-              <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-white font-black text-xl shadow-md shadow-primary/20">
+            {/* 2.1 LOGO */}
+            <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary via-indigo-600 to-indigo-800 flex items-center justify-center text-white font-black text-xl shadow-md shadow-primary/25 group-hover:scale-105 transition-transform">
                 M
               </div>
               <div className="hidden sm:flex flex-col">
                 <span className="text-lg sm:text-xl font-black tracking-tight text-main leading-none">
                   MODERN<span className="text-cta">SHOP</span>
                 </span>
-                <span className="text-[9px] text-muted-foreground font-semibold tracking-wider">
-                  PLATFORM
+                <span className="text-[9px] text-muted-foreground font-bold tracking-widest mt-0.5">
+                  PREMIUM STORE
                 </span>
               </div>
             </Link>
 
-            {/* 2. COMPACT SEARCH BAR */}
-            <div className="flex-1 max-w-md mx-1 sm:mx-4">
+            {/* 2.2 SEARCH BAR WITH HOT KEYWORDS */}
+            <div className="flex-1 max-w-xl mx-1 sm:mx-4">
               <div className="relative flex items-center">
                 <Input
-                  placeholder="Tìm kiếm sản phẩm..."
-                  leftIcon={<Search className="w-4 h-4 text-muted-foreground" />}
+                  placeholder="Tìm kiếm sản phẩm, thương hiệu chính hãng..."
+                  leftIcon={<Search className="w-4 h-4 text-primary" />}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-9 text-xs sm:text-sm bg-slate-50/80 rounded-lg pr-14 sm:pr-16 focus-visible:bg-white"
+                  className="h-10 text-xs sm:text-sm bg-slate-50/90 rounded-xl pr-18 sm:pr-20 focus-visible:bg-white border-slate-200 focus-visible:ring-primary/25"
                 />
                 <Button
-                  variant="primary"
+                  variant="gradient-cta"
                   size="sm"
-                  className="absolute right-1 h-7 px-2.5 sm:px-3 text-xs font-semibold rounded-md"
+                  className="absolute right-1.5 h-7.5 px-3 sm:px-4 text-xs font-bold rounded-lg"
                 >
                   Tìm
                 </Button>
               </div>
+
+              {/* Hot search chips (desktop only) */}
+              <div className="hidden lg:flex items-center gap-2 mt-1.5 px-1">
+                <span className="text-[10px] text-muted-foreground font-semibold flex items-center gap-0.5">
+                  <Sparkles className="w-2.5 h-2.5 text-cta" /> Gợi ý:
+                </span>
+                {HOT_KEYWORDS.map((kw) => (
+                  <button
+                    key={kw}
+                    type="button"
+                    onClick={() => setSearchQuery(kw)}
+                    className="text-[10px] text-slate-600 hover:text-primary transition-colors hover:underline cursor-pointer"
+                  >
+                    {kw}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* 3. DESKTOP ACTIONS (>= md: 768px) */}
-            <div className="hidden md:flex items-center gap-2.5 shrink-0">
-              {/* Kênh Người Bán */}
-              <Link href="/seller">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-xs font-semibold text-slate-700 hover:text-cta gap-1.5"
-                >
-                  <Store className="w-3.5 h-3.5 text-cta" />
-                  <span>Kênh Người Bán</span>
-                </Button>
-              </Link>
-
+            {/* 2.3 DESKTOP ACTIONS */}
+            <div className="hidden md:flex items-center gap-3 shrink-0">
               {/* Giỏ hàng */}
               <Link href="/cart">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="relative rounded-lg border-slate-200 hover:border-primary hover:text-primary h-9 px-3 gap-2"
+                  className="relative rounded-xl border-slate-200 hover:border-primary/50 hover:bg-indigo-50/40 h-10 px-3.5 gap-2"
                 >
                   <div className="relative">
-                    <ShoppingCart className="w-4 h-4" />
-                    <span className="absolute -top-2 -right-2 bg-cta text-white text-[9px] font-bold rounded-full h-4 w-4 flex items-center justify-center shadow-xs">
+                    <ShoppingCart className="w-4 h-4 text-slate-700" />
+                    <span className="absolute -top-2.5 -right-2.5 bg-gradient-to-r from-orange-500 to-red-600 text-white text-[10px] font-black rounded-full h-4.5 w-4.5 flex items-center justify-center shadow-md shadow-cta/30 animate-pulse">
                       3
                     </span>
                   </div>
-                  <span className="font-semibold text-xs">Giỏ hàng</span>
+                  <span className="font-semibold text-xs text-slate-800">Giỏ hàng</span>
                 </Button>
               </Link>
 
-              {/* Nút Đăng nhập */}
-              <Button
-                variant="primary"
-                size="sm"
-                leftIcon={<LogIn className="w-3.5 h-3.5" />}
-                className="h-9 px-3.5 text-xs font-semibold rounded-lg shadow-xs"
-                onClick={() => {
-                  setAuthModalTab("login");
-                  setIsAuthModalOpen(true);
-                }}
-              >
-                Đăng nhập
-              </Button>
+              {/* Tài khoản / Đăng nhập */}
+              {user ? (
+                <div className="flex items-center gap-2 bg-indigo-50/80 border border-indigo-100 rounded-xl px-3 py-1.5">
+                  <div className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                    {user.fullName ? user.fullName[0].toUpperCase() : "U"}
+                  </div>
+                  <span className="text-xs font-bold text-slate-800 max-w-[100px] truncate">
+                    {user.fullName ?? "Tài khoản"}
+                  </span>
+                </div>
+              ) : (
+                <Button
+                  variant="gradient-primary"
+                  size="sm"
+                  leftIcon={<LogIn className="w-3.5 h-3.5" />}
+                  className="h-10 px-4 text-xs font-bold rounded-xl shadow-md shadow-primary/25"
+                  onClick={() => {
+                    setAuthModalTab("login");
+                    setIsAuthModalOpen(true);
+                  }}
+                >
+                  Đăng nhập
+                </Button>
+              )}
             </div>
 
-            {/* 4. MOBILE HAMBURGER BUTTON (< md: 768px) */}
-            <div className="md:hidden flex items-center shrink-0">
+            {/* 2.4 MOBILE HAMBURGER BUTTON */}
+            <div className="md:hidden flex items-center gap-2 shrink-0">
+              <Link href="/cart" className="relative p-2 text-slate-700 hover:text-primary">
+                <ShoppingCart className="w-5 h-5" />
+                <span className="absolute top-0 right-0 bg-cta text-white text-[9px] font-black rounded-full h-4 w-4 flex items-center justify-center">
+                  3
+                </span>
+              </Link>
               <button
                 type="button"
                 onClick={openMenu}
-                className="h-9 w-9 flex items-center justify-center rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 active:scale-95 transition-all"
+                className="h-9 w-9 flex items-center justify-center rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 active:scale-95 transition-all"
                 aria-label="Open mobile menu"
               >
                 <Menu className="w-5 h-5" />
@@ -147,7 +196,7 @@ export function ShopHeader() {
         </div>
       </header>
 
-      {/* 5. MOBILE DRAWER PORTAL (ATTACHED DIRECTLY TO BODY TO FIX STACKING CONTEXT) */}
+      {/* 3. MOBILE DRAWER PORTAL */}
       {mounted &&
         createPortal(
           <div
@@ -199,46 +248,50 @@ export function ShopHeader() {
                 </div>
 
                 {/* User Auth Box */}
-                <div className="p-4 rounded-xl bg-gradient-to-br from-indigo-50/80 to-slate-50 border border-indigo-100/60 space-y-3">
+                <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-50/90 via-slate-50 to-orange-50/40 border border-indigo-100 space-y-3 shadow-xs">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center shadow-xs">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-indigo-700 text-white flex items-center justify-center shadow-md shadow-primary/20">
                       <User className="w-5 h-5" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-sm text-main">Chào mừng bạn!</h4>
+                      <h4 className="font-bold text-sm text-main">
+                        {user ? user.fullName ?? "Xin chào bạn!" : "Chào mừng bạn!"}
+                      </h4>
                       <p className="text-[11px] text-muted-foreground">
-                        Đăng nhập để nhận voucher 50k
+                        {user ? user.email : "Đăng nhập nhận voucher 50.000đ"}
                       </p>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 pt-1">
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      fullWidth
-                      className="text-xs font-semibold"
-                      onClick={() => {
-                        closeMenu();
-                        setAuthModalTab("login");
-                        setIsAuthModalOpen(true);
-                      }}
-                    >
-                      Đăng nhập
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      fullWidth
-                      className="text-xs font-semibold bg-white"
-                      onClick={() => {
-                        closeMenu();
-                        setAuthModalTab("register");
-                        setIsAuthModalOpen(true);
-                      }}
-                    >
-                      Đăng ký
-                    </Button>
-                  </div>
+                  {!user && (
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      <Button
+                        variant="gradient-primary"
+                        size="sm"
+                        fullWidth
+                        className="text-xs font-bold"
+                        onClick={() => {
+                          closeMenu();
+                          setAuthModalTab("login");
+                          setIsAuthModalOpen(true);
+                        }}
+                      >
+                        Đăng nhập
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        fullWidth
+                        className="text-xs font-bold bg-white"
+                        onClick={() => {
+                          closeMenu();
+                          setAuthModalTab("register");
+                          setIsAuthModalOpen(true);
+                        }}
+                      >
+                        Đăng ký
+                      </Button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Navigation Links */}
@@ -251,17 +304,17 @@ export function ShopHeader() {
                   <Link
                     href="/seller"
                     onClick={closeMenu}
-                    className="flex items-center justify-between p-3 rounded-xl bg-orange-50/70 hover:bg-orange-100/60 text-cta border border-orange-200/80 transition-colors group"
+                    className="flex items-center justify-between p-3 rounded-xl bg-orange-50/80 hover:bg-orange-100/70 text-cta border border-orange-200/80 transition-colors group"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-lg bg-cta text-white flex items-center justify-center shadow-xs">
+                      <div className="w-9 h-9 rounded-xl bg-cta text-white flex items-center justify-center shadow-xs">
                         <Store className="w-4 h-4" />
                       </div>
                       <div>
                         <span className="text-sm font-bold block leading-tight">
                           Kênh Người Bán
                         </span>
-                        <span className="text-[10px] text-orange-700/80">
+                        <span className="text-[10px] text-orange-700/90">
                           Quản lý gian hàng Shop
                         </span>
                       </div>
@@ -276,7 +329,7 @@ export function ShopHeader() {
                     className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 text-main transition-colors border border-surface-border/60"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-lg bg-orange-50 text-cta flex items-center justify-center">
+                      <div className="w-9 h-9 rounded-xl bg-orange-50 text-cta flex items-center justify-center">
                         <ShoppingCart className="w-4 h-4" />
                       </div>
                       <div>
@@ -296,7 +349,7 @@ export function ShopHeader() {
                     className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 text-main transition-colors border border-surface-border/60"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                      <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
                         <Package className="w-4 h-4" />
                       </div>
                       <div>
@@ -307,21 +360,6 @@ export function ShopHeader() {
                     <ChevronRight className="w-4 h-4 text-slate-400" />
                   </Link>
 
-                  {/* Thông báo */}
-                  <Link
-                    href="/notifications"
-                    onClick={closeMenu}
-                    className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 text-main transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
-                        <Bell className="w-4 h-4" />
-                      </div>
-                      <span className="text-sm font-medium">Thông Báo Khuyến Mãi</span>
-                    </div>
-                    <span className="w-2 h-2 rounded-full bg-cta"></span>
-                  </Link>
-
                   {/* Trợ giúp */}
                   <Link
                     href="/help"
@@ -329,7 +367,7 @@ export function ShopHeader() {
                     className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 text-main transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center">
+                      <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center">
                         <HelpCircle className="w-4 h-4" />
                       </div>
                       <span className="text-sm font-medium">Trung Tâm Trợ Giúp</span>
@@ -352,9 +390,8 @@ export function ShopHeader() {
           document.body
         )}
 
-      {/* Auth Modal */}
+      {/* 4. AUTH MODAL */}
       <AuthModal
-        key={authModalTab}
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         initialTab={authModalTab}
