@@ -22,11 +22,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <input
             type={type}
             className={cn(
-              "flex h-10 w-full rounded-lg border bg-surface-card px-3.5 py-2 text-sm text-main placeholder:text-placeholder transition-all duration-200 file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50",
-              leftIcon && "pl-10",
-              rightIcon && "pr-10",
+              "flex h-10.5 w-full rounded-xl border bg-surface-card px-3.5 py-2 text-sm text-main placeholder:text-placeholder transition-all duration-200 file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50",
+              leftIcon && "pl-10.5",
+              rightIcon && "pr-10.5",
               error
-                ? "border-danger focus-visible:ring-danger/20 focus-visible:border-danger"
+                ? "border-danger focus-visible:ring-danger/20 focus-visible:border-danger bg-rose-50/20"
                 : "border-surface-border hover:border-slate-300 focus-visible:border-primary focus-visible:ring-primary/20",
               className
             )}
@@ -43,7 +43,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         </div>
 
         {error && (
-          <p className="text-xs text-danger font-medium flex items-center gap-1 animate-fadeIn">
+          <p className="text-xs text-danger font-medium flex items-center gap-1">
             {error}
           </p>
         )}
@@ -59,4 +59,3 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 Input.displayName = "Input";
 
 export { Input };
-

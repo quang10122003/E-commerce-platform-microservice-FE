@@ -2,7 +2,7 @@
 
 @theme {
   /* ==========================================================================
-     BRAND PRIMARY (Modern Indigo - 30% Brand Identity)
+     BRAND PRIMARY (Electric Indigo - 30% Brand Identity)
      Classes: bg-primary, text-primary, border-primary, hover:bg-primary-hover...
      ========================================================================== */
   --color-primary: #4F46E5;
@@ -11,13 +11,14 @@
   --color-primary-foreground: #FFFFFF;
 
   /* ==========================================================================
-     CTA / CONVERSION (Sunset Coral - 10% Purchase Trigger)
+     CTA / CONVERSION (Sunset Coral & Flame - 10% Purchase Trigger)
      Classes: bg-cta, text-cta, border-cta, hover:bg-cta-hover, bg-cta-light...
      ========================================================================== */
   --color-cta: #FF5722;
   --color-cta-hover: #E64A19;
   --color-cta-light: #FFF1EE;
   --color-cta-foreground: #FFFFFF;
+  --color-cta-flame: #FF3D00;
 
   /* ==========================================================================
      PERKS & TRUST (Emerald Mint - Freeship, Delivery, Verified)
@@ -29,15 +30,15 @@
   --color-perk-foreground: #FFFFFF;
 
   /* ==========================================================================
-     RATING & HIGHLIGHT (Warm Amber - Stars & Best Sellers)
+     RATING & HIGHLIGHT (Amber Gold - Stars, Best Sellers, Coins)
      Classes: text-star, bg-star, bg-star-light...
      ========================================================================== */
-  --color-star: #FBBF24;
-  --color-star-hover: #F59E0B;
+  --color-star: #F59E0B;
+  --color-star-hover: #D97706;
   --color-star-light: #FFFBEB;
 
   /* ==========================================================================
-     DANGER & CANCELLATION (Rose Red - Cancel, Errors, Delete)
+     DANGER & CANCELLATION (Rose Red - Flash Sales, Cancel, Errors)
      Classes: bg-danger, text-danger, border-danger, bg-danger-light...
      ========================================================================== */
   --color-danger: #EF4444;
@@ -46,10 +47,15 @@
   --color-danger-foreground: #FFFFFF;
 
   /* ==========================================================================
-     SURFACES & BACKGROUNDS (60% Clean Modern Slate Canvas)
+     SURFACES & BACKGROUNDS (60% Modern Slate Canvas)
      Classes: bg-surface-bg, bg-surface-card, border-surface-border...
+     SURFACES & BACKGROUNDS (Modern 3D Contrast Canvas)
+     - Page Background: #EEF2F6 (Slate-100/Cool-Gray) tạo tương phản rõ rệt với Card trắng
+     - Card Surface: #FFFFFF (Thuần trắng) nổi khối 3D trên nền
+     - Border: #E2E8F0 (Viền sắc nét)
      ========================================================================== */
   --color-surface-bg: #F8FAFC;
+  --color-surface-bg: #EEF2F6;
   --color-surface-card: #FFFFFF;
   --color-surface-border: #E2E8F0;
 
@@ -73,15 +79,16 @@
   --color-admin-sidebar-border: #1E293B;
 
   /* Radius tokens */
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-  --radius-xl: 12px;
-  --radius-2xl: 16px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 24px;
 }
 
 :root {
   --background: #F8FAFC;
+  --background: #EEF2F6;
   --foreground: #0F172A;
 }
 
@@ -92,4 +99,39 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom visual utilities for rich, vibrant e-commerce components */
+/* Custom 3D visual utilities for strong depth and tactile separation */
+@layer utilities {
+  .shadow-card {
+    box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
+    box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04), 0 0 0 1px rgba(15, 23, 42, 0.06);
+  }
+  .shadow-card-hover {
+    box-shadow: 0 12px 24px -4px rgba(15, 23, 42, 0.08), 0 4px 8px -2px rgba(15, 23, 42, 0.04);
+    box-shadow: 0 20px 30px -6px rgba(15, 23, 42, 0.14), 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(79, 70, 229, 0.18);
+  }
+  .shadow-3d {
+    box-shadow: 0 10px 25px -4px rgba(15, 23, 42, 0.11), 0 4px 10px -2px rgba(15, 23, 42, 0.06), 0 0 0 1px rgba(15, 23, 42, 0.06);
+  }
+  .shadow-3d-hover {
+    box-shadow: 0 24px 40px -8px rgba(15, 23, 42, 0.16), 0 12px 20px -4px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(15, 23, 42, 0.08);
+  }
+  .shadow-glow-cta {
+    box-shadow: 0 8px 20px -4px rgba(255, 87, 34, 0.35);
+    box-shadow: 0 8px 24px -4px rgba(255, 87, 34, 0.42), 0 2px 6px -1px rgba(255, 87, 34, 0.2);
+  }
+  .shadow-glow-primary {
+    box-shadow: 0 8px 20px -4px rgba(79, 70, 229, 0.3);
+    box-shadow: 0 8px 24px -4px rgba(79, 70, 229, 0.4), 0 2px 6px -1px rgba(79, 70, 229, 0.2);
+  }
+  .glass-header {
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
 }

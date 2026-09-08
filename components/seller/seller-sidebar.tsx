@@ -1,25 +1,21 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Package,
   ShoppingCart,
-  Layers,
   Tag,
   Settings,
   Store,
   ChevronRight,
-  TrendingUp,
   X,
-  PlusCircle,
   BarChart3,
   MessagesSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button, Badge } from "@/components/ui";
 
 const sellerNavigation = [
   {
@@ -39,7 +35,7 @@ const sellerNavigation = [
     href: "/seller/orders",
     icon: ShoppingCart,
     badge: "8 mới",
-    badgeColor: "bg-cta",
+    badgeColor: "bg-gradient-to-r from-orange-500 to-red-600",
   },
   {
     title: "Doanh thu & Tài chính",
@@ -48,7 +44,7 @@ const sellerNavigation = [
     badge: null,
   },
   {
-    title: "Mã giảm giá của Shop",
+    title: "Mã giảm giá Shop",
     href: "/seller/vouchers",
     icon: Tag,
     badge: "3 mã",
@@ -62,7 +58,7 @@ const sellerNavigation = [
     badgeColor: "bg-primary",
   },
   {
-    title: "Hồ sơ & Cài đặt Shop",
+    title: "Hồ sơ & Cài đặt",
     href: "/seller/settings",
     icon: Settings,
     badge: null,
@@ -91,7 +87,7 @@ export function SellerSidebar({ isOpen, onClose }: SellerSidebarProps) {
       {/* Sidebar Container */}
       <aside
         className={cn(
-          "fixed top-0 bottom-0 left-0 z-50 w-64 bg-admin-sidebar text-slate-300 flex flex-col justify-between border-r border-slate-800 transition-transform duration-300 ease-in-out lg:static lg:translate-x-0",
+          "fixed top-0 bottom-0 left-0 z-50 w-64 bg-slate-900 text-slate-300 flex flex-col justify-between border-r border-slate-800 transition-transform duration-300 ease-in-out lg:static lg:translate-x-0",
           isOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
         )}
       >
@@ -101,17 +97,17 @@ export function SellerSidebar({ isOpen, onClose }: SellerSidebarProps) {
             <Link
               href="/seller"
               onClick={onClose}
-              className="flex items-center gap-2.5"
+              className="flex items-center gap-2.5 group"
             >
-              <div className="w-9 h-9 rounded-xl bg-cta flex items-center justify-center text-white font-black text-lg shadow-md shadow-cta/20">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-orange-500 via-cta to-red-600 flex items-center justify-center text-white font-black text-lg shadow-md shadow-cta/25 group-hover:scale-105 transition-transform">
                 S
               </div>
               <div>
-                <div className="font-extrabold text-white text-base tracking-tight leading-none">
+                <div className="font-black text-white text-base tracking-tight leading-none">
                   SELLER<span className="text-cta">CENTER</span>
                 </div>
-                <span className="text-[10px] text-slate-400 font-medium tracking-wider">
-                  Kênh Người Bán
+                <span className="text-[10px] text-slate-400 font-bold tracking-wider mt-0.5 block">
+                  KÊNH NGƯỜI BÁN
                 </span>
               </div>
             </Link>
@@ -119,7 +115,7 @@ export function SellerSidebar({ isOpen, onClose }: SellerSidebarProps) {
             {/* Mobile Close Button */}
             <button
               onClick={onClose}
-              className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              className="lg:hidden p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -130,19 +126,19 @@ export function SellerSidebar({ isOpen, onClose }: SellerSidebarProps) {
             <Link
               href="/"
               onClick={onClose}
-              className="flex items-center justify-between w-full px-3 py-2 rounded-lg bg-slate-800/80 hover:bg-slate-800 text-xs font-semibold text-slate-200 border border-slate-700/60 transition-colors group"
+              className="flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-xs font-bold text-slate-200 border border-slate-700/60 transition-colors group"
             >
               <div className="flex items-center gap-2">
                 <Store className="w-4 h-4 text-emerald-400" />
                 <span>Về Trang Mua Hàng</span>
               </div>
-              <ChevronRight className="w-3.5 h-3.5 text-slate-500 group-hover:translate-x-0.5 transition-transform" />
+              <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
             </Link>
           </div>
 
           {/* Navigation Items */}
           <nav className="space-y-1">
-            <p className="px-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
+            <p className="px-3 text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">
               Quản lý Cửa Hàng
             </p>
             {sellerNavigation.map((item) => {
@@ -157,16 +153,16 @@ export function SellerSidebar({ isOpen, onClose }: SellerSidebarProps) {
                   href={item.href}
                   onClick={onClose}
                   className={cn(
-                    "flex items-center justify-between px-3 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all duration-150 group",
+                    "flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 group cursor-pointer",
                     isActive
-                      ? "bg-cta text-white font-semibold shadow-xs"
+                      ? "bg-gradient-to-r from-orange-500 via-cta to-red-600 text-white font-bold shadow-md shadow-cta/30"
                       : "text-slate-300 hover:bg-slate-800 hover:text-white"
                   )}
                 >
                   <div className="flex items-center gap-2.5">
                     <Icon
                       className={cn(
-                        "w-4 h-4 transition-colors",
+                        "w-4.5 h-4.5 transition-colors",
                         isActive
                           ? "text-white"
                           : "text-slate-400 group-hover:text-white"
@@ -178,7 +174,7 @@ export function SellerSidebar({ isOpen, onClose }: SellerSidebarProps) {
                   {item.badge && (
                     <span
                       className={cn(
-                        "text-[10px] font-bold px-2 py-0.5 rounded-full text-white",
+                        "text-[10px] font-black px-2 py-0.5 rounded-full text-white shadow-xs",
                         item.badgeColor || "bg-slate-700"
                       )}
                     >
@@ -192,19 +188,19 @@ export function SellerSidebar({ isOpen, onClose }: SellerSidebarProps) {
         </div>
 
         {/* Shop Info Footer */}
-        <div className="p-4 border-t border-slate-800 bg-slate-950/40">
+        <div className="p-4 border-t border-slate-800 bg-slate-950/60">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-primary to-cta flex items-center justify-center text-white font-bold text-xs shadow-xs">
-              MS
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary to-cta flex items-center justify-center text-white font-bold text-xs shadow-md shadow-cta/20">
+              TS
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold text-white truncate">
                 TechStore Official
               </p>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                <p className="text-[10px] text-slate-400 truncate">
-                  Đang hoạt động
+                <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <p className="text-[10px] text-slate-400 truncate font-medium">
+                  Đang hoạt động (Online)
                 </p>
               </div>
             </div>
@@ -214,4 +210,3 @@ export function SellerSidebar({ isOpen, onClose }: SellerSidebarProps) {
     </>
   );
 }
-
