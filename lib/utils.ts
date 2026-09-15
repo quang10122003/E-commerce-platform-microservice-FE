@@ -32,3 +32,53 @@ export function formatCompactNumber(number: number): string {
   }).format(number);
 }
 
+/**
+ * Trích xuất thông báo lỗi chi tiết từ backend (ApiResponse hoặc RTK Query error)
+ */
+export function getApiErrorMessage(
+  error: unknown,
+  fallbackMessage = "Đã có lỗi xảy ra. Vui lòng thử lại."
+): string {
+  if (!error) return fallbackMessage;
+
+  // Lỗi từ RTK Query unwrap() chứa data là ApiResponse
+  if (typeof error === "object" && error !== null) {
+    const errorObj = error as Record<string, unknown>;
+
+    // Kiểm tra err.data trả về từ backend
+    if (errorObj.data && typeof errorObj.data === "object") {
+      const dataObj = errorObj.data as Record<string, unknown>;
+      if (typeof dataObj.message === "string" && dataObj.message.trim()) {
+        return dataObj.message;
+      }
+      if (
+        dataObj.error &&
+        typeof dataObj.error === "object" &&
+        typeof (dataObj.error as Record<string, unknown>).message === "string"
+      ) {
+        return (dataObj.error as Record<string, unknown>).message as string;
+      }
+    }
+
+    // Nếu backend trả về chuỗi text trực tiếp trong data
+    if (typeof errorObj.data === "string" && errorObj.data.trim()) {
+      return errorObj.data;
+    }
+
+    // Lỗi có trường message ở root (ApiResponse hoặc Error instance)
+    if (typeof errorObj.message === "string" && errorObj.message.trim()) {
+      return errorObj.message;
+    }
+
+    // Lỗi mạng từ RTK Query (error.error)
+    if (typeof errorObj.error === "string" && errorObj.error.trim()) {
+      return errorObj.error;
+    }
+  }
+
+  if (typeof error === "string" && error.trim()) {
+    return error;
+  }
+
+  return fallbackMessage;
+}

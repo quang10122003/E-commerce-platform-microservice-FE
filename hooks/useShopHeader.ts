@@ -3,10 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 
 import { useMounted } from "@/lib/hooks";
-import { useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useLogoutMutation } from "@/lib/redux/services/auth-api";
+import { clearUser } from "@/lib/redux/slices/auth-slice";
 
 // Quản lý state, quyền truy cập và side-effect của header mua sắm.
 export function useShopHeader() {
+  const dispatch = useAppDispatch();
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -14,11 +17,24 @@ export function useShopHeader() {
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement>(null);
   const mounted = useMounted();
+  const [logout, { isLoading: isLogoutLoading }] = useLogoutMutation();
   const user = useAppSelector((state) => state.auth.user);
   const isAuthChecking = useAppSelector((state) => state.auth.isCheckingAuth);
 
   // Kiểm tra quyền mở kênh quản lý dành riêng cho người bán.
   const canAccessSellerChannel = user?.role.includes("ROLE_SHOP") ?? false;
+
+  // Gọi API logout và xóa thông tin user khỏi Redux sau khi thành công.
+  const handleLogout = async () => {
+    try {
+      await logout().unwrap();
+      dispatch(clearUser());
+      setIsAccountMenuOpen(false);
+      setIsMobileMenuOpen(false);
+    } catch {
+      // Base query đã xóa user khi request trả về lỗi HTTP.
+    }
+  };
 
   // Đóng dropdown tài khoản khi người dùng bấm ra bên ngoài.
   useEffect(() => {
@@ -53,6 +69,7 @@ export function useShopHeader() {
     isAuthChecking,
     isAuthModalOpen,
     isMobileMenuOpen,
+    isLogoutLoading,
     mounted,
     openMenu: () => setIsMobileMenuOpen(true),
     searchQuery,
@@ -60,6 +77,7 @@ export function useShopHeader() {
     setIsAccountMenuOpen,
     setIsAuthModalOpen,
     setSearchQuery,
+    handleLogout,
     user,
   };
 }
