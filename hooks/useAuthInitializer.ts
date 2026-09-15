@@ -12,9 +12,11 @@ import {
 } from "@/lib/redux/slices/auth-slice";
 
 // Kiểm tra phiên đăng nhập và đồng bộ thông tin user vào Redux khi app khởi tạo.
-export function useAuthInitializer() {
+export function useAuthInitializer(hasAuthTokens: boolean) {
   const dispatch = useAppDispatch();
   const { data, isError, isFetching, isLoading } = useCheckTokenQuery(undefined, {
+    // Bỏ qua kiểm tra API khi server xác nhận không có token nào trong cookie.
+    skip: !hasAuthTokens,
     refetchOnMountOrArgChange: true,
   });
 

@@ -35,12 +35,12 @@ export function AuthModal({
     handleLoginSubmit,
     handleRegisterSubmit,
     isLoginLoading,
+    isRegisterLoading,
     loginError,
     loginForm,
     mounted,
     registerForm,
-    setLoginForm,
-    setRegisterForm,
+    registerError,
     setShowPassword,
     showPassword,
     switchTab,
@@ -136,18 +136,21 @@ export function AuthModal({
         {/* Form Body */}
         <div className="px-6 pb-6">
           {activeTab === "login" && (
-            <form onSubmit={handleLoginSubmit} className="space-y-4">
+            <form onSubmit={loginForm.handleSubmit(handleLoginSubmit)} className="space-y-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-main">Email</label>
                 <Input
                   type="email"
                   placeholder="you@example.com"
                   leftIcon={<Mail className="w-4 h-4" />}
-                  value={loginForm.email}
-                  required
-                  onChange={(e) =>
-                    setLoginForm({ ...loginForm, email: e.target.value })
-                  }
+                  {...loginForm.register("email", {
+                    required: "Email là bắt buộc.",
+                    pattern: {
+                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                      message: "Email không đúng định dạng.",
+                    },
+                  })}
+                  error={loginForm.formState.errors.email?.message}
                   className="h-11"
                 />
               </div>
@@ -175,11 +178,10 @@ export function AuthModal({
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   }
-                  value={loginForm.password}
-                  required
-                  onChange={(e) =>
-                    setLoginForm({ ...loginForm, password: e.target.value })
-                  }
+                  {...loginForm.register("password", {
+                    required: "Mật khẩu là bắt buộc.",
+                  })}
+                  error={loginForm.formState.errors.password?.message}
                   className="h-11"
                 />
               </div>
@@ -259,15 +261,22 @@ export function AuthModal({
           )}
 
           {activeTab === "register" && (
-            <form onSubmit={handleRegisterSubmit} className="space-y-3.5">
+            <form onSubmit={registerForm.handleSubmit(handleRegisterSubmit)} className="space-y-3.5">
               <div className="space-y-1">
                 <label className="text-xs font-bold text-main">Họ và tên</label>
                 <Input
                   type="text"
                   placeholder="Nguyễn Văn A"
                   leftIcon={<User className="w-4 h-4" />}
-                  value={registerForm.fullName}
-                  onChange={(e) => setRegisterForm({ ...registerForm, fullName: e.target.value })}
+                  {...registerForm.register("fullName", {
+                    validate: (value) =>
+                      value.trim().length > 0 || "Họ tên là bắt buộc.",
+                    maxLength: {
+                      value: 30,
+                      message: "Họ tên không được vượt quá 30 ký tự.",
+                    },
+                  })}
+                  error={registerForm.formState.errors.fullName?.message}
                   className="h-10.5"
                 />
               </div>
@@ -278,8 +287,14 @@ export function AuthModal({
                   type="email"
                   placeholder="you@example.com"
                   leftIcon={<Mail className="w-4 h-4" />}
-                  value={registerForm.email}
-                  onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
+                  {...registerForm.register("email", {
+                    required: "Email là bắt buộc.",
+                    pattern: {
+                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                      message: "Email không đúng định dạng.",
+                    },
+                  })}
+                  error={registerForm.formState.errors.email?.message}
                   className="h-10.5"
                 />
               </div>
@@ -288,10 +303,16 @@ export function AuthModal({
                 <label className="text-xs font-bold text-main">Mật khẩu</label>
                 <Input
                   type={showPassword ? "text" : "password"}
-                  placeholder="Tối thiểu 8 ký tự"
+                  placeholder="Tối thiểu 6 ký tự"
                   leftIcon={<Lock className="w-4 h-4" />}
-                  value={registerForm.password}
-                  onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
+                  {...registerForm.register("password", {
+                    required: "Mật khẩu là bắt buộc.",
+                    minLength: {
+                      value: 6,
+                      message: "Mật khẩu phải có ít nhất 6 ký tự.",
+                    },
+                  })}
+                  error={registerForm.formState.errors.password?.message}
                   className="h-10.5"
                 />
               </div>
@@ -301,11 +322,18 @@ export function AuthModal({
                 variant="gradient-cta"
                 size="lg"
                 fullWidth
+                isLoading={isRegisterLoading}
                 leftIcon={<UserPlus className="w-4 h-4" />}
                 className="rounded-xl font-bold shadow-glow-cta mt-2"
               >
                 Đăng Ký Thành Viên
               </Button>
+
+              {registerError && (
+                <p className="text-center text-xs font-semibold text-rose-600 bg-rose-50 p-2 rounded-xl border border-rose-200" role="alert">
+                  {registerError}
+                </p>
+              )}
             </form>
           )}
 

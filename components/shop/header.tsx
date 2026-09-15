@@ -38,6 +38,7 @@ export function ShopHeader() {
     isAuthChecking,
     isAuthModalOpen,
     isMobileMenuOpen,
+    isLogoutLoading,
     mounted,
     openMenu,
     searchQuery,
@@ -45,6 +46,7 @@ export function ShopHeader() {
     setIsAccountMenuOpen,
     setIsAuthModalOpen,
     setSearchQuery,
+    handleLogout,
     user,
   } = useShopHeader();
 
@@ -172,7 +174,7 @@ export function ShopHeader() {
                         <Settings className="w-4 h-4 text-slate-500" /> Cài đặt
                       </Link>
                       <div className="my-1 border-t border-slate-100" />
-                      <button type="button" onClick={() => setIsAccountMenuOpen(false)} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50" role="menuitem">
+                      <button type="button" onClick={handleLogout} disabled={isLogoutLoading} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60" role="menuitem">
                         <LogOut className="w-4 h-4" /> Đăng xuất
                       </button>
                     </div>
@@ -331,7 +333,7 @@ export function ShopHeader() {
                           <Store className="w-3.5 h-3.5" /> Người bán
                         </Link>
                       )}
-                      <button type="button" onClick={closeMenu} className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-red-600">
+                      <button type="button" onClick={handleLogout} disabled={isLogoutLoading} className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-red-600 disabled:cursor-not-allowed disabled:opacity-60">
                         <LogOut className="w-3.5 h-3.5" /> Đăng xuất
                       </button>
                     </div>

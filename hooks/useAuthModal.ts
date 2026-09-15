@@ -1,11 +1,17 @@
 "use client";
 
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 
 import { useMounted } from "@/lib/hooks";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { useLoginMutation } from "@/lib/redux/services/auth-api";
+import {
+  useLoginMutation,
+  useRegisterMutation,
+} from "@/lib/redux/services/auth-api";
 import { setUser } from "@/lib/redux/slices/auth-slice";
+import { getApiErrorMessage } from "@/lib/utils";
+import type { LoginRequest, RegisterRequest } from "@/types/auth";
 
 export type AuthTab = "login" | "register";
 
@@ -20,17 +26,20 @@ export function useAuthModal({ initialTab, isOpen, onClose }: AuthModalOptions) 
   const [activeTab, setActiveTab] = useState<AuthTab>(initialTab);
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
-  const [loginForm, setLoginForm] = useState({ email: "", password: "" });
-  const [registerForm, setRegisterForm] = useState({
-    fullName: "",
-    email: "",
-    phone: "",
-    password: "",
-    confirmPassword: "",
+  const [registerError, setRegisterError] = useState<string | null>(null);
+  // Quản lý dữ liệu và validation cho form đăng nhập.
+  const loginForm = useForm<LoginRequest>({
+    defaultValues: { email: "", password: "" },
+  });
+
+  // Quản lý dữ liệu và validation cho form đăng ký theo DTO backend.
+  const registerForm = useForm<RegisterRequest>({
+    defaultValues: { fullName: "", email: "", password: "" },
   });
   const mounted = useMounted();
   const dispatch = useAppDispatch();
   const [login, { isLoading: isLoginLoading }] = useLoginMutation();
+  const [register, { isLoading: isRegisterLoading }] = useRegisterMutation();
 
   // Khóa cuộn trang khi modal tài khoản đang mở.
   useEffect(() => {
@@ -54,12 +63,11 @@ export function useAuthModal({ initialTab, isOpen, onClose }: AuthModalOptions) 
 
   // Gửi thông tin đăng nhập và lưu user vào Redux sau khi thành công.
   const handleLoginSubmit = useCallback(
-    async (event: FormEvent) => {
-      event.preventDefault();
+    async (credentials: LoginRequest) => {
       setLoginError(null);
 
       try {
-        const response = await login(loginForm).unwrap();
+        const response = await login(credentials).unwrap();
         if (!response.success || !response.data) {
           setLoginError(response.message || "Đăng nhập thất bại.");
           return;
@@ -67,20 +75,42 @@ export function useAuthModal({ initialTab, isOpen, onClose }: AuthModalOptions) 
 
         dispatch(setUser(response.data));
         onClose();
-      } catch {
-        setLoginError("Đăng nhập thất bại. Vui lòng kiểm tra email và mật khẩu.");
+      } catch (err: unknown) {
+        setLoginError(
+          getApiErrorMessage(
+            err,
+            "Đăng nhập thất bại. Vui lòng kiểm tra email và mật khẩu."
+          )
+        );
       }
     },
-    [dispatch, login, loginForm, onClose]
+    [dispatch, login, onClose]
   );
 
-  // Tiếp nhận form đăng ký theo flow giao diện hiện tại.
+  // Gửi dữ liệu đăng ký hợp lệ và đồng bộ user sau khi backend phản hồi thành công.
   const handleRegisterSubmit = useCallback(
-    (event: FormEvent) => {
-      event.preventDefault();
-      console.log("Register:", registerForm);
+    async (formData: RegisterRequest) => {
+      setRegisterError(null);
+      try {
+        const response = await register(formData).unwrap();
+
+        if (!response.success || !response.data) {
+          setRegisterError(response.message || "Đăng ký thất bại.");
+          return;
+        }
+
+        dispatch(setUser(response.data));
+        onClose();
+      } catch (err: unknown) {
+        setRegisterError(
+          getApiErrorMessage(
+            err,
+            "Đăng ký thất bại. Vui lòng kiểm tra lại thông tin."
+          )
+        );
+      }
     },
-    [registerForm]
+    [dispatch, onClose, register]
   );
 
   // Chuyển tab và xóa trạng thái lỗi của form đăng nhập.
@@ -88,6 +118,7 @@ export function useAuthModal({ initialTab, isOpen, onClose }: AuthModalOptions) 
     setActiveTab(tab);
     setShowPassword(false);
     setLoginError(null);
+    setRegisterError(null);
   };
 
   return {
@@ -95,12 +126,12 @@ export function useAuthModal({ initialTab, isOpen, onClose }: AuthModalOptions) 
     handleLoginSubmit,
     handleRegisterSubmit,
     isLoginLoading,
+    isRegisterLoading,
     loginError,
     loginForm,
     mounted,
     registerForm,
-    setLoginForm,
-    setRegisterForm,
+    registerError,
     setShowPassword,
     showPassword,
     switchTab,

@@ -8,16 +8,17 @@ import { makeStore, type AppStore } from "./store";
 
 type ReduxProviderProps = {
   children: ReactNode;
+  hasAuthTokens: boolean;
 };
 
 // Khởi tạo một store ổn định cho toàn bộ cây component phía client.
-export function ReduxProvider({ children }: ReduxProviderProps) {
+export function ReduxProvider({ children, hasAuthTokens }: ReduxProviderProps) {
   // State lưu store ổn định trong suốt vòng đời provider phía client.
   const [store] = useState<AppStore>(() => makeStore());
 
   return (
     <Provider store={store}>
-      <AuthInitializer>{children}</AuthInitializer>
+      <AuthInitializer hasAuthTokens={hasAuthTokens}>{children}</AuthInitializer>
     </Provider>
   );
 }
