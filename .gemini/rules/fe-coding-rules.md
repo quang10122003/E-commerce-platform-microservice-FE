@@ -13,3 +13,11 @@ Các quy tắc này áp dụng cho toàn bộ mã nguồn frontend:
 9. Trước khi viết code, xác định rõ đây là UI, logic hay service rồi đặt đúng file/thư mục.
 10. Ưu tiên composition: component cha gọi nhiều component con nhỏ kết hợp với hook, thay vì một file lớn xử lý toàn bộ.
 11. Khi hiển thị hình ảnh, bắt buộc ưu tiên dùng `Image` từ `next/image`; không dùng trực tiếp thẻ `<img>` trong component UI.
+
+## Quy tắc quản lý form
+
+12. Ưu tiên sử dụng `react-hook-form` cho mọi form có submit hoặc validation.
+13. Khai báo type dữ liệu form rõ ràng, đặt validation theo từng field và hiển thị lỗi ngay tại field tương ứng.
+14. Logic submit, gọi mutation/API và side-effect phải nằm trong custom hook; component chỉ render form và nhận handler từ hook.
+15. Không dùng `useState` để quản lý giá trị, lỗi hoặc trạng thái submit của form nếu `react-hook-form` có thể đảm nhiệm.
+16. Không chuyển input tìm kiếm tức thời, bộ lọc hoặc điều khiển UI sang form nếu không có submit/validation thực sự.

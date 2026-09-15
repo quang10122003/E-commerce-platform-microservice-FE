@@ -44,3 +44,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Tệp và thư mục hướng dẫn, cấu hình cho AI
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+.cursorrules
+.codex/
+.gemini/
+codex/

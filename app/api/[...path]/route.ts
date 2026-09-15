@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { serverFetch } from "@/lib/api/server-client";
+import { resolveRequestHandler } from "@/lib/api/request-strategies";
+import type { ServerFetchOptions } from "@/lib/api/server-client";
 
 type ApiRouteContext = {
   params: Promise<{ path: string[] }>;
@@ -12,14 +13,21 @@ async function proxyRequest(request: Request, context: ApiRouteContext) {
   const requestUrl = new URL(request.url);
   const endpointPath = `api/${path.join("/")}${requestUrl.search}`;
   const hasBody = !["GET", "HEAD"].includes(request.method);
-
-  // Route chỉ chuyển tiếp request, toàn bộ logic gọi backend nằm trong serverFetch.
-  const result = await serverFetch(endpointPath, {
+  const requestOptions: ServerFetchOptions = {
     method: request.method,
     headers: request.headers,
     body: hasBody ? await request.arrayBuffer() : undefined,
     cache: "no-store",
-  });
+  };
+
+  // Chọn strategy để route chỉ tập trung nhận request và trả response.
+  const requestHandler = resolveRequestHandler(request.method, endpointPath);
+  const result = await requestHandler(endpointPath, requestOptions);
+
+  // Trả response rỗng đúng chuẩn cho mọi endpoint thành công với mã 204.
+  if (result.status === 204) {
+    return new NextResponse(null, { status: 204 });
+  }
 
   return NextResponse.json(result.payload, { status: result.status });
 }

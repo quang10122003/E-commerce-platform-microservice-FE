@@ -4,9 +4,22 @@ export interface LoginRequest {
   password: string;
 }
 
+// Payload đăng ký tài khoản theo đúng DTO của auth service.
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  fullName: string;
+}
+
 // Payload gửi lên backend để cấp lại cặp token xác thực.
 export interface RefreshTokenRequest {
   refreshToken: string;
+}
+
+// Payload gửi lên backend để kết thúc phiên đăng nhập.
+export interface LogoutRequest {
+  refreshToken: string;
+  accessToken: string;
 }
 
 // Dữ liệu token mới backend trả về sau khi refresh thành công.
