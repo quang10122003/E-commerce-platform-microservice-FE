@@ -12,7 +12,7 @@ const rawBaseQuery = fetchBaseQuery({
   baseUrl: "/",
 });
 
-// Xóa user Redux khi request qua BFF xác nhận phiên không còn hợp lệ.
+// Xóa user Redux khi request qua BFF xác nhận phiên không còn hợp lệ (401 Unauthorized).
 const baseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> = async (
   args,
   api,
@@ -20,7 +20,7 @@ const baseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> =
 ) => {
   const result = await rawBaseQuery(args, api, extraOptions);
 
-  if (result.error) {
+  if (result.error && result.error.status === 401) {
     api.dispatch(clearUser());
   }
 
@@ -31,5 +31,6 @@ const baseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> =
 export const baseApi = createApi({
   reducerPath: "baseApi",
   baseQuery,
+  tagTypes: ["Product", "Auth", "User"],
   endpoints: () => ({}),
 });
