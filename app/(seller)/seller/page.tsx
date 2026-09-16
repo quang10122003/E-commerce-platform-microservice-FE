@@ -113,37 +113,7 @@ const shopOrders = [
 export default function SellerDashboardPage() {
   return (
     <div className="space-y-6">
-      {/* 1. SHOP HEADER GREETING */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-6 rounded-3xl text-white shadow-3d border border-slate-800">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white">
-              Kênh Người Bán (Seller Center)
-            </h1>
-            <Badge variant="favorite" size="xs">
-              Yêu Thích+
-            </Badge>
-          </div>
-          <p className="text-xs sm:text-sm text-slate-300">
-            Chào mừng trở lại, <span className="text-amber-400 font-bold">TechStore Official</span>! Quản lý doanh số và tăng trưởng kinh doanh hôm nay.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2.5">
-          <Link href="/seller/products/new">
-            <Button
-              variant="gradient-cta"
-              size="md"
-              leftIcon={<Plus className="w-4 h-4" />}
-              className="text-xs font-bold rounded-xl shadow-glow-cta"
-            >
-              Thêm Sản Phẩm Mới
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      {/* 2. TO-DO LIST */}
+      {/* 1. TO-DO LIST */}
       <Card variant="3d" className="p-5">
         <div className="flex items-center justify-between mb-3.5">
           <div className="flex items-center gap-2">
