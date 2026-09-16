@@ -87,11 +87,11 @@ export function SellerSidebar({ isOpen, onClose }: SellerSidebarProps) {
       {/* Sidebar Container */}
       <aside
         className={cn(
-          "fixed top-0 bottom-0 left-0 z-50 w-64 bg-slate-900 text-slate-300 flex flex-col justify-between border-r border-slate-800 transition-transform duration-300 ease-in-out lg:static lg:translate-x-0",
+          "fixed top-0 bottom-0 left-0 z-50 w-64 bg-slate-900 text-slate-300 flex flex-col justify-between border-r border-slate-800 transition-transform duration-300 ease-in-out lg:translate-x-0",
           isOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
         )}
       >
-        <div className="p-4 space-y-5 overflow-y-auto">
+        <div className="flex-1 min-h-0 p-4 space-y-5 overflow-y-auto">
           {/* Header & Logo */}
           <div className="flex items-center justify-between px-2 pt-1">
             <Link
@@ -187,25 +187,6 @@ export function SellerSidebar({ isOpen, onClose }: SellerSidebarProps) {
           </nav>
         </div>
 
-        {/* Shop Info Footer */}
-        <div className="p-4 border-t border-slate-800 bg-slate-950/60">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary to-cta flex items-center justify-center text-white font-bold text-xs shadow-md shadow-cta/20">
-              TS
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-white truncate">
-                TechStore Official
-              </p>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                <p className="text-[10px] text-slate-400 truncate font-medium">
-                  Đang hoạt động (Online)
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
       </aside>
     </>
   );
