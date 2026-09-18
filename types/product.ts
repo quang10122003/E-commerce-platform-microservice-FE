@@ -1,11 +1,10 @@
 // DTO gửi lên backend khi tạo sản phẩm mới (khớp với CreateProductRequest.java).
 export interface CreateProductRequest {
-  name: string;
   categoryId: number;
-  brandId?: number | null;
-  description?: string;
-  imageUrl?: string;
-  attributes?: ProductAttributeRequest[];
+  brandId: number | null;
+  name: string;
+  description: string;
+  attributes: ProductAttributeRequest[];
   variants: ProductVariantRequest[];
 }
 
@@ -23,7 +22,6 @@ export interface AttributeSelection {
 
 // Thông tin ảnh của từng biến thể.
 export interface VariantImageRequest {
-  imageUrl?: string;
   primary: boolean;
 }
 

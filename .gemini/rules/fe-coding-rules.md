@@ -1,5 +1,9 @@
 # FE Coding Rules
 
+## Ranh giới Server và Client Component
+
+- Mặc định sử dụng Server Component cho page, layout và UI không cần tương tác; chỉ dùng Client Component khi bắt buộc bởi state, event handler, hook phía client hoặc Web API. Đẩy ranh giới Client xuống component lá nhỏ nhất có thể.
+
 Các quy tắc này áp dụng cho toàn bộ mã nguồn frontend:
 
 1. Component chỉ chịu trách nhiệm render UI, nhận dữ liệu qua props hoặc một custom hook.

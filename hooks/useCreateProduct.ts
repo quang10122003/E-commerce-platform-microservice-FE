@@ -1,8 +1,6 @@
-"use client";
-
 import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm, useWatch } from "react-hook-form";
 
 import { useCreateProductMutation } from "@/lib/redux/services/product-api";
 import { getApiErrorMessage } from "@/lib/utils";
@@ -10,34 +8,8 @@ import { useNotification } from "@/hooks/useNotification";
 import type {
   CreateProductRequest,
   ProductAttributeRequest,
-  ProductCategoryOption,
-  ProductBrandOption,
   VariantImageMeta,
 } from "@/types/product";
-
-// Danh mục ngành hàng mẫu chuẩn sàn TMĐT
-export const SAMPLE_CATEGORIES: ProductCategoryOption[] = [
-  { id: 1, name: "Thiết Bị Điện Tử & Công Nghệ", icon: "Smartphone" },
-  { id: 2, name: "Thời Trang & Phụ Kiện Nam Nữ", icon: "Shirt" },
-  { id: 3, name: "Nhà Cửa & Đời Sống", icon: "Home" },
-  { id: 4, name: "Sức Khỏe & Sắc Đẹp", icon: "HeartPulse" },
-  { id: 5, name: "Thể Thao & Du Lịch", icon: "Footprints" },
-  { id: 6, name: "Mẹ & Bé", icon: "ShoppingBag" },
-  { id: 7, name: "Ô Tô & Xe Máy", icon: "Car" },
-  { id: 8, name: "Sách & Văn Phòng Phẩm", icon: "BookOpen" },
-];
-
-// Danh sách thương hiệu mẫu
-export const SAMPLE_BRANDS: ProductBrandOption[] = [
-  { id: 1, name: "Apple" },
-  { id: 2, name: "Samsung" },
-  { id: 3, name: "Sony" },
-  { id: 4, name: "Xiaomi" },
-  { id: 5, name: "Logitech" },
-  { id: 6, name: "Baseus" },
-  { id: 7, name: "Anker" },
-  { id: 8, name: "No Brand (Khác)" },
-];
 
 // Dữ liệu form thông tin cơ bản
 export interface ProductBasicFormData {
@@ -47,6 +19,7 @@ export interface ProductBasicFormData {
   description: string;
   simplePrice: number;
   simpleStock: number;
+  attributes: ProductAttributeRequest[];
 }
 
 // Chi tiết 1 hàng biến thể trong ma trận giao diện
@@ -56,12 +29,24 @@ export interface UIProductVariantRow {
   price: number;
   stockQuantity: number;
   attributeSelections: { attributeIndex: number; valueIndex: number }[];
-  imageFile: File | null;
-  imagePreviewUrl: string | null;
+  imageFiles: File[];
+  imagePreviewUrls: string[];
+  primaryImageIndex: number;
+}
+
+// Thông tin file và URL xem trước của một ảnh sản phẩm.
+export interface ProductImageSelection {
+  file: File;
+  previewUrl: string;
 }
 
 // Hook quản lý form tạo sản phẩm, sinh biến thể và đóng gói multipart gửi lên backend.
-export function useCreateProduct() {
+export interface UseCreateProductOptions {
+  defaultCategoryId: number;
+}
+
+// Hook quản lý form tạo sản phẩm, sinh biến thể và đóng gói multipart gửi lên backend.
+export function useCreateProduct({ defaultCategoryId }: UseCreateProductOptions) {
   const router = useRouter();
   const [createProduct, { isLoading: isSubmitting }] = useCreateProductMutation();
   const { notifyError, notifySuccess, notifyWarning } = useNotification();
@@ -70,25 +55,30 @@ export function useCreateProduct() {
   const form = useForm<ProductBasicFormData>({
     defaultValues: {
       name: "",
-      categoryId: 1,
+      categoryId: defaultCategoryId,
       brandId: null,
       description: "",
       simplePrice: 0,
       simpleStock: 0,
+      attributes: [{ name: "", values: [] }],
     },
   });
+
+  const { control, clearErrors, setError, setValue } = form;
+  const attributeFields = useFieldArray({ control, name: "attributes" });
+  const attributes = useWatch({ control, name: "attributes" });
 
   // State ảnh bìa sản phẩm chính
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
   const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null);
 
+  // State nhiều ảnh cho variant duy nhất của sản phẩm đơn giản
+  const [simpleImages, setSimpleImages] = useState<ProductImageSelection[]>([]);
+  // Vị trí ảnh chính của sản phẩm đơn giản
+  const [simplePrimaryImageIndex, setSimplePrimaryImageIndex] = useState(0);
+
   // Chế độ sản phẩm có biến thể hay sản phẩm đơn giản
   const [hasVariants, setHasVariants] = useState<boolean>(false);
-
-  // Danh sách thuộc tính phân loại (tối đa 2 thuộc tính: vd Màu sắc, Size)
-  const [attributes, setAttributes] = useState<ProductAttributeRequest[]>([
-    { name: "Màu sắc", values: ["Đen", "Trắng"] },
-  ]);
 
   // Lưu thông tin tùy biến (giá, kho, ảnh) của từng biến thể theo key
   const [variantOverrides, setVariantOverrides] = useState<
@@ -97,8 +87,9 @@ export function useCreateProduct() {
       {
         price: number;
         stockQuantity: number;
-        imageFile: File | null;
-        imagePreviewUrl: string | null;
+        imageFiles: File[];
+        imagePreviewUrls: string[];
+        primaryImageIndex: number;
       }
     >
   >({});
@@ -167,65 +158,103 @@ export function useCreateProduct() {
           attributeIndex: c.attrIdx,
           valueIndex: c.valIdx,
         })),
-        imageFile: override ? override.imageFile : null,
-        imagePreviewUrl: override ? override.imagePreviewUrl : null,
+        imageFiles: override?.imageFiles || [],
+        imagePreviewUrls: override?.imagePreviewUrls || [],
+        primaryImageIndex: override?.primaryImageIndex || 0,
       };
     });
   }, [hasVariants, attributes, variantOverrides]);
 
   // Thêm nhóm thuộc tính mới
   const addAttributeGroup = useCallback(() => {
+    attributes.forEach((attribute, index) => {
+      if (!attribute.name.trim()) {
+        setError(`attributes.${index}.name`, {
+          type: "manual",
+          message: "Vui lòng nhập tên nhóm phân loại.",
+        });
+      }
+      if (attribute.values.length === 0) {
+        setError(`attributes.${index}.values`, {
+          type: "manual",
+          message: "Vui lòng thêm ít nhất một giá trị.",
+        });
+      }
+    });
+
+    const hasInvalidAttribute = attributes.some(
+      (attribute) => !attribute.name.trim() || attribute.values.length === 0
+    );
+    if (hasInvalidAttribute) return;
+
     if (attributes.length >= 2) {
       notifyWarning("Hệ thống hỗ trợ tối đa 2 nhóm thuộc tính phân loại.");
       return;
     }
-    setAttributes((prev) => [...prev, { name: "Kích thước", values: ["S", "M", "L"] }]);
-  }, [attributes.length, notifyWarning]);
+    attributeFields.append({ name: "", values: [] });
+  }, [attributeFields, attributes, notifyWarning, setError]);
 
   // Xóa nhóm thuộc tính
   const removeAttributeGroup = useCallback((index: number) => {
-    setAttributes((prev) => prev.filter((_, i) => i !== index));
-  }, [notifyWarning]);
+    attributeFields.remove(index);
+    clearErrors("attributes");
+    setVariantOverrides({});
+  }, [attributeFields, clearErrors]);
 
   // Cập nhật tên nhóm thuộc tính
   const updateAttributeName = useCallback((index: number, name: string) => {
-    setAttributes((prev) => {
-      const clone = [...prev];
-      clone[index] = { ...clone[index], name };
-      return clone;
-    });
-  }, []);
+    const currentAttribute = attributes[index];
+    if (!currentAttribute) return;
+
+    setValue(`attributes.${index}.name`, name, { shouldDirty: true });
+    if (currentAttribute.name !== name) {
+      // Đổi tên nhóm làm thay đổi toàn bộ tổ hợp biến thể hiện tại.
+      setValue(`attributes.${index}.values`, [], { shouldDirty: true });
+      setVariantOverrides({});
+      clearErrors(`attributes.${index}.values`);
+    }
+    if (name.trim()) clearErrors(`attributes.${index}.name`);
+  }, [attributes, clearErrors, setValue]);
 
   // Thêm giá trị cho nhóm thuộc tính (ví dụ: thêm màu mới)
   const addAttributeValue = useCallback((attrIndex: number, value: string) => {
     const trimmed = value.trim();
     if (!trimmed) return;
 
-    setAttributes((prev) => {
-      const clone = [...prev];
-      if (clone[attrIndex].values.includes(trimmed)) {
-        notifyWarning("Giá trị phân loại này đã tồn tại.");
-        return prev;
-      }
-      clone[attrIndex] = {
-        ...clone[attrIndex],
-        values: [...clone[attrIndex].values, trimmed],
-      };
-      return clone;
+    const currentValues = attributes[attrIndex]?.values || [];
+    if (currentValues.includes(trimmed)) {
+      notifyWarning("Giá trị phân loại này đã tồn tại.");
+      return;
+    }
+
+    setValue(`attributes.${attrIndex}.values`, [...currentValues, trimmed], {
+      shouldDirty: true,
     });
-  }, []);
+    // Thêm giá trị mới sẽ tạo tổ hợp mới nên cần xóa dữ liệu biến thể cũ.
+    setVariantOverrides({});
+    clearErrors(`attributes.${attrIndex}.values`);
+  }, [attributes, clearErrors, notifyWarning, setValue]);
+
+  // Báo lỗi khi người dùng bấm thêm giá trị nhưng ô nhập đang trống.
+  const validateAttributeValue = useCallback((index: number) => {
+    setError(`attributes.${index}.values`, {
+      type: "manual",
+      message: "Vui lòng nhập giá trị phân loại.",
+    });
+    return false;
+  }, [setError]);
 
   // Xóa giá trị của nhóm thuộc tính
   const removeAttributeValue = useCallback((attrIndex: number, valIndex: number) => {
-    setAttributes((prev) => {
-      const clone = [...prev];
-      clone[attrIndex] = {
-        ...clone[attrIndex],
-        values: clone[attrIndex].values.filter((_, i) => i !== valIndex),
-      };
-      return clone;
-    });
-  }, []);
+    const currentValues = attributes[attrIndex]?.values || [];
+    setValue(
+      `attributes.${attrIndex}.values`,
+      currentValues.filter((_, index) => index !== valIndex),
+      { shouldDirty: true }
+    );
+    // Xóa giá trị làm thay đổi tổ hợp nên không giữ lại dữ liệu biến thể cũ.
+    setVariantOverrides({});
+  }, [attributes, setValue]);
 
   // Cập nhật giá/tồn kho cho từng biến thể
   const updateVariantValue = useCallback(
@@ -236,38 +265,112 @@ export function useCreateProduct() {
       setVariantOverrides((prev) => ({
         ...prev,
         [targetRow.key]: {
-          price: field === "price" ? Math.max(0, value) : prev[targetRow.key]?.price || 0,
+          price:
+            field === "price"
+              ? Number.isFinite(value)
+                ? Math.max(0, value)
+                : 0
+              : prev[targetRow.key]?.price || 0,
           stockQuantity:
             field === "stockQuantity"
-              ? Math.max(0, value)
+              ? Number.isFinite(value)
+                ? Math.max(0, value)
+                : 0
               : prev[targetRow.key]?.stockQuantity || 0,
-          imageFile: prev[targetRow.key]?.imageFile || null,
-          imagePreviewUrl: prev[targetRow.key]?.imagePreviewUrl || null,
-        },
-      }));
-    },
-    [notifySuccess, variantRows]
-  );
-
-  // Cập nhật file ảnh riêng cho biến thể
-  const updateVariantImage = useCallback(
-    (index: number, file: File | null) => {
-      const targetRow = variantRows[index];
-      if (!targetRow) return;
-
-      const previewUrl = file ? URL.createObjectURL(file) : null;
-      setVariantOverrides((prev) => ({
-        ...prev,
-        [targetRow.key]: {
-          price: prev[targetRow.key]?.price || 0,
-          stockQuantity: prev[targetRow.key]?.stockQuantity || 0,
-          imageFile: file,
-          imagePreviewUrl: previewUrl,
+          imageFiles: prev[targetRow.key]?.imageFiles || [],
+          imagePreviewUrls: prev[targetRow.key]?.imagePreviewUrls || [],
+          primaryImageIndex: prev[targetRow.key]?.primaryImageIndex || 0,
         },
       }));
     },
     [variantRows]
   );
+
+  // Cập nhật nhiều file ảnh riêng cho từng biến thể
+  const updateVariantImages = useCallback(
+    (index: number, files: File[], primaryImageIndex = 0) => {
+      const targetRow = variantRows[index];
+      if (!targetRow) return;
+
+      const previewUrls = files.map((file) => URL.createObjectURL(file));
+      setVariantOverrides((prev) => ({
+        ...prev,
+        [targetRow.key]: {
+          price: prev[targetRow.key]?.price || 0,
+          stockQuantity: prev[targetRow.key]?.stockQuantity || 0,
+          imageFiles: files,
+          imagePreviewUrls: previewUrls,
+          primaryImageIndex: Math.min(primaryImageIndex, Math.max(files.length - 1, 0)),
+        },
+      }));
+    },
+    [variantRows]
+  );
+
+  // Cập nhật nhiều ảnh cho variant duy nhất của sản phẩm đơn giản
+  const updateSimpleImages = useCallback((files: File[], primaryImageIndex = 0) => {
+    setSimplePrimaryImageIndex(Math.min(primaryImageIndex, Math.max(files.length - 1, 0)));
+    setSimpleImages(
+      files.map((file) => ({
+        file,
+        previewUrl: URL.createObjectURL(file),
+      }))
+    );
+  }, []);
+
+  // Đặt ảnh được chọn làm ảnh chính của nhóm ảnh
+  const setPrimaryProductImage = useCallback((group: "simple" | number, imageIndex: number) => {
+    if (group === "simple") {
+      setSimplePrimaryImageIndex(imageIndex);
+      return;
+    }
+
+    const targetRow = variantRows[group];
+    if (!targetRow) return;
+
+    setVariantOverrides((prev) => ({
+      ...prev,
+      [targetRow.key]: {
+        price: prev[targetRow.key]?.price || 0,
+        stockQuantity: prev[targetRow.key]?.stockQuantity || 0,
+        imageFiles: prev[targetRow.key]?.imageFiles || [],
+        imagePreviewUrls: prev[targetRow.key]?.imagePreviewUrls || [],
+        primaryImageIndex: imageIndex,
+      },
+    }));
+  }, [variantRows]);
+
+  // Xóa một ảnh đã chọn theo nhóm ảnh tương ứng
+  const removeProductImage = useCallback((group: "simple" | number, imageIndex: number) => {
+    if (group === "simple") {
+      setSimpleImages((prev) => prev.filter((_, index) => index !== imageIndex));
+      setSimplePrimaryImageIndex((prev) => (prev === imageIndex ? 0 : prev > imageIndex ? prev - 1 : prev));
+      return;
+    }
+
+    const targetRow = variantRows[group];
+    if (!targetRow) return;
+
+    setVariantOverrides((prev) => {
+      const current = prev[targetRow.key];
+      if (!current) return prev;
+
+      return {
+        ...prev,
+        [targetRow.key]: {
+          ...current,
+          imageFiles: current.imageFiles.filter((_, index) => index !== imageIndex),
+          imagePreviewUrls: current.imagePreviewUrls.filter((_, index) => index !== imageIndex),
+          primaryImageIndex:
+            current.primaryImageIndex === imageIndex
+              ? 0
+              : current.primaryImageIndex > imageIndex
+                ? current.primaryImageIndex - 1
+                : current.primaryImageIndex,
+        },
+      };
+    });
+  }, [variantRows]);
 
   // Áp dụng giá và tồn kho hàng loạt cho tất cả các biến thể
   const batchApply = useCallback(
@@ -284,15 +387,16 @@ export function useCreateProduct() {
               stock !== undefined && !isNaN(stock) && stock >= 0
                 ? stock
                 : prev[row.key]?.stockQuantity || 0,
-            imageFile: prev[row.key]?.imageFile || null,
-            imagePreviewUrl: prev[row.key]?.imagePreviewUrl || null,
+            imageFiles: prev[row.key]?.imageFiles || [],
+            imagePreviewUrls: prev[row.key]?.imagePreviewUrls || [],
+            primaryImageIndex: prev[row.key]?.primaryImageIndex || 0,
           };
         });
         return next;
       });
       notifySuccess("Đã áp dụng giá và tồn kho cho toàn bộ biến thể!");
     },
-    [variantRows]
+    [notifySuccess, variantRows]
   );
 
   // Xử lý gửi form và đóng gói Multipart/form-data
@@ -315,10 +419,43 @@ export function useCreateProduct() {
         return;
       }
 
+      // Kiểm tra đầy đủ tên nhóm và giá trị trước khi tạo ma trận biến thể.
+      const hasInvalidAttribute = attributes.some(
+        (attribute) =>
+          !attribute.name.trim() ||
+          attribute.values.length === 0 ||
+          attribute.values.some((value) => !value.trim())
+      );
+      if (hasInvalidAttribute) {
+        notifyError("Vui lòng nhập đầy đủ tên nhóm và giá trị phân loại.");
+        return;
+      }
+
+      // Kiểm tra mỗi biến thể phải có ít nhất một ảnh trước khi gửi.
+      const hasMissingVariantImage = variantRows.some(
+        (variant) => variant.imageFiles.length === 0
+      );
+      if (hasMissingVariantImage) {
+        notifyError("Vui lòng chọn ít nhất 1 ảnh cho tất cả biến thể.");
+        return;
+      }
+
       // Kiểm tra xem có biến thể nào có giá <= 0 không
-      const hasInvalidPrice = variantRows.some((v) => v.price <= 0);
+      const hasInvalidPrice = variantRows.some(
+        (variant) => !Number.isFinite(variant.price) || variant.price <= 0
+      );
       if (hasInvalidPrice) {
         notifyError("Vui lòng nhập giá bán lớn hơn 0 cho tất cả biến thể.");
+        return;
+      }
+
+      // Kiểm tra tồn kho của tất cả biến thể phải lớn hơn 0 trước khi gửi.
+      const hasInvalidStock = variantRows.some(
+        (variant) =>
+          !Number.isFinite(variant.stockQuantity) || variant.stockQuantity <= 0
+      );
+      if (hasInvalidStock) {
+        notifyError("Vui lòng nhập tồn kho lớn hơn 0 cho tất cả biến thể.");
         return;
       }
 
@@ -327,17 +464,15 @@ export function useCreateProduct() {
       );
 
       finalVariants = variantRows.map((row, variantIdx) => {
-        const images: { primary: boolean }[] = [];
-
-        // Nếu biến thể có file ảnh, thêm vào danh sách upload và gán metadata
-        if (row.imageFile) {
-          variantFilesToUpload.push(row.imageFile);
+        // Gắn metadata theo đúng thứ tự file ảnh của từng biến thể
+        const images: { primary: boolean }[] = row.imageFiles.map((file, imageIdx) => {
+          variantFilesToUpload.push(file);
           variantMetaToUpload.push({
             variantIndex: variantIdx,
-            imageIndex: images.length,
+            imageIndex: imageIdx,
           });
-          images.push({ primary: true });
-        }
+          return { primary: imageIdx === row.primaryImageIndex };
+        });
 
         return {
           price: row.price,
@@ -348,8 +483,14 @@ export function useCreateProduct() {
       });
     } else {
       // Sản phẩm đơn giản không có phân loại
-      if (!data.simplePrice || data.simplePrice <= 0) {
+      if (!Number.isFinite(data.simplePrice) || data.simplePrice <= 0) {
         notifyError("Vui lòng nhập giá bán hợp lệ cho sản phẩm.");
+        return;
+      }
+
+      // Kiểm tra tồn kho sản phẩm đơn giản phải lớn hơn 0 trước khi gửi.
+      if (!Number.isFinite(data.simpleStock) || data.simpleStock <= 0) {
+        notifyError("Vui lòng nhập tồn kho lớn hơn 0 cho sản phẩm.");
         return;
       }
 
@@ -359,7 +500,15 @@ export function useCreateProduct() {
           price: data.simplePrice,
           stockQuantity: data.simpleStock || 0,
           attributeSelections: [],
-          images: [],
+          // Gắn ảnh đã chọn vào variant duy nhất của sản phẩm đơn giản
+          images: simpleImages.map((selection, imageIdx) => {
+            variantFilesToUpload.push(selection.file);
+            variantMetaToUpload.push({
+              variantIndex: 0,
+              imageIndex: imageIdx,
+            });
+            return { primary: imageIdx === simplePrimaryImageIndex };
+          }),
         },
       ];
     }
@@ -402,7 +551,7 @@ export function useCreateProduct() {
     try {
       const response = await createProduct(formData).unwrap();
 
-      if (response.success || response.data) {
+      if (response.success && response.data) {
         notifySuccess("Tạo và đăng bán sản phẩm thành công!");
         router.push("/seller/products");
       } else {
@@ -422,8 +571,6 @@ export function useCreateProduct() {
     addAttributeValue,
     attributes,
     batchApply,
-    categories: SAMPLE_CATEGORIES,
-    brands: SAMPLE_BRANDS,
     coverImageFile,
     coverImagePreview,
     form,
@@ -435,9 +582,14 @@ export function useCreateProduct() {
     removeAttributeValue,
     setHasVariants,
     updateAttributeName,
-    updateVariantImage,
+    updateVariantImages,
+    updateSimpleImages,
+    removeProductImage,
+    setPrimaryProductImage,
     updateVariantValue,
+    validateAttributeValue,
     variantRows,
+    simpleImages,
+    simplePrimaryImageIndex,
   };
 }
-
