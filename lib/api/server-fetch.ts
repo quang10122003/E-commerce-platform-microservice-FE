@@ -1,54 +1,61 @@
 import "server-only";
 
-import { AUTHORIZATION_HEADER } from "@/lib/api/public-endpoints";
+import {
+  AUTH_TOKEN_FIELDS,
+  isPublicEndpoint,
+} from "@/lib/api/public-endpoints";
+import {
+  clearAuthTokens,
+  getAccessToken,
+  getRefreshToken,
+  setAuthTokens,
+} from "@/lib/auth/cookies";
 import type { ApiResponse } from "@/types/common";
+import type {
+  AuthResponse,
+  LogoutRequest,
+  RefreshTokenRequest,
+  RefreshTokenResponse,
+} from "@/types/auth";
 
 const DEFAULT_TIMEOUT_MS = 15_000;
 const BACKEND_API_URL = process.env.BACKEND_API_URL;
+const LOGIN_ENDPOINT = "api/auth/login";
+const REGISTER_ENDPOINT = "api/auth/register";
+const REFRESH_TOKEN_ENDPOINT = "api/auth/refresh_token";
+const LOGOUT_ENDPOINT = "api/auth/logout";
 
-// Type định nghĩa context request gửi đi
 export type ServerFetchRequestContext = {
   url: string;
   options: ServerFetchOptions;
   headers: Headers;
 };
 
-// Type định nghĩa context khi gặp mã lỗi 401 Unauthorized
 export type ServerFetchUnauthorizedContext = {
   backendUrl: string;
   endpointPath: string;
 };
 
-// Type options mở rộng cho serverFetch với các lifecycle hooks
 export type ServerFetchOptions = RequestInit & {
   accessToken?: string;
   skipAuth?: boolean;
   timeoutMs?: number;
-  onBeforeRequest?: (
-    context: ServerFetchRequestContext,
-  ) => Promise<Response | void>;
-  onAfterResponse?: <T>(
-    response: Response,
-    payload: ApiResponse<T>,
-  ) => Promise<ApiResponse<T>>;
-  onUnauthorized?: (
-    context: ServerFetchUnauthorizedContext,
-  ) => Promise<string | undefined>;
-  onAuthFailure?: () => Promise<void>;
 };
 
-// Type kết quả trả về từ serverFetch gồm payload ApiResponse và HTTP status code
 export type ServerFetchResult<T> = {
   payload: ApiResponse<T>;
   status: number;
 };
 
-// Chuẩn hóa path loại bỏ query string và dấu gạch chéo thừa ở 2 đầu
+// Dùng một promise chung để nhiều request 401 chỉ refresh token một lần.
+let refreshPromise: Promise<string | undefined> | null = null;
+
+// Chuẩn hóa path loại bỏ query string và dấu gạch chéo thừa ở 2 đầu.
 export function getEndpointPath(path: string): string {
   return path.split("?", 1)[0].replace(/^\/+|\/+$/g, "");
 }
 
-// Ghép baseUrl backend với endpoint path bắt đầu bằng 'api/'
+// Ghép baseUrl backend với endpoint path bắt đầu bằng api/.
 export function getBackendUrl(path: string): string | undefined {
   const baseUrl = BACKEND_API_URL?.replace(/\/+$/, "");
   const endpointPath = path.replace(/^\/+/, "");
@@ -59,7 +66,7 @@ export function getBackendUrl(path: string): string | undefined {
   return `${baseUrl}/${endpointPath}`;
 }
 
-// Đọc response an toàn khi backend trả body rỗng hoặc định dạng không phải JSON
+// Đọc response an toàn khi backend trả body rỗng hoặc định dạng không phải JSON.
 export async function parseApiResponse<T>(
   response: Response,
 ): Promise<ApiResponse<T>> {
@@ -98,7 +105,7 @@ export async function parseApiResponse<T>(
   }
 }
 
-// Tạo Headers chuẩn có đính kèm Bearer token hoặc bỏ qua nếu là endpoint public
+// Tạo headers theo chính sách public/private do serverFetch điều phối.
 export function buildAuthHeaders(
   options: ServerFetchOptions,
   token: string | undefined,
@@ -106,17 +113,16 @@ export function buildAuthHeaders(
 ): Headers {
   const headers = new Headers(options.headers);
   headers.set("Accept", "application/json");
+  headers.delete("Authorization");
 
-  if (skipAuth) {
-    headers.delete(AUTHORIZATION_HEADER);
-  } else if (token) {
-    headers.set(AUTHORIZATION_HEADER, `Bearer ${token}`);
+  if (!skipAuth && token) {
+    headers.set("Authorization", "Bearer " + token);
   }
 
   return headers;
 }
 
-// Thực hiện fetch kèm timeout và lắng nghe AbortSignal từ caller
+// Thực hiện fetch kèm timeout và lắng nghe AbortSignal từ caller.
 export async function fetchWithTimeout(
   url: string,
   options: RequestInit,
@@ -124,7 +130,7 @@ export async function fetchWithTimeout(
 ): Promise<Response> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => {
-    controller.abort(new Error(`Request timeout sau ${timeoutMs}ms.`));
+    controller.abort(new Error("Request timeout sau " + timeoutMs + "ms."));
   }, timeoutMs);
 
   const abortHandler = () => controller.abort(options.signal?.reason);
@@ -144,89 +150,180 @@ export async function fetchWithTimeout(
   }
 }
 
-// Hàm fetch API generic dùng trên Server (RSC & BFF Route Handler)
+// Refresh token trong serverFetch và cập nhật lại cookie httpOnly.
+async function refreshAccessToken(): Promise<string | undefined> {
+  const refreshToken = await getRefreshToken();
+  if (!refreshToken) return undefined;
+
+  const requestBody: RefreshTokenRequest = { refreshToken };
+  const result = await serverFetch<RefreshTokenResponse>(
+    REFRESH_TOKEN_ENDPOINT,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(requestBody),
+      skipAuth: true,
+    },
+  );
+
+  if (
+    result.status < 200 ||
+    result.status >= 300 ||
+    !result.payload.success ||
+    !result.payload.data
+  ) {
+    return undefined;
+  }
+
+  await setAuthTokens(result.payload.data);
+  return result.payload.data.accessToken;
+}
+
+// Điều phối refresh token theo cơ chế single-flight.
+function refreshAccessTokenSingleFlight(): Promise<string | undefined> {
+  if (!refreshPromise) {
+    refreshPromise = refreshAccessToken().finally(() => {
+      refreshPromise = null;
+    });
+  }
+
+  return refreshPromise;
+}
+
+// Lưu token sau login/register và loại token khỏi dữ liệu trả về client.
+async function handleAuthResponse<T>(
+  endpointPath: string,
+  response: Response,
+  payload: ApiResponse<T>,
+): Promise<ApiResponse<T>> {
+  const isAuthEndpoint =
+    endpointPath === LOGIN_ENDPOINT ||
+    endpointPath === REGISTER_ENDPOINT;
+
+  if (!isAuthEndpoint || !response.ok || !payload.data) {
+    return payload;
+  }
+
+  const authData = payload.data as unknown as AuthResponse;
+  const accessToken = authData[AUTH_TOKEN_FIELDS.ACCESS_TOKEN];
+  const refreshToken = authData[AUTH_TOKEN_FIELDS.REFRESH_TOKEN];
+
+  if (!accessToken || !refreshToken) {
+    return payload;
+  }
+
+  await setAuthTokens({ accessToken, refreshToken });
+
+  const authenticatedUser = Object.fromEntries(
+    Object.entries(authData).filter(
+      ([key]) =>
+        key !== AUTH_TOKEN_FIELDS.ACCESS_TOKEN &&
+        key !== AUTH_TOKEN_FIELDS.REFRESH_TOKEN,
+    ),
+  );
+
+  return { ...payload, data: authenticatedUser as T };
+}
+
+// Tạo lại body logout từ token trong cookie và herder cho logout
+async function prepareLogoutRequest(
+  options: ServerFetchOptions,
+): Promise<Pick<ServerFetchOptions, "headers" | "body">> {
+  const requestBody: LogoutRequest = {
+    refreshToken: (await getRefreshToken()) ?? "",
+    accessToken: (await getAccessToken()) ?? "",
+  };
+  const headers = new Headers(options.headers);
+  headers.set("Accept", "application/json");
+  headers.set("Content-Type", "application/json");
+  headers.delete("content-length");
+  headers.delete("transfer-encoding");
+
+  return {
+    headers,
+    body: JSON.stringify(requestBody),
+  };
+}
+
+// Hàm base duy nhất điều phối public/private, token, refresh và response auth.
 export async function serverFetch<T>(
   path: string,
   options: ServerFetchOptions = {},
 ): Promise<ServerFetchResult<T>> {
   const endpointPath = getEndpointPath(path);
   const backendUrl = getBackendUrl(path);
+
   if (!backendUrl) {
     throw new Error("Thiếu biến môi trường BACKEND_API_URL");
   }
 
-  const {
-    accessToken: explicitAccessToken,
-    skipAuth = false,
-    timeoutMs = DEFAULT_TIMEOUT_MS,
-    onBeforeRequest,
-    onAfterResponse,
-    onUnauthorized,
-    onAuthFailure,
-    ...requestOptions
-  } = options;
-  const headers = buildAuthHeaders(options, explicitAccessToken, skipAuth);
-  const requestContext = {
-    url: backendUrl,
-    options,
-    headers,
-  } satisfies ServerFetchRequestContext;
+  const isPublic = isPublicEndpoint(endpointPath);
+  const skipAuth = options.skipAuth ?? isPublic;
+  const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+  const token = skipAuth
+    ? undefined
+    : options.accessToken ?? (await getAccessToken());
+  const isLogoutRequest =
+    endpointPath === LOGOUT_ENDPOINT &&
+    (options.method ?? "GET").toUpperCase() === "POST";
 
-  // Cho phép wrapper can thiệp trước khi gửi request thực tế
-  const beforeRequestResponse = await onBeforeRequest?.(requestContext);
-  let response =
-    beforeRequestResponse ??
-    (await fetchWithTimeout(
-      backendUrl,
-      {
-        ...requestOptions,
-        headers,
-      },
-      timeoutMs,
-    ));
+  let requestOptions: ServerFetchOptions = { ...options };
+  if (isLogoutRequest) {
+    requestOptions = {
+      ...options,
+      ...(await prepareLogoutRequest(options)),
+    };
+  }
 
-  // Tự động retry khi nhận mã 401 Unauthorized nếu caller có cung cấp hook refresh
-  if (response.status === 401 && !skipAuth && onUnauthorized) {
-    let refreshedAccessToken: string | undefined;
+  const headers = buildAuthHeaders(requestOptions, token, skipAuth);
+  let response = await fetchWithTimeout(
+    backendUrl,
+    {
+      ...requestOptions,
+      headers,
+      body: requestOptions.body,
+    },
+    timeoutMs,
+  );
 
-    try {
-      refreshedAccessToken = await onUnauthorized({
-        backendUrl,
-        endpointPath,
-      });
-    } catch (error) {
-      await onAuthFailure?.();
-      throw error;
-    }
+  // Private request 401 sẽ refresh token rồi thử lại đúng một lần.
+  if (response.status === 401 && !skipAuth) {
+    const refreshedAccessToken = await refreshAccessTokenSingleFlight();
 
     if (!refreshedAccessToken) {
-      await onAuthFailure?.();
+      await clearAuthTokens();
     } else {
       const retryHeaders = buildAuthHeaders(
-        options,
+        requestOptions,
         refreshedAccessToken,
-        skipAuth,
+        false,
       );
       response = await fetchWithTimeout(
         backendUrl,
         {
           ...requestOptions,
           headers: retryHeaders,
+          body: requestOptions.body,
         },
         timeoutMs,
       );
 
-      // Session không còn hợp lệ nếu retry vẫn bị 401
       if (response.status === 401) {
-        await onAuthFailure?.();
+        await clearAuthTokens();
       }
     }
   }
 
-  let payload = await parseApiResponse<T>(response);
-  if (onAfterResponse) {
-    payload = await onAfterResponse(response, payload);
+  const payload = await parseApiResponse<T>(response);
+  const normalizedPayload = await handleAuthResponse(
+    endpointPath,
+    response,
+    payload,
+  );
+
+  if (isLogoutRequest) {
+    await clearAuthTokens();
   }
 
-  return { payload, status: response.status };
+  return { payload: normalizedPayload, status: response.status };
 }

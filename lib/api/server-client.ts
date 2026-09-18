@@ -18,7 +18,5 @@ export type {
 export {
   isPublicEndpoint,
   PUBLIC_ENDPOINTS,
-  AUTH_ENDPOINTS,
-  AUTH_TOKEN_FIELDS,
-  AUTHORIZATION_HEADER,
 } from "@/lib/api/public-endpoints";
+export { AUTHORIZATION_HEADER } from "@/lib/api/constants";
