@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useRef, useState } from "react";
 
 import { useMounted } from "@/lib/hooks";
@@ -31,8 +29,8 @@ export function useShopHeader() {
       dispatch(clearUser());
       setIsAccountMenuOpen(false);
       setIsMobileMenuOpen(false);
-    } catch {
-      // Base query đã xóa user khi request trả về lỗi HTTP.
+    } catch(e) {
+      throw Error("lỗi khi khi server logout "+e)
     }
   };
 
