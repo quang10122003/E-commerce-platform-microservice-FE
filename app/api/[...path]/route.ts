@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
 
-import { resolveRequestHandler } from "@/lib/api/request-strategies";
-import type { ServerFetchOptions } from "@/lib/api/server-client";
+import { serverFetch, type ServerFetchOptions } from "@/lib/api/server-client";
 
 type ApiRouteContext = {
   params: Promise<{ path: string[] }>;
 };
 
-// Chuyển tiếp request từ client qua serverFetch đến backend.
+// Chuyển tiếp request và ủy quyền toàn bộ chính sách cho serverFetch.
 async function proxyRequest(request: Request, context: ApiRouteContext) {
   const { path } = await context.params;
   const requestUrl = new URL(request.url);
@@ -20,9 +19,8 @@ async function proxyRequest(request: Request, context: ApiRouteContext) {
     cache: "no-store",
   };
 
-  // Chọn strategy để route chỉ tập trung nhận request và trả response.
-  const requestHandler = resolveRequestHandler(request.method, endpointPath);
-  const result = await requestHandler(endpointPath, requestOptions);
+  // serverFetch tự quyết định public/private và xử lý refresh token.
+  const result = await serverFetch<unknown>(endpointPath, requestOptions);
 
   // Trả response rỗng đúng chuẩn cho mọi endpoint thành công với mã 204.
   if (result.status === 204) {

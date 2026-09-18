@@ -1,59 +1,50 @@
-# QUY CHUẨN KIẾN TRÚC GỌI API & QUẢN LÝ TOKEN (DATA FETCHING & API RULES)
+# QUY CHUẨN KIẾN TRÚC GỌI API & QUẢN LÝ TOKEN
 
-Mọi tác vụ phát triển tính năng, gọi API hoặc xử lý dữ liệu bắt buộc tuân thủ đúng 2 luồng chuẩn sau:
+## 1. Luồng gọi API
 
----
+- Server Component hoặc server service gọi trực tiếp serverFetch từ lib/api/server-client.
+- Client Component và Redux chỉ gọi BFF nội bộ qua /api/....
+- Route Handler tại app/api/[...path]/route.ts gọi trực tiếp serverFetch để chuyển tiếp request đến backend.
+- Không gọi backend trực tiếp từ Client Component, Redux service hoặc Route Handler.
 
-## 1. LUỒNG GỌI DỮ LIỆU (DATA FETCHING FLOWS)
+Luồng chuẩn:
 
-### Luồng 1: Server Components (RSC)
-* **Cách gọi:** Sử dụng trực tiếp `serverFetch` từ `@/lib/api/server-client`.
-* **Cơ chế:**
-  - `serverFetch` chạy trên Server (được bảo vệ bởi `import "server-only"`).
-  - Nhận `accessToken`, `skipAuth` và interceptor qua options; không tự chứa logic nghiệp vụ auth.
-  - Wrapper auth đọc token từ cookie `httpOnly`, cấu hình hook và tiếp tục gọi qua `serverFetch`.
+[Server Component / server service] ---> serverFetch() ---> [Backend Microservices]
 
-```
-[Server Component (RSC)] ---> serverFetch() ---> [Backend Microservices]
-                         hoặc wrapper auth cấu hình hook
-```
+[Client Component / Redux] ---> /api/... ---> [Route Handler] ---> serverFetch() ---> [Backend Microservices]
 
----
+## 2. Trách nhiệm duy nhất của serverFetch
 
-### Luồng 2: Client Components (Redux Toolkit Query / Client Hooks)
-* **Cách gọi:** 
-  - Redux Toolkit Query / RTK Query / Client fetch gửi request đến Next.js Route Handler nội bộ (BFF) qua URL `/api/...` (ví dụ: `/api/auth/login`, `/api/products`).
-* **Cơ chế:** 
-  - Client gọi đến `/api/[...path]` (`app/api/[...path]/route.ts`).
-  - Route Handler nhận request và chuyển tiếp qua `serverFetch` hoặc wrapper gọi `serverFetch`.
-  - Wrapper auth xử lý token cookie và hook đặc biệt trước khi `serverFetch` gửi request đến Backend Microservices.
-  - Kết quả từ Backend được trả ngược về cho Client.
+serverFetch là base orchestrator duy nhất cho mọi request phía server. Hàm này chịu trách nhiệm:
 
-```
-[Client Component / RTK Query] 
-             |
-             v
-   [Next.js Route Handler] (/api/[...path]/route.ts)
-             |
-             v
-        serverFetch() (server-side, nhận token và hook từ caller)
-             |
-             v
-   [Backend Microservices]
-```
+- Chuẩn hóa endpoint và tạo URL backend.
+- Tự quyết định endpoint public/private dựa trên PUBLIC_ENDPOINTS.
+- Với private endpoint, tự đọc access token từ cookie httpOnly và gắn Authorization.
+- Khi private request nhận 401, tự đọc refresh token, gọi refresh và retry request một lần.
+- Lưu token mới hoặc xóa session khi refresh thất bại.
+- Xử lý lifecycle đặc biệt của login, register và logout.
+- Parse response về ApiResponse<T> thống nhất.
 
----
+Không tạo authenticatedRequest, loginRequest, registerRequest, logoutRequest hoặc request-strategies riêng. Không gọi fetch backend ngoài serverFetch.
 
-## 2. NGUYÊN TẮC BẢO MẬT & QUẢN LÝ TOKEN
-1. **Mảng PUBLIC_ENDPOINTS:** Trong `@/lib/api/public-endpoints`, mảng string `PUBLIC_ENDPOINTS` chứa danh sách các endpoint công khai. Caller kiểm tra danh sách và truyền `skipAuth: true`; `serverFetch` không đọc cookie và không đính kèm header `Authorization` khi option này được bật.
-2. **Tuyệt đối không lưu Token ở Client State/LocalStorage:** Toàn bộ `access_token` và `refresh_token` phải được bảo vệ trong cookie `httpOnly`.
-3. **Không tạo hàm wrapper dư thừa:** Không viết các hàm gọi API phân mảnh/thừa thãi. Mọi tương tác gọi backend từ phía server đều quy về `serverFetch`.
-4. **Phân tách rõ ràng:**
-   - Server Component: `serverFetch`
-   - Client Component / Redux: RTK Query -> `/api/...` proxy route -> `serverFetch`
+## 3. Chính sách public/private
 
-## 3. NGOẠI LỆ TRONG serverFetch
-- Mọi API backend phải đi qua `serverFetch`; Route Handler không được gọi backend trực tiếp.
-- `serverFetch` là luồng generic dùng chung, không chèn business logic riêng cho từng endpoint.
-- Nếu API có flow đặc biệt, tách flow đó thành wrapper/helper riêng, truyền hook vào `serverFetch` và không thêm endpoint-specific logic vào core.
+- Danh sách endpoint public duy nhất nằm trong PUBLIC_ENDPOINTS tại lib/api/public-endpoints.
+- Endpoint không nằm trong PUBLIC_ENDPOINTS mặc định là private.
+- Caller không tự quyết định public/private và không tự gắn Authorization.
+- skipAuth chỉ dùng bên trong serverFetch cho flow nội bộ như refresh token; không dùng để tạo wrapper nghiệp vụ riêng.
+- AUTHORIZATION_HEADER là hằng số dùng chung trong lib/api/constants.
 
+## 4. Quy tắc cho từng lớp
+
+- Server Component: gọi serverFetch trực tiếp hoặc gọi server service chỉ có nhiệm vụ tổ chức dữ liệu; server service vẫn phải gọi serverFetch.
+- Route Handler: chỉ nhận request, tạo options và gọi serverFetch; không chứa logic auth hoặc strategy endpoint.
+- Redux/Client service: gọi URL BFF /api/... bằng RTK Query; không đọc cookie và không gọi backend trực tiếp.
+- Component UI: không gọi API; nhận dữ liệu qua props hoặc custom hook theo đúng ranh giới Server/Client.
+- Không tạo wrapper auth hoặc helper fetch mới nếu chỉ chuyển tiếp sang serverFetch.
+
+## 5. Bảo mật token
+
+- Không lưu access_token hoặc refresh_token trong Redux state, localStorage hoặc client state.
+- Token chỉ được quản lý qua cookie httpOnly và serverFetch.
+- Không truyền token từ Client Component xuống props.
