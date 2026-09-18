@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 
 // Quản lý trạng thái mở đóng sidebar của khu vực người bán.

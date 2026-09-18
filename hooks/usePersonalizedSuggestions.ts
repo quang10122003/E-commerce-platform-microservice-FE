@@ -1,5 +1,3 @@
-"use client";
-
 import { useMemo, useState } from "react";
 import { filterSuggestedProducts, type SuggestionTab } from "@/utils/suggestions.utils";
 
