@@ -1,5 +1,3 @@
-"use client";
-
 import type { ToasterProps } from "sonner";
 
 export type NotificationVariant = "success" | "info" | "warning" | "error" | "loading";

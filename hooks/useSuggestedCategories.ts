@@ -1,5 +1,3 @@
-"use client";
-
 import { useRef, useState, type MouseEvent } from "react";
 
 // Quản lý thao tác kéo ngang và ngăn điều hướng ngoài ý muốn của danh mục.

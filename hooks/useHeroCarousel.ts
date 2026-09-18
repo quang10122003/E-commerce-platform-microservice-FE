@@ -1,5 +1,3 @@
-"use client";
-
 import { useCallback, useEffect, useState } from "react";
 
 // Quản lý slide hiện tại và tự động chuyển slide cho hero carousel.

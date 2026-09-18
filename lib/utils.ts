@@ -1,3 +1,6 @@
+import type { ApiResponse } from "@/types/common";
+import type { ServerFetchResult } from "@/lib/api/server-client";
+
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -20,6 +23,22 @@ export function formatCurrency(amount: number | string): string {
     currency: "VND",
     maximumFractionDigits: 0,
   }).format(numericAmount);
+}
+
+/** Định dạng số tiền trong input bằng dấu chấm phân tách hàng nghìn. */
+export function formatNumberInput(value: number | string): string {
+  const digits = String(value).replace(/\D/g, "");
+  if (!digits) return "";
+
+  return new Intl.NumberFormat("vi-VN", {
+    maximumFractionDigits: 0,
+  }).format(Number(digits));
+}
+
+/** Chuyển giá trị tiền đã định dạng về số nguyên để lưu và gửi API. */
+export function parseNumberInput(value: number | string): number {
+  const digits = String(value).replace(/\D/g, "");
+  return digits ? Number(digits) : 0;
 }
 
 /**
@@ -81,4 +100,66 @@ export function getApiErrorMessage(
   }
 
   return fallbackMessage;
+}
+
+// Đọc thông báo lỗi từ kết quả serverFetch hoặc ApiResponse của server service.
+export function getFetchServiceErrorMessage(
+  result: unknown,
+  fallbackMessage = "Không thể tải dữ liệu từ máy chủ."
+): string {
+  if (isServerFetchResult(result)) {
+    const payloadMessage = getApiErrorMessage(result.payload, "");
+    if (payloadMessage) return payloadMessage;
+
+    if (typeof result.status === "number" && result.status >= 400) {
+      return `Backend trả về HTTP ${result.status} ${fallbackMessage}`;
+    }
+
+    return fallbackMessage;
+  }
+
+  return getApiErrorMessage(result, fallbackMessage);
+}
+
+// type data return sau khi fetch
+export type ResolvedFetchField<T> = {
+  data: T | null;
+  error: string | null;
+};
+
+// Chuẩn hóa kết quả từng request để dữ liệu và lỗi được xử lý độc lập.
+export function resolveProductCatalogField<T>(
+  result: PromiseSettledResult<ServerFetchResult<T>>,
+): ResolvedFetchField<T> {
+  if (result.status === "rejected") {
+    return {
+      data: null,
+      error: getFetchServiceErrorMessage(result.reason),
+    };
+  }
+
+  if (!result.value.payload.success || result.value.payload.data === null) {
+    return {
+      data: null,
+      error: getFetchServiceErrorMessage(result.value),
+    };
+  }
+
+  return { data: result.value.payload.data, error: null };
+}
+
+// Kiểm tra kết quả có đúng cấu trúc trả về của serverFetch hay không.
+function isServerFetchResult(
+  result: unknown,
+): result is { payload: ApiResponse<unknown>; status: number } {
+  if (typeof result !== "object" || result === null) {
+    return false;
+  }
+
+  const resultObject = result as Record<string, unknown>;
+  return (
+    typeof resultObject.status === "number" &&
+    typeof resultObject.payload === "object" &&
+    resultObject.payload !== null
+  );
 }
