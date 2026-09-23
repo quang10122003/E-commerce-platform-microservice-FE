@@ -40,6 +40,7 @@
    - Đánh giá sao vàng + Số lượng đã bán (*"Đã bán 1.5k"*).
    - Địa điểm xuất kho (*"Hà Nội"*, *"TP. Hồ Chí Minh"*).
 4. **Hiệu ứng Thẻ:** Nâng nhẹ khi hover (`hover:-translate-y-1 hover:shadow-xl`), đổ bóng mềm mại có chiều sâu.
+5. **Bo góc sắc nét (Anti-blob):** Bo góc vừa vặn 6px - 10px (`rounded-md`, `rounded-lg`, `rounded-xl`), tránh bo góc tròn lớn (`rounded-2xl`, `rounded-3xl`) gây cảm giác mềm yếu.
 
 ---
 

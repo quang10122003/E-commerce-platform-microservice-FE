@@ -226,8 +226,8 @@ export function PersonalizedSuggestions() {
         </div>
       </div>
 
-      {/* 2. PRODUCT GRID (5 COLUMNS ON DESKTOP) */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 sm:gap-4">
+      {/* 2. PRODUCT GRID (5-6 CỘT TRÊN DESKTOP) */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6 gap-3.5 sm:gap-4">
         {filteredProducts.slice(0, visibleCount).map((product) => (
           <Link
             key={product.id}
