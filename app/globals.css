@@ -87,12 +87,14 @@
   --color-admin-sidebar-muted: #94A3B8;
   --color-admin-sidebar-border: #1E293B;
 
-  /* Radius tokens */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 18px;
-  --radius-2xl: 24px;
+  /* Radius tokens - Chuẩn bo góc nhỏ gọn, sắc nét, tránh hiệu ứng quá tròn mềm */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
+  --radius-2xl: 12px;
+  --radius-3xl: 14px;
 }
 
 :root {

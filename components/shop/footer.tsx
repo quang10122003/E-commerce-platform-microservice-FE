@@ -7,8 +7,8 @@ export function ShopFooter() {
   return (
     <footer className="w-full bg-slate-900 text-slate-300 mt-16 text-xs">
       {/* 1. NEWSLETTER SUBSCRIPTION STRIP */}
-      <div className="border-b border-slate-800 py-10 px-4 sm:px-8 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+      <div className="border-b border-slate-800 py-10 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900">
+        <div className="max-w-[1440px] mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-1 text-center md:text-left">
             <h3 className="text-lg sm:text-xl font-black text-white tracking-tight">
               Đăng Ký Nhận Bản Tin Ưu Đãi
@@ -36,7 +36,7 @@ export function ShopFooter() {
       </div>
 
       {/* 2. MAIN FOOTER LINKS */}
-      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-8 grid grid-cols-2 md:grid-cols-4 gap-8">
+      <div className="max-w-[1440px] mx-auto py-12 px-4 sm:px-6 lg:px-8 grid grid-cols-2 md:grid-cols-4 gap-8">
         <div className="space-y-3">
           <h4 className="font-bold text-white uppercase tracking-wider text-xs">
             Chăm Sóc Khách Hàng

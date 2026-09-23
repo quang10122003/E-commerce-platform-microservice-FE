@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { useMounted } from "@/lib/hooks";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -7,6 +8,7 @@ import { clearUser } from "@/lib/redux/slices/auth-slice";
 
 // Quản lý state, quyền truy cập và side-effect của header mua sắm.
 export function useShopHeader() {
+  const router = useRouter();
   const dispatch = useAppDispatch();
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -21,6 +23,18 @@ export function useShopHeader() {
 
   // Kiểm tra quyền mở kênh quản lý dành riêng cho người bán.
   const canAccessSellerChannel = user?.role.includes("ROLE_SHOP") ?? false;
+
+  // Điều hướng đến trang kết quả với từ khóa đã được chuẩn hóa.
+  const handleSearch = useCallback((keyword = searchQuery) => {
+    const normalizedKeyword = keyword.trim();
+    // Không gửi request tìm kiếm khi người dùng chưa nhập từ khóa.
+    if (!normalizedKeyword) return;
+    const query = normalizedKeyword
+      ? `?keyword=${encodeURIComponent(normalizedKeyword)}`
+      : "";
+
+    router.push(`/search${query}`);
+  }, [router, searchQuery]);
 
   // Gọi API logout và xóa thông tin user khỏi Redux sau khi thành công.
   const handleLogout = async () => {
@@ -76,6 +90,7 @@ export function useShopHeader() {
     setIsAuthModalOpen,
     setSearchQuery,
     handleLogout,
+    handleSearch,
     user,
   };
 }

@@ -257,7 +257,7 @@ export async function serverFetch<T>(
     throw new Error("Thiếu biến môi trường BACKEND_API_URL");
   }
 
-  const isPublic = isPublicEndpoint(endpointPath);
+  const isPublic = isPublicEndpoint(endpointPath, options.method);
   const skipAuth = options.skipAuth ?? isPublic;
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const token = skipAuth
