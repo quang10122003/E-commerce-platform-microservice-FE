@@ -7,6 +7,8 @@ import {
 } from "@/lib/utils";
 import type {
   ProductBrandOption,
+  ProductCatalogPage,
+  ProductCatalogQuery,
   ProductCategoryOption,
 } from "@/types/product";
 
@@ -33,4 +35,37 @@ export async function GetDataForCareteProduct(): Promise<GetDataForCreateProduct
     category: resolveProductCatalogField(categoriesResult),
     brand: resolveProductCatalogField(brandsResult),
   };
+}
+
+// Lấy batch đầu của trang tìm kiếm từ Server Component.
+export async function getProductCatalog(
+  query: ProductCatalogQuery,
+): Promise<ProductCatalogPage> {
+  const params = new URLSearchParams();
+
+  Object.entries(query).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      if (Array.isArray(value)) {
+        value.forEach((item) => params.append(key, String(item)));
+      } else {
+        params.set(key, String(value));
+      }
+    }
+  });
+
+  const result = await serverFetch<ProductCatalogPage>(
+    `api/products?${params.toString()}`,
+    { method: "GET", cache: "no-store" },
+  );
+
+  if (
+    result.status < 200 ||
+    result.status >= 300 ||
+    !result.payload.success ||
+    !result.payload.data
+  ) {
+    throw new Error("Không thể tải kết quả tìm kiếm.");
+  }
+
+  return result.payload.data;
 }

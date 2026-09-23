@@ -5,7 +5,6 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import {
   Search,
-  Camera,
   ShoppingCart,
   Store,
   LogIn,
@@ -47,6 +46,7 @@ export function ShopHeader() {
     setIsAuthModalOpen,
     setSearchQuery,
     handleLogout,
+    handleSearch,
     user,
   } = useShopHeader();
 
@@ -54,7 +54,7 @@ export function ShopHeader() {
     <>
       {/* Khu vực header chính của trang mua sắm. */}
       <header className="sticky top-0 z-40 w-full glass-header border-b border-slate-200/80 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between gap-3 sm:gap-6">
             {/* 2.1 LOGO */}
             <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
@@ -73,7 +73,13 @@ export function ShopHeader() {
 
             {/* 2.2 SEARCH BAR WITH HOT KEYWORDS */}
             <div className="flex-1 max-w-xl mx-1 sm:mx-4">
-              <div className="relative flex items-center">
+              <form
+                className="relative flex items-center"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  handleSearch();
+                }}
+              >
                 <Input
                   placeholder="Tìm kiếm sản phẩm, thương hiệu chính hãng..."
                   leftIcon={<Search className="w-4 h-4 text-primary" />}
@@ -84,14 +90,14 @@ export function ShopHeader() {
                 <Button
                   variant="gradient-cta"
                   size="sm"
-                  type="button"
-                  aria-label="Tìm kiếm sản phẩm bằng hình ảnh"
-                  title="Tìm kiếm sản phẩm bằng hình ảnh"
+                  type="submit"
+                  aria-label="Tìm kiếm sản phẩm"
+                  title="Tìm kiếm sản phẩm"
                   className="absolute right-1.5 h-7.5 w-8 p-0 rounded-lg"
                 >
-                  <Camera className="w-4 h-4" />
+                  <Search className="w-4 h-4" />
                 </Button>
-              </div>
+              </form>
 
               {/* Hot search chips (desktop only) */}
               <div className="hidden lg:flex items-center gap-2 mt-1.5 px-1">
@@ -102,7 +108,10 @@ export function ShopHeader() {
                   <button
                     key={kw}
                     type="button"
-                    onClick={() => setSearchQuery(kw)}
+                    onClick={() => {
+                      setSearchQuery(kw);
+                      handleSearch(kw);
+                    }}
                     className="text-[10px] text-slate-600 hover:text-primary transition-colors hover:underline cursor-pointer"
                   >
                     {kw}
