@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import {
   Flame,
   Zap,
@@ -237,10 +238,12 @@ export function PersonalizedSuggestions() {
             <div>
               {/* Product Thumbnail with Unsplash Image */}
               <div className="relative aspect-square w-full overflow-hidden bg-slate-100">
-                <img
+                <Image
+                  fill
                   src={product.imageUrl}
                   alt={product.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                  sizes="(min-width: 1536px) 16.67vw, (min-width: 1024px) 20vw, (min-width: 640px) 25vw, 50vw"
+                  className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                 />
 
                 {/* Top Badges */}

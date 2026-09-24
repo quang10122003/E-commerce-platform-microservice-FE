@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Flame,
   ArrowRight,
@@ -51,6 +52,15 @@ const flashSaleProducts = [
     discount: 44,
     soldPercent: 81,
     imageUrl: "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=500&auto=format&fit=crop&q=80",
+  },
+  {
+    id: "fs-5",
+    title: "Đồng hồ thông minh theo dõi sức khỏe chống nước",
+    price: 699000,
+    originalPrice: 1190000,
+    discount: 41,
+    soldPercent: 76,
+    imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&auto=format&fit=crop&q=80",
   },
 ];
 
@@ -173,7 +183,7 @@ export default function ShopHomePage() {
         </div>
 
         {/* Flash Sale Product Grid */}
-        <div className="p-4 sm:p-5 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
+        <div className="p-4 sm:p-5 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-4">
           {flashSaleProducts.map((item) => (
             <Link
               key={item.id}
@@ -183,10 +193,12 @@ export default function ShopHomePage() {
               <div>
                 {/* Product Image */}
                 <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-slate-100">
-                  <img
+                  <Image
+                    fill
                     src={item.imageUrl}
                     alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    sizes="(min-width: 1024px) 20vw, 50vw"
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute top-2 right-2">
                     <Badge variant="flame" size="sm">
