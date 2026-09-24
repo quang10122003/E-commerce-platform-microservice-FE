@@ -26,6 +26,7 @@ export interface ProductBasicFormData {
 export interface UIProductVariantRow {
   key: string;
   label: string;
+  selected: boolean;
   price: number;
   stockQuantity: number;
   attributeSelections: { attributeIndex: number; valueIndex: number }[];
@@ -94,6 +95,9 @@ export function useCreateProduct({ defaultCategoryId }: UseCreateProductOptions)
     >
   >({});
 
+  // Lưu các tổ hợp người bán không muốn tạo biến thể.
+  const [excludedVariantKeys, setExcludedVariantKeys] = useState<Set<string>>(new Set());
+
   // Cập nhật preview khi chọn ảnh bìa
   const handleCoverImageChange = useCallback((file: File | null) => {
     setCoverImageFile(file);
@@ -111,9 +115,9 @@ export function useCreateProduct({ defaultCategoryId }: UseCreateProductOptions)
       return [];
     }
 
-    const validAttributes = attributes.filter(
-      (attr) => attr.name.trim() && attr.values.length > 0
-    );
+    const validAttributes = attributes
+      .map((attr, attributeIndex) => ({ ...attr, attributeIndex }))
+      .filter((attr) => attr.name.trim() && attr.values.length > 0);
 
     if (validAttributes.length === 0) {
       return [];
@@ -134,7 +138,7 @@ export function useCreateProduct({ defaultCategoryId }: UseCreateProductOptions)
       currentAttr.values.forEach((val, valIdx) => {
         const nextCombo = [
           ...currentCombo,
-          { attrIdx, valIdx, valName: val },
+          { attrIdx: currentAttr.attributeIndex, valIdx, valName: val },
         ];
         results.push(...generateCombinations(attrIdx + 1, nextCombo));
       });
@@ -152,6 +156,7 @@ export function useCreateProduct({ defaultCategoryId }: UseCreateProductOptions)
       return {
         key,
         label,
+        selected: !excludedVariantKeys.has(key),
         price: override ? override.price : 0,
         stockQuantity: override ? override.stockQuantity : 0,
         attributeSelections: combo.map((c) => ({
@@ -163,7 +168,33 @@ export function useCreateProduct({ defaultCategoryId }: UseCreateProductOptions)
         primaryImageIndex: override?.primaryImageIndex || 0,
       };
     });
-  }, [hasVariants, attributes, variantOverrides]);
+  }, [hasVariants, attributes, variantOverrides, excludedVariantKeys]);
+
+  // Lọc các biến thể được chọn để kiểm tra và gửi lên backend.
+  const selectedVariantRows = useMemo(
+    () => variantRows.filter((row) => row.selected),
+    [variantRows]
+  );
+
+  // Chuyển trạng thái tạo hoặc bỏ qua của một tổ hợp.
+  const toggleVariantSelection = useCallback((key: string) => {
+    setExcludedVariantKeys((previous) => {
+      const next = new Set(previous);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }, []);
+
+  // Chọn lại toàn bộ tổ hợp đang hiển thị.
+  const selectAllVariants = useCallback(() => {
+    setExcludedVariantKeys(new Set());
+  }, []);
+
+  // Bỏ chọn toàn bộ tổ hợp để người bán chọn các biến thể cần tạo.
+  const deselectAllVariants = useCallback(() => {
+    setExcludedVariantKeys(new Set(variantRows.map((row) => row.key)));
+  }, [variantRows]);
 
   // Thêm nhóm thuộc tính mới
   const addAttributeGroup = useCallback(() => {
@@ -199,6 +230,7 @@ export function useCreateProduct({ defaultCategoryId }: UseCreateProductOptions)
     attributeFields.remove(index);
     clearErrors("attributes");
     setVariantOverrides({});
+    setExcludedVariantKeys(new Set());
   }, [attributeFields, clearErrors]);
 
   // Cập nhật tên nhóm thuộc tính
@@ -211,6 +243,7 @@ export function useCreateProduct({ defaultCategoryId }: UseCreateProductOptions)
       // Đổi tên nhóm làm thay đổi toàn bộ tổ hợp biến thể hiện tại.
       setValue(`attributes.${index}.values`, [], { shouldDirty: true });
       setVariantOverrides({});
+      setExcludedVariantKeys(new Set());
       clearErrors(`attributes.${index}.values`);
     }
     if (name.trim()) clearErrors(`attributes.${index}.name`);
@@ -232,6 +265,7 @@ export function useCreateProduct({ defaultCategoryId }: UseCreateProductOptions)
     });
     // Thêm giá trị mới sẽ tạo tổ hợp mới nên cần xóa dữ liệu biến thể cũ.
     setVariantOverrides({});
+    setExcludedVariantKeys(new Set());
     clearErrors(`attributes.${attrIndex}.values`);
   }, [attributes, clearErrors, notifyWarning, setValue]);
 
@@ -254,6 +288,7 @@ export function useCreateProduct({ defaultCategoryId }: UseCreateProductOptions)
     );
     // Xóa giá trị làm thay đổi tổ hợp nên không giữ lại dữ liệu biến thể cũ.
     setVariantOverrides({});
+    setExcludedVariantKeys(new Set());
   }, [attributes, setValue]);
 
   // Cập nhật giá/tồn kho cho từng biến thể
@@ -372,12 +407,12 @@ export function useCreateProduct({ defaultCategoryId }: UseCreateProductOptions)
     });
   }, [variantRows]);
 
-  // Áp dụng giá và tồn kho hàng loạt cho tất cả các biến thể
+  // Áp dụng giá và tồn kho hàng loạt cho các biến thể được chọn.
   const batchApply = useCallback(
     (price?: number, stock?: number) => {
       setVariantOverrides((prev) => {
         const next = { ...prev };
-        variantRows.forEach((row) => {
+        selectedVariantRows.forEach((row) => {
           next[row.key] = {
             price:
               price !== undefined && !isNaN(price) && price >= 0
@@ -394,9 +429,9 @@ export function useCreateProduct({ defaultCategoryId }: UseCreateProductOptions)
         });
         return next;
       });
-      notifySuccess("Đã áp dụng giá và tồn kho cho toàn bộ biến thể!");
+      notifySuccess("Đã áp dụng giá và tồn kho cho các biến thể được chọn!");
     },
-    [notifySuccess, variantRows]
+    [notifySuccess, selectedVariantRows]
   );
 
   // Xử lý gửi form và đóng gói Multipart/form-data
@@ -431,31 +466,37 @@ export function useCreateProduct({ defaultCategoryId }: UseCreateProductOptions)
         return;
       }
 
-      // Kiểm tra mỗi biến thể phải có ít nhất một ảnh trước khi gửi.
-      const hasMissingVariantImage = variantRows.some(
+      // Sản phẩm có phân loại cần ít nhất một tổ hợp được chọn để bán.
+      if (selectedVariantRows.length === 0) {
+        notifyError("Vui lòng chọn ít nhất một tổ hợp biến thể cần tạo.");
+        return;
+      }
+
+      // Kiểm tra ảnh của các biến thể được chọn trước khi gửi.
+      const hasMissingVariantImage = selectedVariantRows.some(
         (variant) => variant.imageFiles.length === 0
       );
       if (hasMissingVariantImage) {
-        notifyError("Vui lòng chọn ít nhất 1 ảnh cho tất cả biến thể.");
+        notifyError("Vui lòng chọn ít nhất 1 ảnh cho mỗi biến thể được chọn.");
         return;
       }
 
-      // Kiểm tra xem có biến thể nào có giá <= 0 không
-      const hasInvalidPrice = variantRows.some(
+      // Kiểm tra giá bán của các biến thể được chọn.
+      const hasInvalidPrice = selectedVariantRows.some(
         (variant) => !Number.isFinite(variant.price) || variant.price <= 0
       );
       if (hasInvalidPrice) {
-        notifyError("Vui lòng nhập giá bán lớn hơn 0 cho tất cả biến thể.");
+        notifyError("Vui lòng nhập giá bán lớn hơn 0 cho mỗi biến thể được chọn.");
         return;
       }
 
-      // Kiểm tra tồn kho của tất cả biến thể phải lớn hơn 0 trước khi gửi.
-      const hasInvalidStock = variantRows.some(
+      // Kiểm tra tồn kho của các biến thể được chọn trước khi gửi.
+      const hasInvalidStock = selectedVariantRows.some(
         (variant) =>
           !Number.isFinite(variant.stockQuantity) || variant.stockQuantity <= 0
       );
       if (hasInvalidStock) {
-        notifyError("Vui lòng nhập tồn kho lớn hơn 0 cho tất cả biến thể.");
+        notifyError("Vui lòng nhập tồn kho lớn hơn 0 cho mỗi biến thể được chọn.");
         return;
       }
 
@@ -463,7 +504,7 @@ export function useCreateProduct({ defaultCategoryId }: UseCreateProductOptions)
         (a) => a.name.trim() && a.values.length > 0
       );
 
-      finalVariants = variantRows.map((row, variantIdx) => {
+      finalVariants = selectedVariantRows.map((row, variantIdx) => {
         // Gắn metadata theo đúng thứ tự file ảnh của từng biến thể
         const images: { primary: boolean }[] = row.imageFiles.map((file, imageIdx) => {
           variantFilesToUpload.push(file);
@@ -573,6 +614,7 @@ export function useCreateProduct({ defaultCategoryId }: UseCreateProductOptions)
     batchApply,
     coverImageFile,
     coverImagePreview,
+    deselectAllVariants,
     form,
     handleCoverImageChange,
     hasVariants,
@@ -580,7 +622,10 @@ export function useCreateProduct({ defaultCategoryId }: UseCreateProductOptions)
     onSubmit,
     removeAttributeGroup,
     removeAttributeValue,
+    selectAllVariants,
+    selectedVariantCount: selectedVariantRows.length,
     setHasVariants,
+    toggleVariantSelection,
     updateAttributeName,
     updateVariantImages,
     updateSimpleImages,
