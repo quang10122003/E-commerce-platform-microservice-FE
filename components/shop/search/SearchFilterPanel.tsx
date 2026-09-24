@@ -1,10 +1,17 @@
 "use client";
 
+import { ChevronDown } from "lucide-react";
+import administrativeUnits from "@/data/vietnam-administrative-units.json";
 import type { ProductBrandOption } from "@/types/product";
+
+const provinceFilterOptions = Object.entries(administrativeUnits.provinceNameMap);
+const visibleProvinceOptions = provinceFilterOptions.slice(0, 7);
+const additionalProvinceOptions = provinceFilterOptions.slice(7);
 
 type SearchFilterPanelProps = {
   matchedBrands: ProductBrandOption[];
   brandIds: number[];
+  locations: string[];
   isPending: boolean;
   minPriceInput: string;
   maxPriceInput: string;
@@ -17,6 +24,7 @@ type SearchFilterPanelProps = {
   onPriceSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   onBrandChange: (id: number) => void;
   onClearBrands: () => void;
+  onLocationChange: (location: string) => void;
   onClearFilters: () => void;
 };
 
@@ -24,6 +32,7 @@ type SearchFilterPanelProps = {
 export function SearchFilterPanel({
   matchedBrands,
   brandIds,
+  locations,
   isPending,
   minPriceInput,
   maxPriceInput,
@@ -35,6 +44,7 @@ export function SearchFilterPanel({
   onPriceSubmit,
   onBrandChange,
   onClearBrands,
+  onLocationChange,
   onClearFilters,
 }: SearchFilterPanelProps) {
   // Lớp CSS input và nút thay đổi theo ngữ cảnh desktop/mobile.
@@ -145,6 +155,50 @@ export function SearchFilterPanel({
               Chưa có thương hiệu phù hợp
             </p>
           )}
+        </div>
+      </div>
+
+      {/* Danh sách tỉnh dùng cho bộ lọc checkbox. */}
+      <div className={mobile ? "border-t border-slate-200 pt-4 space-y-2" : "border-t border-slate-200/90 pt-4"}>
+        <p className={mobile ? "text-xs font-bold text-slate-800 uppercase tracking-wide" : "text-xs font-medium text-slate-700"}>
+          Tỉnh / Thành phố
+        </p>
+        <div className={mobile ? "space-y-1" : "mt-2 space-y-1"}>
+          {visibleProvinceOptions.map(([provinceKey, provinceValue]) => (
+            <label key={provinceKey} className={brandItemCls}>
+              <input
+                type="checkbox"
+                value={provinceValue}
+                checked={locations.includes(provinceValue)}
+                onChange={() => onLocationChange(provinceValue)}
+                disabled={isPending}
+                className={checkboxCls}
+              />
+              <span className="truncate">{provinceKey}</span>
+            </label>
+          ))}
+          <details className="group flex flex-col">
+            <div className="space-y-1">
+              {additionalProvinceOptions.map(([provinceKey, provinceValue]) => (
+                <label key={provinceKey} className={brandItemCls}>
+                  <input
+                    type="checkbox"
+                    value={provinceValue}
+                    checked={locations.includes(provinceValue)}
+                    onChange={() => onLocationChange(provinceValue)}
+                    disabled={isPending}
+                    className={checkboxCls}
+                  />
+                  <span className="truncate">{provinceKey}</span>
+                </label>
+              ))}
+            </div>
+            <summary className="order-last flex cursor-pointer list-none items-center gap-1 px-2 py-1.5 text-[11px] font-medium text-slate-500 transition hover:text-slate-700">
+              <span className="group-open:hidden">Xem thêm</span>
+              <span className="hidden group-open:inline">Thu nhỏ</span>
+              <ChevronDown className="h-3.5 w-3.5 transition-transform group-open:rotate-180" />
+            </summary>
+          </details>
         </div>
       </div>
     </div>

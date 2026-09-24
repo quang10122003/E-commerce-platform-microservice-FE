@@ -10,6 +10,7 @@ type SearchPageProps = {
     brandId?: string;
     minPrice?: string;
     maxPrice?: string;
+    locations?: string | string[];
   }>;
 };
 
@@ -31,13 +32,25 @@ function parseBrandParams(value?: string | string[]): number[] {
       .filter((item) => Number.isInteger(item) && item > 0),
   )];
 }
+// Chuẩn hóa danh sách tỉnh/thành từ query string trước khi gửi đến backend.
+function parseLocationParams(value?: string | string[]): string[] {
+  const values = Array.isArray(value) ? value : value ? [value] : [];
+  return [...new Set(
+    values
+      .flatMap((item) => item.split(","))
+      .map((item) => item.trim())
+      .filter(Boolean),
+  )];
+}
+
 
 // Hiển thị batch đầu từ server để trang tìm kiếm tải nhanh và có thể lập chỉ mục.
 export default async function SearchPage({ searchParams }: SearchPageProps) {
-  const { keyword = "", sort, brandIds, brandId, minPrice, maxPrice } = await searchParams;
+  const { keyword = "", sort, brandIds, brandId, minPrice, maxPrice, locations } = await searchParams;
   const normalizedKeyword = keyword.trim();
   const normalizedSort = sort === "MOST_SOLD" ? "MOST_SOLD" : "RELEVANCE";
   const normalizedBrandIds = parseBrandParams(brandIds ?? brandId);
+  const normalizedLocations = parseLocationParams(locations);
   const normalizedMinPrice = parsePriceParam(minPrice);
   const normalizedMaxPrice = parsePriceParam(maxPrice);
   // Giá trị dự phòng giúp UI vẫn hiển thị khi Elasticsearch tạm thời không phản hồi.
@@ -54,6 +67,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         keyword: normalizedKeyword,
         sort: normalizedSort,
         brandIds: normalizedBrandIds,
+        locations: normalizedLocations,
         minPrice: normalizedMinPrice,
         maxPrice: normalizedMaxPrice,
         size: 20,
@@ -65,11 +79,12 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
   return (
     <ProductSearchResultsView
-      key={`${normalizedKeyword}:${normalizedSort}:${normalizedBrandIds.join(",")}:${normalizedMinPrice ?? ""}:${normalizedMaxPrice ?? ""}`}
+      key={`${normalizedKeyword}:${normalizedSort}:${normalizedBrandIds.join(",")}:${normalizedLocations.join(",")}:${normalizedMinPrice ?? ""}:${normalizedMaxPrice ?? ""}`}
       initialPage={initialPage}
       keyword={normalizedKeyword}
       sort={normalizedSort}
       brandIds={normalizedBrandIds}
+      locations={normalizedLocations}
       minPrice={normalizedMinPrice}
       maxPrice={normalizedMaxPrice}
     />

@@ -114,6 +114,7 @@ export interface ProductCatalogQuery {
   keyword?: string;
   categoryId?: number;
   brandIds?: number[];
+  locations?: string[];
   minPrice?: number;
   maxPrice?: number;
   sort?: ProductSortOption;
