@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   ChevronLeft,
   ChevronRight,
@@ -174,10 +175,12 @@ export function HeroCarousel() {
             {/* Hình ảnh sản phẩm nổi bật bên phải của Hero Banner */}
             <div className="hidden sm:block relative z-10 w-52 sm:w-64 lg:w-88 aspect-square shrink-0">
               <div className="relative w-full h-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border-2 border-white/25 transform group-hover:scale-105 transition-transform duration-500">
-                <img
+                <Image
+                  fill
                   src={s.imageUrl}
                   alt={s.title}
-                  className="w-full h-full object-cover"
+                  sizes="(min-width: 1024px) 22rem, 16rem"
+                  className="object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                 <div className="absolute bottom-3.5 left-3.5 right-3.5 flex items-center justify-between text-xs font-bold font-heading text-white">
