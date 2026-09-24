@@ -8,6 +8,7 @@ import type { ProductSortOption } from "@/types/product";
 type UseProductSearchFiltersOptions = {
   sort: ProductSortOption;
   brandIds?: number[];
+  locations?: string[];
   minPrice?: number;
   maxPrice?: number;
 };
@@ -15,6 +16,7 @@ type UseProductSearchFiltersOptions = {
 type FilterUpdates = {
   sort?: ProductSortOption;
   brandIds?: number[];
+  locations?: string[];
   minPrice?: number;
   maxPrice?: number;
 };
@@ -37,6 +39,7 @@ function parsePriceInput(value: string): number | undefined {
 export function useProductSearchFilters({
   sort,
   brandIds = [],
+  locations = [],
   minPrice,
   maxPrice,
 }: UseProductSearchFiltersOptions) {
@@ -69,6 +72,13 @@ export function useProductSearchFilters({
         });
       }
       nextSearchParams.delete("brandId");
+
+      if ("locations" in updates) {
+        nextSearchParams.delete("locations");
+        updates.locations?.forEach((location) => {
+          nextSearchParams.append("locations", location);
+        });
+      }
 
       if (updates.minPrice !== undefined) {
         nextSearchParams.set("minPrice", String(updates.minPrice));
@@ -105,6 +115,17 @@ export function useProductSearchFilters({
   const handleClearBrands = useCallback(
     () => navigateWithFilters({ brandIds: [] }),
     [navigateWithFilters],
+  );
+
+  // Bật hoặc tắt một tỉnh/thành và đồng bộ danh sách lên URL.
+  const handleLocationChange = useCallback(
+    (nextLocation: string) => {
+      const nextLocations = locations.includes(nextLocation)
+        ? locations.filter((location) => location !== nextLocation)
+        : [...locations, nextLocation];
+      navigateWithFilters({ locations: nextLocations });
+    },
+    [locations, navigateWithFilters],
   );
 
   // Áp dụng khoảng giá sau khi kiểm tra điều kiện tối thiểu và tối đa.
@@ -150,6 +171,7 @@ export function useProductSearchFilters({
     navigateWithFilters({
       sort: "RELEVANCE",
       brandIds: [],
+      locations: [],
       minPrice: undefined,
       maxPrice: undefined,
     });
@@ -163,9 +185,11 @@ export function useProductSearchFilters({
 
   return {
     brandIds,
+    locations,
     handleBrandChange,
     handleClearBrands,
     handleClearFilters,
+    handleLocationChange,
     handlePriceSubmit,
     handleSortChange,
     isPending,

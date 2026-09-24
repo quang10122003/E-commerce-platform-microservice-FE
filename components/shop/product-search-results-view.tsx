@@ -21,6 +21,7 @@ type ProductSearchResultsViewProps = {
   keyword: string;
   sort: ProductSortOption;
   brandIds: number[];
+  locations: string[];
   minPrice?: number;
   maxPrice?: number;
 };
@@ -31,6 +32,7 @@ export function ProductSearchResultsView({
   keyword,
   sort,
   brandIds,
+  locations,
   minPrice,
   maxPrice,
 }: ProductSearchResultsViewProps) {
@@ -41,6 +43,7 @@ export function ProductSearchResultsView({
     handleBrandChange,
     handleClearBrands,
     handleClearFilters,
+    handleLocationChange,
     handlePriceSubmit,
     handleSortChange,
     isPending,
@@ -49,13 +52,14 @@ export function ProductSearchResultsView({
     priceError,
     setMaxPriceInput,
     setMinPriceInput,
-  } = useProductSearchFilters({ sort, brandIds, minPrice, maxPrice });
+  } = useProductSearchFilters({ sort, brandIds, locations, minPrice, maxPrice });
 
   const matchedBrands = initialPage.brands ?? [];
   const query: ProductCatalogQuery = {
     keyword: keyword || undefined,
     sort,
     brandIds,
+    locations,
     minPrice,
     maxPrice,
     size: 20,
@@ -63,6 +67,7 @@ export function ProductSearchResultsView({
   const hasActiveFilters =
     sort !== "RELEVANCE" ||
     brandIds.length > 0 ||
+    locations.length > 0 ||
     minPrice !== undefined ||
     maxPrice !== undefined;
 
@@ -83,6 +88,8 @@ export function ProductSearchResultsView({
     onPriceSubmit: handlePriceSubmit,
     onBrandChange: handleBrandChange,
     onClearBrands: handleClearBrands,
+    locations,
+    onLocationChange: handleLocationChange,
     onClearFilters: handleClearFilters,
   };
 

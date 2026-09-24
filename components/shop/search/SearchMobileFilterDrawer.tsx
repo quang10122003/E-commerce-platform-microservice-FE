@@ -14,6 +14,7 @@ type SearchMobileFilterDrawerProps = {
   isPending: boolean;
   matchedBrands: ProductBrandOption[];
   brandIds: number[];
+  locations: string[];
   minPriceInput: string;
   maxPriceInput: string;
   priceError: string | null;
@@ -23,6 +24,7 @@ type SearchMobileFilterDrawerProps = {
   onPriceSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   onBrandChange: (id: number) => void;
   onClearBrands: () => void;
+  onLocationChange: (location: string) => void;
   onClearFilters: () => void;
 };
 
@@ -33,6 +35,7 @@ export function SearchMobileFilterDrawer({
   isPending,
   matchedBrands,
   brandIds,
+  locations,
   minPriceInput,
   maxPriceInput,
   priceError,
@@ -42,6 +45,7 @@ export function SearchMobileFilterDrawer({
   onPriceSubmit,
   onBrandChange,
   onClearBrands,
+  onLocationChange,
   onClearFilters,
 }: SearchMobileFilterDrawerProps) {
   const mounted = useMounted();
@@ -102,6 +106,7 @@ export function SearchMobileFilterDrawer({
             mobile
             matchedBrands={matchedBrands}
             brandIds={brandIds}
+            locations={locations}
             isPending={isPending}
             minPriceInput={minPriceInput}
             maxPriceInput={maxPriceInput}
@@ -112,6 +117,7 @@ export function SearchMobileFilterDrawer({
             onPriceSubmit={handlePriceSubmitAndClose}
             onBrandChange={onBrandChange}
             onClearBrands={onClearBrands}
+            onLocationChange={onLocationChange}
             onClearFilters={onClearFilters}
           />
         </div>
