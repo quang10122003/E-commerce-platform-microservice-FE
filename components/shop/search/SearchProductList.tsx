@@ -2,6 +2,7 @@
 
 import { AlertCircle } from "lucide-react";
 
+import { Button } from "@/components/ui";
 import { useProductSearch } from "@/hooks/useProductSearch";
 import { getApiErrorMessage } from "@/lib/utils";
 import type {
@@ -26,7 +27,7 @@ export function SearchProductList({
   sort,
   isPendingFilter,
 }: SearchProductListProps) {
-  const { error, hasNext, isFetching, products, sentinelRef } = useProductSearch({
+  const { error, hasNext, isFetching, prefetchRef, products, retryLoadMore } = useProductSearch({
     initialPage,
     query,
   });
@@ -77,14 +78,16 @@ export function SearchProductList({
   return (
     <>
       {/* Lưới sản phẩm responsive theo số cột phù hợp từng breakpoint. */}
-      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5">
+      <div className="relative grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5">
         {products.map((product) => (
           <SearchProductCard key={product.id} product={product} sort={sort} />
         ))}
+        {/* Điểm tải thêm nằm ở 70% chiều cao lưới sản phẩm đã hiển thị. */}
+        <span ref={prefetchRef} aria-hidden="true" className="pointer-events-none absolute left-0 top-[70%] h-px w-px" />
       </div>
 
-      {/* Điểm quan sát để tải thêm batch sản phẩm bằng cursor. */}
-      <div ref={sentinelRef} className="flex min-h-12 items-center justify-center">
+      {/* Trạng thái tải thêm và thông báo cuối danh sách. */}
+      <div className="flex min-h-12 items-center justify-center">
         {isFetching && (
           <span className="text-sm font-semibold text-cta">Đang tải thêm sản phẩm...</span>
         )}
@@ -92,10 +95,13 @@ export function SearchProductList({
           <span className="text-sm text-muted-foreground">Bạn đã xem hết kết quả.</span>
         )}
         {error && (
-          <span className="flex items-center gap-1.5 text-sm text-danger">
+          <div className="flex flex-wrap items-center justify-center gap-2 text-sm text-danger">
             <AlertCircle className="h-4 w-4" />
-            {getApiErrorMessage(error, "Không thể tải thêm sản phẩm.")}
-          </span>
+            <span>{getApiErrorMessage(error, "Không thể tải thêm sản phẩm.")}</span>
+            <Button type="button" variant="outline" size="sm" onClick={retryLoadMore}>
+              Thử lại
+            </Button>
+          </div>
         )}
       </div>
     </>
