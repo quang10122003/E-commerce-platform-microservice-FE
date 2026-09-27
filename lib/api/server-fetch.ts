@@ -77,7 +77,7 @@ export async function parseApiResponse<T>(
       success: response.ok,
       message: response.ok
         ? "Backend không trả về nội dung."
-        : `Backend trả về HTTP ${response.status}.`,
+        : `Response body rỗng (HTTP ${response.status}).`,
       data: null,
       error: null,
       timestamp: new Date().toISOString(),
@@ -103,6 +103,26 @@ export async function parseApiResponse<T>(
       timestamp: new Date().toISOString(),
     };
   }
+}
+
+// Ghi log response lỗi từ backend, không ghi token hoặc dữ liệu request.
+function logBackendError(
+  endpointPath: string,
+  method: string,
+  status: number,
+  payload: ApiResponse<unknown>,
+): void {
+  if (status >= 200 && status < 300 && payload.success) {
+    return;
+  }
+
+  console.error("Backend trả về lỗi trong serverFetch. " + JSON.stringify({
+    endpoint: endpointPath,
+    method,
+    status,
+    code: payload.error?.code,
+    message: payload.error?.message ?? payload.message,
+  }));
 }
 
 // Tạo headers theo chính sách public/private do serverFetch điều phối.
@@ -315,6 +335,12 @@ export async function serverFetch<T>(
   }
 
   const payload = await parseApiResponse<T>(response);
+  logBackendError(
+    endpointPath,
+    (options.method ?? "GET").toUpperCase(),
+    response.status,
+    payload,
+  );
   const normalizedPayload = await handleAuthResponse(
     endpointPath,
     response,
