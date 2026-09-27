@@ -1,0 +1,6 @@
+[
+  { "value": "", "label": "Tất cả trạng thái" },
+  { "value": "ACTIVE", "label": "Đang bán" },
+  { "value": "OUT_OF_STOCK", "label": "Hết hàng" },
+  { "value": "INACTIVE", "label": "Tạm ẩn" }
+]

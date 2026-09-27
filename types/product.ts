@@ -95,6 +95,7 @@ export type ProductStatus = "ACTIVE" | "INACTIVE";
 export interface ProductCatalogItem {
   id: number;
   name: string;
+  location: string | null;
   description: string | null;
   categoryId: number;
   categoryName: string;
