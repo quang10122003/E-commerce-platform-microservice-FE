@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import { useMounted } from "@/lib/hooks";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -9,6 +9,7 @@ import { clearUser } from "@/lib/redux/slices/auth-slice";
 // Quản lý state, quyền truy cập và side-effect của header mua sắm.
 export function useShopHeader() {
   const router = useRouter();
+  const pathname = usePathname();
   const dispatch = useAppDispatch();
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -36,6 +37,21 @@ export function useShopHeader() {
     router.push(`/search${query}`);
   }, [router, searchQuery]);
 
+  // Khôi phục từ khóa trong header khi tải lại hoặc quay về trang tìm kiếm.
+  useEffect(() => {
+    const syncSearchQuery = () => {
+      if (window.location.pathname !== "/search") return;
+      setSearchQuery(new URLSearchParams(window.location.search).get("keyword") ?? "");
+    };
+
+    const timer = window.setTimeout(syncSearchQuery, 0);
+    window.addEventListener("popstate", syncSearchQuery);
+
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("popstate", syncSearchQuery);
+    };
+  }, [pathname]);
   // Gọi API logout và xóa thông tin user khỏi Redux sau khi thành công.
   const handleLogout = async () => {
     try {

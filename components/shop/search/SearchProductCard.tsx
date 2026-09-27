@@ -16,7 +16,6 @@ const SEARCH_CARD_DEFAULTS = {
   originalPrice: 1990000,
   discount: 30,
   rating: 4.8,
-  location: "Hà Nội",
 };
 
 // Thẻ sản phẩm tĩnh trong trang tìm kiếm, render phía server.
@@ -80,10 +79,10 @@ export function SearchProductCard({ product, sort }: SearchProductCardProps) {
           </div>
         </div>
 
-        {/* Địa điểm xuất kho. */}
+        {/* Địa điểm xuất kho từ API, báo rõ khi người bán chưa cập nhật. */}
         <div className="flex items-center gap-1 text-[10px] text-slate-400">
           <MapPin className="h-2.5 w-2.5" />
-          <span className="truncate">{SEARCH_CARD_DEFAULTS.location}</span>
+          <span className="truncate">{product.location?.trim() || "Chưa cập nhật"}</span>
         </div>
 
         {/* Đánh giá sao và tổng lượng đã bán. */}
