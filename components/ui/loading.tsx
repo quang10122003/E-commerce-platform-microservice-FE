@@ -1,5 +1,3 @@
-import { LoaderCircle } from "lucide-react";
-
 import { cn } from "@/lib/utils";
 
 type LoadingProps = {
@@ -15,16 +13,18 @@ export function Loading({
   return (
     <div
       className={cn(
-        "flex min-h-56 flex-col items-center justify-center gap-4 rounded-2xl border border-slate-200/80 bg-white/80 p-8 text-center shadow-card",
+        "flex min-h-56 flex-col items-center justify-center gap-3 rounded-xl border border-slate-200/80 bg-white/80 p-8 text-center shadow-card",
         className,
       )}
       role="status"
       aria-live="polite"
     >
-      {/* Biểu tượng xoay thể hiện request đang được xử lý. */}
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-primary shadow-sm">
-        <LoaderCircle className="h-7 w-7 animate-spin" aria-hidden="true" />
-      </div>
+      {/* Ba chấm nhảy thể hiện dữ liệu đang được tải. */}
+      <span className="flex h-8 items-center gap-2" aria-hidden="true">
+        <span className="h-3 w-3 animate-[bounce_0.55s_infinite] rounded-full bg-primary [animation-delay:-0.3s]" />
+        <span className="h-3 w-3 animate-[bounce_0.55s_infinite] rounded-full bg-primary [animation-delay:-0.15s]" />
+        <span className="h-3 w-3 animate-[bounce_0.55s_infinite] rounded-full bg-primary" />
+      </span>
 
       {/* Nhãn mô tả ngắn gọn trạng thái loading cho người dùng và trình đọc màn hình. */}
       <span className="text-sm font-semibold text-slate-600">{label}</span>

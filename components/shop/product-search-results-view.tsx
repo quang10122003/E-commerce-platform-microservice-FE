@@ -98,8 +98,8 @@ export function ProductSearchResultsView({
       <SearchResultHeader keyword={keyword} />
 
       <div className="grid gap-4 sm:gap-5 lg:grid-cols-[190px_minmax(0,1fr)] lg:items-start pt-1">
-        {/* Sidebar bộ lọc — chỉ hiển thị trên desktop. */}
-        <aside className="hidden lg:block space-y-4 lg:sticky lg:top-24">
+        {/* Sidebar bộ lọc desktop cuộn riêng khi nội dung vượt chiều cao màn hình. */}
+        <aside className="hidden lg:block space-y-4 lg:sticky lg:top-24 lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto lg:overscroll-y-contain lg:[scrollbar-width:none] lg:[&::-webkit-scrollbar]:hidden">
           <div className="flex items-center gap-2 border-b border-slate-200/90 pb-3">
             <Filter className="h-4 w-4 text-slate-700" />
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-800">
