@@ -1,4 +1,4 @@
-import { CreateProductView } from "@/components/seller/create-product-view";
+import { CreateProductView } from "@/components/shop/create-product-view";
 import { GetDataForCareteProduct } from "@/lib/service/productService";
 
 // Tải dữ liệu danh mục trước khi render form tạo sản phẩm.

@@ -1,117 +1,21 @@
-"use client";
-
 import { Fragment, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  AlertOctagon, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight,
-  Edit, EyeOff, Layers, Package, Plus, Search, Tag, Trash2,
-} from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Edit, Layers, Loader2, Package, Tag, Trash2 } from "lucide-react";
+import { Badge, Button, Card, buttonVariants } from "@/components/ui";
+import { cn, formatCurrency } from "@/lib/utils";
+import { formatSellerProductDate, getNearbySellerPages, getSellerProductsUrl, getSellerVariantLabel, summarizeSellerProduct } from "@/lib/utils/shop-product.utils";
+import type { SellerProductPage, SellerProductStatus } from "@/types/shop-product";
+import type { MouseEvent } from "react";
 
-import { Badge, Button, Card, Input } from "@/components/ui";
-import sellerProductStatuses from "@/data/seller-product-statuses.json";
-import { useSellerProductFilters } from "@/hooks/useSellerProductFilters";
-import { formatCurrency } from "@/lib/utils";
-import {
-  formatSellerProductDate, getNearbySellerPages, getSellerProductsUrl, getSellerVariantLabel,
-  summarizeSellerProduct,
-} from "@/lib/utils/seller-product.utils";
-import type { ProductCategoryOption } from "@/types/product";
-import type { SellerProductPage, SellerProductStatus } from "@/types/seller-product";
+type ShopProductsTableProps = { products: SellerProductPage; productError: boolean; isPending: boolean; categoryId?: number; status?: SellerProductStatus; keyword?: string; handleLinkClick: (event: MouseEvent<HTMLAnchorElement>, href: string) => void; deletingProductId: number | null; deletingVariantId: number | null; handleDeleteProduct: (productId: number, productName: string) => Promise<void>; handleDeleteVariant: (productId: number, variantId: number, variantLabel: string) => Promise<void>; };
 
-type SellerProductsViewProps = {
-  categories: ProductCategoryOption[];
-  categoryError: boolean;
-  products: SellerProductPage;
-  productError: boolean;
-  categoryId?: number;
-  status?: SellerProductStatus;
-  keyword?: string;
-};
-
-const statusIcons = [Package, CheckCircle2, AlertOctagon, EyeOff];
-const statusColors = [
-  "from-indigo-50/60 text-primary",
-  "from-emerald-50/60 text-emerald-600",
-  "from-rose-50/60 text-rose-600",
-  "from-slate-100/80 text-slate-600",
-];
-
-// Hiển thị sản phẩm thật, bộ lọc URL và phân trang của người bán.
-export function SellerProductsView({
-  categories, categoryError, products, productError, categoryId, status, keyword,
-}: SellerProductsViewProps) {
-  // Lưu ID sản phẩm đang mở chi tiết phân loại.
+export function ShopProductsTable({ products, productError, isPending, categoryId, status, keyword, handleLinkClick, deletingProductId, deletingVariantId, handleDeleteProduct, handleDeleteVariant }: ShopProductsTableProps) {
   const [expandedProductId, setExpandedProductId] = useState<number | null>(null);
-  const { keywordInput, handleKeywordChange, handleCategoryChange, handleStatusChange, handleLinkClick, isPending } = useSellerProductFilters({ categoryId, status, keyword });
   const firstItem = products.totalItems === 0 ? 0 : (products.page - 1) * products.pageSize + 1;
   const lastItem = Math.min(products.page * products.pageSize, products.totalItems);
-
   return (
-    <div className="space-y-6">
-      {/* Các thẻ trạng thái dẫn tới bộ lọc; chỉ trạng thái đang xem có số lượng từ API. */}
-      <div className="grid grid-cols-2 gap-3.5 sm:gap-4 lg:grid-cols-4">
-        {sellerProductStatuses.map((item, index) => {
-          const Icon = statusIcons[index];
-          const isSelected = (status ?? "") === item.value;
-          return (
-            <Link key={item.value || "all"} href={getSellerProductsUrl(categoryId, item.value, 1, keywordInput)} scroll={false} onClick={(event) => handleLinkClick(event, getSellerProductsUrl(categoryId, item.value, 1, keywordInput))}>
-              <Card variant="3d" className={`h-full bg-gradient-to-br ${statusColors[index]} to-white p-4.5 transition hover:-translate-y-1 hover:shadow-3d-hover ${isSelected ? "ring-2 ring-primary/30" : ""}`}>
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-bold font-heading text-slate-600">{item.label}</span>
-                  <Icon className="h-4.5 w-4.5" aria-hidden="true" />
-                </div>
-                <div className="mt-2.5 text-2xl font-black font-heading tracking-tight">
-                  {isSelected && !productError ? products.totalItems : "—"}
-                </div>
-                <p className="mt-1 text-[10px] font-medium text-slate-500">
-                  {isSelected ? "Sản phẩm theo bộ lọc" : "Xem danh sách"}
-                </p>
-              </Card>
-            </Link>
-          );
-        })}
-      </div>
-
-      {/* Tìm theo tên và lọc sản phẩm qua URL để Server Component tải lại dữ liệu. */}
-      <Card variant="3d" className="space-y-3 p-3 sm:flex sm:items-center sm:justify-between sm:gap-4 sm:p-4 sm:space-y-0">
-        <Input type="search" aria-label="Tìm theo tên sản phẩm" placeholder="Tìm theo tên sản phẩm..." value={keywordInput} onChange={(event) => handleKeywordChange(event.target.value)} leftIcon={<Search className="h-4 w-4" />} className="h-10 w-full max-w-md bg-slate-50/80 text-xs" />
-        <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-2.5">
-          <select
-            key={`category-${categoryId ?? "all"}`}
-            aria-label="Lọc theo ngành hàng"
-            defaultValue={categoryId ? String(categoryId) : ""}
-            onChange={(event) => handleCategoryChange(event.target.value)}
-            disabled={categoryError || isPending}
-            className="h-10 min-w-0 rounded-xl border border-slate-200 bg-white px-2 text-xs font-medium text-slate-700 sm:px-3"
-          >
-            <option value="">Tất cả ngành hàng</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>{category.name}</option>
-            ))}
-          </select>
-          <select
-            key={`status-${status ?? "all"}`}
-            aria-label="Lọc theo trạng thái"
-            defaultValue={status ?? ""}
-            onChange={(event) => handleStatusChange(event.target.value)}
-            disabled={isPending}
-            className="h-10 min-w-0 rounded-xl border border-slate-200 bg-white px-2 text-xs font-medium text-slate-700 sm:px-3"
-          >
-            {sellerProductStatuses.map((item) => (
-              <option key={item.value || "all"} value={item.value}>{item.label}</option>
-            ))}
-          </select>
-          <Link href="/seller/products/new" className="col-span-2 sm:col-auto">
-            <Button variant="gradient-cta" size="md" leftIcon={<Plus className="h-4 w-4" />} className="w-full rounded-xl px-4 text-xs font-bold font-heading shadow-glow-cta sm:w-auto">
-              Thêm Sản Phẩm Mới
-            </Button>
-          </Link>
-        </div>
-      </Card>
-
-      {categoryError && <p role="alert" className="text-xs text-danger">Không thể tải danh mục ngành hàng. Hãy tải lại trang.</p>}
-
+    <>
       {/* Bảng hiển thị sản phẩm và chi tiết phân loại từ API. */}
       <Card variant="3d" className="overflow-hidden">
         <div aria-live="polite" aria-busy={isPending}>
@@ -211,8 +115,8 @@ export function SellerProductsView({
                         </td>
                         <td className="px-3 py-3.5 text-right sm:px-4">
                           <div className="flex items-center justify-end gap-0.5 sm:gap-1">
-                            <Button variant="ghost" size="icon-sm" className="h-7.5 w-7.5 cursor-pointer rounded-lg text-slate-500 hover:bg-indigo-50 hover:text-primary" title="Chỉnh sửa sản phẩm"><Edit className="h-3.5 w-3.5" /></Button>
-                            <Button variant="ghost" size="icon-sm" className="h-7.5 w-7.5 cursor-pointer rounded-lg text-slate-500 hover:bg-rose-50 hover:text-rose-600" title="Xóa sản phẩm"><Trash2 className="h-3.5 w-3.5" /></Button>
+                            <Link href={`/shop/products/${product.id}/edit`} className={cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "h-7.5 w-7.5 rounded-lg text-slate-500 hover:bg-indigo-50 hover:text-primary")} title="Chỉnh sửa sản phẩm" aria-label={`Chỉnh sửa sản phẩm ${product.name}`}><Edit className="h-3.5 w-3.5" /></Link>
+                            <Button variant="ghost" size="icon-sm" className="h-7.5 w-7.5 cursor-pointer rounded-lg text-slate-500 hover:bg-rose-50 hover:text-rose-600" title="Xóa sản phẩm" aria-label={`Xóa sản phẩm ${product.name}`} disabled={deletingProductId !== null || deletingVariantId !== null} onClick={() => void handleDeleteProduct(product.id, product.name)}>{deletingProductId === product.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}</Button>
                           </div>
                         </td>
                       </tr>
@@ -229,7 +133,7 @@ export function SellerProductsView({
                                       <td className="px-3 py-2 font-semibold text-slate-700">{getSellerVariantLabel(variant)}<span className="block font-mono text-[10px] font-normal text-slate-400">{variant.sku}</span></td>
                                       <td className="whitespace-nowrap px-3 py-2 font-mono text-[10px] font-bold text-cta">{formatCurrency(variant.price)}</td>
                                       <td className="px-3 py-2 font-mono text-[10px] font-bold text-slate-600">{variant.stockQuantity}</td>
-                                      <td className="px-3 py-2"><div className="flex items-center justify-end gap-0.5 sm:gap-1"><Button variant="ghost" size="icon-sm" className="h-7.5 w-7.5 cursor-pointer rounded-lg text-slate-500 hover:bg-indigo-50 hover:text-primary" title="Chỉnh sửa phân loại"><Edit className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon-sm" className="h-7.5 w-7.5 cursor-pointer rounded-lg text-slate-500 hover:bg-rose-50 hover:text-rose-600" title="Xóa phân loại"><Trash2 className="h-3.5 w-3.5" /></Button></div></td>
+                                      <td className="px-3 py-2"><div className="flex items-center justify-end gap-0.5 sm:gap-1"><Button variant="ghost" size="icon-sm" className="h-7.5 w-7.5 cursor-pointer rounded-lg text-slate-500 hover:bg-rose-50 hover:text-rose-600" title={product.variants.length <= 1 ? "Không thể xóa phân loại cuối cùng" : "Xóa phân loại"} aria-label={`Xóa phân loại ${getSellerVariantLabel(variant)}`} disabled={product.variants.length <= 1 || deletingProductId !== null || deletingVariantId !== null} onClick={() => void handleDeleteVariant(product.id, variant.id, getSellerVariantLabel(variant))}>{deletingVariantId === variant.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}</Button></div></td>
                                     </tr>
                                   ))}
                                 </tbody>
@@ -252,13 +156,13 @@ export function SellerProductsView({
           <nav aria-label="Phân trang sản phẩm" className="flex flex-col gap-3 border-t border-slate-200 bg-white px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
             <p className="text-center text-xs font-medium text-slate-500 sm:text-left">Hiển thị <span className="font-bold text-slate-700">{firstItem}–{lastItem}</span> trong <span className="font-bold text-slate-700">{products.totalItems}</span> sản phẩm</p>
             <div className="flex items-center justify-center gap-1.5">
-              {products.page > 1 ? <Link href={getSellerProductsUrl(categoryId, status, products.page - 1, keywordInput)} scroll={false} onClick={(event) => handleLinkClick(event, getSellerProductsUrl(categoryId, status, products.page - 1, keywordInput))} aria-label="Trang trước" className="inline-flex h-8.5 w-8.5 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50"><ChevronLeft className="h-4 w-4" /></Link> : <button type="button" aria-label="Trang trước" disabled className="inline-flex h-8.5 w-8.5 cursor-not-allowed items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-slate-300 opacity-70"><ChevronLeft className="h-4 w-4" /></button>}
+              {products.page > 1 ? <Link href={getSellerProductsUrl(categoryId, status, products.page - 1, keyword)} scroll={false} onClick={(event) => handleLinkClick(event, getSellerProductsUrl(categoryId, status, products.page - 1, keyword))} aria-label="Trang trước" className="inline-flex h-8.5 w-8.5 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50"><ChevronLeft className="h-4 w-4" /></Link> : <button type="button" aria-label="Trang trước" disabled className="inline-flex h-8.5 w-8.5 cursor-not-allowed items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-slate-300 opacity-70"><ChevronLeft className="h-4 w-4" /></button>}
               {getNearbySellerPages(products.page, products.totalPages).map((pageNumber) => (
                 <Link
                   key={pageNumber}
-                  href={getSellerProductsUrl(categoryId, status, pageNumber, keywordInput)}
+                  href={getSellerProductsUrl(categoryId, status, pageNumber, keyword)}
                   scroll={false}
-                  onClick={(event) => handleLinkClick(event, getSellerProductsUrl(categoryId, status, pageNumber, keywordInput))}
+                  onClick={(event) => handleLinkClick(event, getSellerProductsUrl(categoryId, status, pageNumber, keyword))}
                   aria-label={`Trang ${pageNumber}`}
                   aria-current={pageNumber === products.page ? "page" : undefined}
                   className={`inline-flex h-8.5 min-w-8.5 items-center justify-center rounded-lg px-2 text-xs font-semibold transition ${pageNumber === products.page ? "bg-primary text-white shadow-md shadow-primary/20" : "border border-slate-200 text-slate-600 hover:bg-slate-50"}`}
@@ -266,11 +170,11 @@ export function SellerProductsView({
                   {pageNumber}
                 </Link>
               ))}
-              {products.page < products.totalPages ? <Link href={getSellerProductsUrl(categoryId, status, products.page + 1, keywordInput)} scroll={false} onClick={(event) => handleLinkClick(event, getSellerProductsUrl(categoryId, status, products.page + 1, keywordInput))} aria-label="Trang sau" className="inline-flex h-8.5 w-8.5 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50"><ChevronRight className="h-4 w-4" /></Link> : <button type="button" aria-label="Trang sau" disabled className="inline-flex h-8.5 w-8.5 cursor-not-allowed items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-slate-300 opacity-70"><ChevronRight className="h-4 w-4" /></button>}
+              {products.page < products.totalPages ? <Link href={getSellerProductsUrl(categoryId, status, products.page + 1, keyword)} scroll={false} onClick={(event) => handleLinkClick(event, getSellerProductsUrl(categoryId, status, products.page + 1, keyword))} aria-label="Trang sau" className="inline-flex h-8.5 w-8.5 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50"><ChevronRight className="h-4 w-4" /></Link> : <button type="button" aria-label="Trang sau" disabled className="inline-flex h-8.5 w-8.5 cursor-not-allowed items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-slate-300 opacity-70"><ChevronRight className="h-4 w-4" /></button>}
             </div>
           </nav>
         )}
       </Card>
-    </div>
+    </>
   );
 }

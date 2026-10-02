@@ -20,46 +20,46 @@ import { cn } from "@/lib/utils";
 const sellerNavigation = [
   {
     title: "Tổng quan Shop",
-    href: "/seller",
+    href: "/shop",
     icon: LayoutDashboard,
     badge: null,
   },
   {
     title: "Quản lý Sản phẩm",
-    href: "/seller/products",
+    href: "/shop/products",
     icon: Package,
     badge: "142 sp",
   },
   {
     title: "Quản lý Đơn hàng",
-    href: "/seller/orders",
+    href: "/shop/orders",
     icon: ShoppingCart,
     badge: "8 mới",
     badgeColor: "bg-gradient-to-r from-orange-500 to-red-600",
   },
   {
     title: "Doanh thu & Tài chính",
-    href: "/seller/analytics",
+    href: "/shop/analytics",
     icon: BarChart3,
     badge: null,
   },
   {
     title: "Mã giảm giá Shop",
-    href: "/seller/vouchers",
+    href: "/shop/vouchers",
     icon: Tag,
     badge: "3 mã",
     badgeColor: "bg-emerald-500",
   },
   {
     title: "Tin nhắn & Chat",
-    href: "/seller/chat",
+    href: "/shop/chat",
     icon: MessagesSquare,
     badge: "2",
     badgeColor: "bg-primary",
   },
   {
     title: "Hồ sơ & Cài đặt",
-    href: "/seller/settings",
+    href: "/shop/settings",
     icon: Settings,
     badge: null,
   },
@@ -95,7 +95,7 @@ export function SellerSidebar({ isOpen, onClose }: SellerSidebarProps) {
           {/* Header & Logo */}
           <div className="flex items-center justify-between px-2 pt-1">
             <Link
-              href="/seller"
+              href="/shop"
               onClick={onClose}
               className="flex items-center gap-2.5 group"
             >
@@ -145,7 +145,7 @@ export function SellerSidebar({ isOpen, onClose }: SellerSidebarProps) {
               const Icon = item.icon;
               const isActive =
                 pathname === item.href ||
-                (item.href !== "/seller" && pathname.startsWith(item.href));
+                (item.href !== "/shop" && pathname.startsWith(item.href));
 
               return (
                 <Link

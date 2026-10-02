@@ -11,7 +11,7 @@ import type {
   ProductCatalogQuery,
   ProductCategoryOption,
 } from "@/types/product";
-import type { SellerProductPage, SellerProductQuery } from "@/types/seller-product";
+import type { SellerProductPage, SellerProductQuery } from "@/types/shop-product";
 
 type GetDataForCreateProductResult = {
   category: ResolvedFetchField<ProductCategoryOption[]>;

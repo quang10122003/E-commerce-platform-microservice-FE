@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
-import { SellerSidebar } from "@/components/seller/seller-sidebar";
-import { SellerTopbar } from "@/components/seller/seller-topbar";
-import { useSellerLayout } from "@/hooks/useSellerLayout";
+import { SellerSidebar } from "@/components/shop/shop-sidebar";
+import { SellerTopbar } from "@/components/shop/shop-topbar";
+import { useSellerLayout } from "@/hooks/useShopLayout";
 
 export function SellerLayoutShell({
   children,

@@ -1,5 +1,5 @@
 import React from "react";
-import { SellerLayoutShell } from "@/components/seller/seller-layout-shell";
+import { SellerLayoutShell } from "@/components/shop/shop-layout-shell";
 
 export default function ShopLayout({
   children,

@@ -130,3 +130,54 @@ export interface ProductCatalogPage {
   hasNext: boolean;
   brands: ProductBrandOption[];
 }
+
+// Dữ liệu chi tiết GET /api/products/shop/{productId} để giữ đúng ID khi cập nhật.
+export interface ShopProductDetail {
+  id: number;
+  categoryId: number;
+  brandId: number | null;
+  name: string;
+  description: string | null;
+  imageUrl: string | null;
+  attributes: ShopProductAttribute[];
+  variants: ShopProductVariant[];
+}
+
+export interface ShopProductAttribute {
+  id: number;
+  name: string;
+  values: { id: number; value: string }[];
+}
+
+export interface ShopProductVariant {
+  id: number;
+  sku: string;
+  price: number;
+  stockQuantity: number;
+  attributeSelections: AttributeSelection[];
+  images: { id: number; imageUrl: string; primary: boolean }[];
+}
+
+// JSON của PUT chỉ gửi ID bản ghi cần giữ; SKU được backend tự sinh lại.
+export interface UpdateProductRequest {
+  categoryId: number;
+  brandId: number | null;
+  name: string;
+  description: string;
+  attributes: UpdateProductAttribute[];
+  variants: UpdateProductVariant[];
+}
+
+export interface UpdateProductAttribute {
+  id?: number;
+  name: string;
+  values: { id?: number; value: string }[];
+}
+
+export interface UpdateProductVariant {
+  id?: number;
+  price: number;
+  stockQuantity: number;
+  attributeSelections: AttributeSelection[];
+  images: { id?: number; primary: boolean }[];
+}

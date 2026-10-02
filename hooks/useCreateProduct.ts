@@ -594,7 +594,7 @@ export function useCreateProduct({ defaultCategoryId }: UseCreateProductOptions)
 
       if (response.success && response.data) {
         notifySuccess("Tạo và đăng bán sản phẩm thành công!");
-        router.push("/seller/products");
+        router.push("/shop/products");
       } else {
         notifyError(response.message || "Không thể tạo sản phẩm.");
       }

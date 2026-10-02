@@ -1,4 +1,4 @@
-import type { SellerProductItem } from "@/types/seller-product";
+import type { SellerProductItem } from "@/types/shop-product";
 
 // Tính giá và tồn kho từ các phân loại để hiển thị một dòng sản phẩm.
 export function summarizeSellerProduct(product: SellerProductItem) {
@@ -31,7 +31,7 @@ export function getSellerProductsUrl(categoryId?: number, status?: string, page 
   if (keyword?.trim()) params.set("keyword", keyword.trim());
   if (page > 1) params.set("page", String(page));
   const query = params.toString();
-  return query ? `/seller/products?${query}` : "/seller/products";
+  return query ? `/shop/products?${query}` : "/shop/products";
 }
 
 // Lấy tối đa năm số trang gần trang hiện tại, bù ở hai đầu khi cần.
@@ -42,4 +42,15 @@ export function getNearbySellerPages(currentPage: number, totalPages: number) {
     Math.max(1, totalPages - visibleCount + 1),
   );
   return Array.from({ length: visibleCount }, (_, index) => firstPage + index);
+}
+
+// Kiểm tra các phân loại còn khác tổ hợp sau khi chọn hoặc bỏ nhóm thuộc tính.
+export function hasDuplicateVariantCombinations(
+  attributes: ReadonlyArray<{ key: string }>,
+  variants: ReadonlyArray<{ selections: Readonly<Record<string, string>> }>,
+) {
+  const combinations = variants.map((variant) => JSON.stringify(
+    attributes.map((attribute) => variant.selections[attribute.key] || ""),
+  ));
+  return new Set(combinations).size !== combinations.length;
 }
