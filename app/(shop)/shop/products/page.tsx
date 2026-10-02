@@ -1,7 +1,7 @@
-import { SellerProductsView } from "@/components/seller/seller-products-view";
-import sellerProductStatuses from "@/data/seller-product-statuses.json";
+import { SellerProductsView } from "@/components/shop/shop-products-view";
+import sellerProductStatuses from "@/data/shop-product-statuses.json";
 import { getSellerProductCategories, getSellerProducts } from "@/lib/service/productService";
-import type { SellerProductPage, SellerProductStatus } from "@/types/seller-product";
+import type { SellerProductPage, SellerProductStatus } from "@/types/shop-product";
 
 type SellerProductsPageProps = {
   searchParams: Promise<{ page?: string; categoryId?: string; status?: string; keyword?: string }>;

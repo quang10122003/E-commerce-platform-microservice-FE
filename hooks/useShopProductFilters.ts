@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useRef, useState, useTransition, type MouseEvent } from "react";
 import { useRouter } from "next/navigation";
 
-import { getSellerProductsUrl } from "@/lib/utils/seller-product.utils";
-import type { SellerProductStatus } from "@/types/seller-product";
+import { getSellerProductsUrl } from "@/lib/utils/shop-product.utils";
+import type { SellerProductStatus } from "@/types/shop-product";
 
 type SellerFilters = {
   categoryId?: number;
