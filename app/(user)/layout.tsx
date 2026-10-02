@@ -1,6 +1,6 @@
 import React from "react";
-import { ShopHeader } from "@/components/shop/header";
-import { ShopFooter } from "@/components/shop/footer";
+import { ShopHeader } from "@/components/user/header";
+import { ShopFooter } from "@/components/user/footer";
 
 export default function UserLayout({
   children,
