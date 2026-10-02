@@ -1,4 +1,4 @@
-import { ProductSearchResultsView } from "@/components/shop/product-search-results-view";
+import { ProductSearchResultsView } from "@/components/user/product-search-results-view";
 import { getProductCatalog } from "@/lib/service/productService";
 import type { ProductCatalogPage } from "@/types/product";
 

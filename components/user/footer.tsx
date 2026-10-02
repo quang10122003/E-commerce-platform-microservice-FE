@@ -87,7 +87,7 @@ export function ShopFooter() {
             Mở gian hàng kinh doanh cùng hàng triệu khách hàng tiềm năng toàn quốc.
           </p>
           <Link
-            href="/seller"
+            href="/shop"
             className="inline-flex items-center gap-2 font-bold text-amber-400 hover:text-amber-300 hover:underline pt-1"
           >
             <Store className="w-4 h-4" />
