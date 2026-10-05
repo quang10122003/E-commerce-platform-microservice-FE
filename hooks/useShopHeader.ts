@@ -37,11 +37,12 @@ export function useShopHeader() {
     router.push(`/search${query}`);
   }, [router, searchQuery]);
 
-  // Khôi phục từ khóa trong header khi tải lại hoặc quay về trang tìm kiếm.
+  // Đồng bộ từ khóa trên trang tìm kiếm và xóa input khi chuyển sang trang khác.
   useEffect(() => {
     const syncSearchQuery = () => {
-      if (window.location.pathname !== "/search") return;
-      setSearchQuery(new URLSearchParams(window.location.search).get("keyword") ?? "");
+      setSearchQuery(window.location.pathname === "/search"
+        ? new URLSearchParams(window.location.search).get("keyword") ?? ""
+        : "");
     };
 
     const timer = window.setTimeout(syncSearchQuery, 0);
