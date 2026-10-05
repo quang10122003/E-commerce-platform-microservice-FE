@@ -67,6 +67,10 @@
   --color-surface-bg: #EEF2F6;
   --color-surface-card: #FFFFFF;
   --color-surface-border: #E2E8F0;
+  /* Màu nền và viền phụ cho các trạng thái sản phẩm trong giỏ hàng. */
+  --color-surface-subtle: #F8FAFC;
+  --color-surface-muted: #F1F5F9;
+  --color-surface-border-strong: #CBD5E1;
 
   /* ==========================================================================
      TYPOGRAPHY COLORS

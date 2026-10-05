@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import { filterSuggestedProducts, type SuggestionTab } from "@/utils/suggestions.utils";
+import type { ProductCatalogItem } from "@/types/product";
 
 // Quản lý tab, phân trang và trạng thái tải thêm của danh sách gợi ý.
-export function usePersonalizedSuggestions<T extends { discount: number; isFlashSale?: boolean; sold: number }>(products: T[]) {
+export function usePersonalizedSuggestions(products: ProductCatalogItem[]) {
   const [activeTab, setActiveTab] = useState<SuggestionTab>("all");
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [visibleCount, setVisibleCount] = useState(10);
