@@ -1,6 +1,7 @@
-import { ProductSearchResultsView } from "@/components/user/product-search-results-view";
+import { PAGE_SIZE } from "@/lib/constants";
+import { ProductSearchResultsView } from "@/components/user/search/product-search-results-view";
 import { getProductCatalog } from "@/lib/service/productService";
-import type { ProductCatalogPage } from "@/types/product";
+import type { ProductCatalogPage } from "@/types/user/product";
 
 type SearchPageProps = {
   searchParams: Promise<{
@@ -43,7 +44,6 @@ function parseLocationParams(value?: string | string[]): string[] {
   )];
 }
 
-
 // Hiển thị batch đầu từ server để trang tìm kiếm tải nhanh và có thể lập chỉ mục.
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const { keyword = "", sort, brandIds, brandId, minPrice, maxPrice, locations } = await searchParams;
@@ -70,7 +70,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         locations: normalizedLocations,
         minPrice: normalizedMinPrice,
         maxPrice: normalizedMaxPrice,
-        size: 20,
+        size: PAGE_SIZE.PRODUCT_SEARCH,
       });
     } catch {
     // Giữ dữ liệu dự phòng để Client Component hiển thị trạng thái rỗng an toàn.

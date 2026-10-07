@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import { EditProductView } from "@/components/shop/edit-product-view";
+import { EditProductView } from "@/components/shop/products/edit-product-view";
 import { GetDataForCareteProduct } from "@/lib/service/productService";
 
 type EditProductPageProps = {

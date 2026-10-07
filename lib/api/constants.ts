@@ -3,7 +3,7 @@
  */
 
 // Tên header chuẩn gửi access token đến backend.
-export const AUTHORIZATION_HEADER = "Authorization";
+export { AUTHORIZATION_HEADER } from "@/lib/constants";
 
 export {
   AUTH_TOKEN_FIELDS,

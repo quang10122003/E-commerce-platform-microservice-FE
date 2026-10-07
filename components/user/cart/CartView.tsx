@@ -5,11 +5,11 @@ import { EmptyCartView } from "@/components/user/cart/EmptyCartView";
 import { CartErrorView } from "@/components/user/cart/CartErrorView";
 import { CartItemView } from "@/components/user/cart/CartItemView";
 import { CartSummary } from "@/components/user/cart/CartSummary";
-import { useCart } from "@/hooks/useCart";
+import { useCart } from "@/hooks/user/cart/useCart";
 import { cn } from "@/lib/utils";
 import { Loading } from "@/components/ui";
 import { isCartItemAvailable } from "@/utils/cart.utils";
-import type { CartResponse } from "@/types/cart";
+import type { CartResponse } from "@/types/user/cart";
 
 interface CartViewProps {
   initialCart: CartResponse | null;

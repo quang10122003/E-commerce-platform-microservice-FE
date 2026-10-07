@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import type {
   NotificationAction,
   NotificationVariant,
-} from "@/hooks/useNotification";
+} from "@/hooks/shared/useNotification";
 
 type NotificationToastProps = {
   title: string;

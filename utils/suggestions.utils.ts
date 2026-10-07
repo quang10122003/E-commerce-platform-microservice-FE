@@ -1,4 +1,5 @@
-import type { ProductCatalogItem } from "@/types/product";
+import { BEST_SELLER_MIN_SOLD } from "@/lib/constants";
+import type { ProductCatalogItem } from "@/types/user/product";
 
 export type SuggestionTab = "all" | "sale" | "bestseller";
 
@@ -13,6 +14,6 @@ export function filterSuggestedProducts(
   return products.filter((product) => {
     if (activeTab === "all") return true;
     if (activeTab === "sale") return DEMO_SALE_PRODUCT_IDS.has(product.id);
-    return product.totalSold >= 2000;
+    return product.totalSold >= BEST_SELLER_MIN_SOLD;
   });
 }

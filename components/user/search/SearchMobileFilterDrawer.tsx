@@ -5,7 +5,7 @@ import { Filter, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { useMounted } from "@/lib/hooks";
-import type { ProductBrandOption } from "@/types/product";
+import type { ProductBrandOption } from "@/types/shared/product";
 import { SearchFilterPanel } from "./SearchFilterPanel";
 
 type SearchMobileFilterDrawerProps = {

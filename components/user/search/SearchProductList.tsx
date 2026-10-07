@@ -3,13 +3,9 @@
 import { AlertCircle } from "lucide-react";
 
 import { Button } from "@/components/ui";
-import { useProductSearch } from "@/hooks/useProductSearch";
+import { useProductSearch } from "@/hooks/user/search/useProductSearch";
 import { getApiErrorMessage } from "@/lib/utils";
-import type {
-  ProductCatalogPage,
-  ProductCatalogQuery,
-  ProductSortOption,
-} from "@/types/product";
+import type { ProductCatalogPage, ProductCatalogQuery, ProductSortOption } from "@/types/user/product";
 import { SearchEmptyState } from "./SearchEmptyState";
 import { SearchProductCard } from "./SearchProductCard";
 

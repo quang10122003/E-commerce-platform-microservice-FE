@@ -1,4 +1,4 @@
-import type { ApiResponse } from "@/types/common";
+import type { ApiResponse, ResolvedFetchField } from "@/types/shared/api";
 import type { ServerFetchResult } from "@/lib/api/server-client";
 
 import { clsx, type ClassValue } from "clsx";
@@ -120,12 +120,6 @@ export function getFetchServiceErrorMessage(
 
   return getApiErrorMessage(result, fallbackMessage);
 }
-
-// type data return sau khi fetch
-export type ResolvedFetchField<T> = {
-  data: T | null;
-  error: string | null;
-};
 
 // Chuẩn hóa kết quả từng request để dữ liệu và lỗi được xử lý độc lập.
 export function resolveProductCatalogField<T>(

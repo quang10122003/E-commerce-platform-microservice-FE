@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { Check, Minus, Plus, Package } from "lucide-react";
 import { cn, formatCurrency } from "@/lib/utils";
-import type { CartItem } from "@/types/cart";
+import type { CartItem } from "@/types/user/cart";
 import { isCartItemAvailable } from "@/utils/cart.utils";
 
 interface CartItemViewProps {

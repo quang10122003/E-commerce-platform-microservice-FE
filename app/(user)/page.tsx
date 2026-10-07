@@ -1,8 +1,8 @@
-import { FlashSaleSection } from "@/components/user/flash-sale-section";
-import { HeroCarousel } from "@/components/user/hero-carousel";
-import { PersonalizedSuggestions } from "@/components/user/personalized-suggestions";
-import { SuggestedCategories } from "@/components/user/suggested-categories";
-import { TrustPerks, VoucherStrip } from "@/components/user/home-promotions";
+import { FlashSaleSection } from "@/components/user/home/flash-sale-section";
+import { HeroCarousel } from "@/components/user/home/hero-carousel";
+import { PersonalizedSuggestions } from "@/components/user/home/personalized-suggestions";
+import { SuggestedCategories } from "@/components/user/home/suggested-categories";
+import { TrustPerks, VoucherStrip } from "@/components/user/home/home-promotions";
 
 export default function ShopHomePage() {
   return (

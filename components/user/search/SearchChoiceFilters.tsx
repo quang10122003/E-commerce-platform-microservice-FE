@@ -1,6 +1,7 @@
+import { SEARCH_VISIBLE_LOCATIONS } from "@/lib/constants";
 import { ChevronDown } from "lucide-react";
 import administrativeUnits from "@/data/vietnam-administrative-units.json";
-import type { ProductBrandOption } from "@/types/product";
+import type { ProductBrandOption } from "@/types/shared/product";
 
 const provinces = Object.entries(administrativeUnits.provinceNameMap);
 
@@ -44,7 +45,7 @@ export function ProvinceFilter({ mobile, isPending, className, checkboxClassName
     <div className={sectionClass}>
       <p className={mobile ? "text-xs font-bold text-slate-800 uppercase tracking-wide" : "text-xs font-medium text-slate-700"}>Tỉnh / Thành phố</p>
       <div className={mobile ? "space-y-1" : "mt-2 space-y-1"}>
-        {provinces.slice(0, 7).map(renderProvince)}
+        {provinces.slice(0, SEARCH_VISIBLE_LOCATIONS).map(renderProvince)}
         <details className="group flex flex-col"><div className="space-y-1">{provinces.slice(7).map(renderProvince)}</div><summary className="order-last flex cursor-pointer list-none items-center gap-1 px-2 py-1.5 text-[11px] font-medium text-slate-500 transition hover:text-slate-700"><span className="group-open:hidden">Xem thêm</span><span className="hidden group-open:inline">Thu nhỏ</span><ChevronDown className="h-3.5 w-3.5 transition-transform group-open:rotate-180" /></summary></details>
       </div>
     </div>

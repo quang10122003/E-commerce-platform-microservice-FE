@@ -1,3 +1,4 @@
+import { AUTHORIZATION_HEADER, HTTP_STATUS, DEFAULT_TIMEOUT_MS, API_ENDPOINTS } from "@/lib/constants";
 import "server-only";
 
 import {
@@ -10,20 +11,15 @@ import {
   getRefreshToken,
   setAuthTokens,
 } from "@/lib/auth/cookies";
-import type { ApiResponse } from "@/types/common";
+import type { ApiResponse } from "@/types/shared/api";
 import type {
   AuthResponse,
   LogoutRequest,
   RefreshTokenRequest,
   RefreshTokenResponse,
-} from "@/types/auth";
+} from "@/types/shared/auth";
 
-const DEFAULT_TIMEOUT_MS = 15_000;
 const BACKEND_API_URL = process.env.BACKEND_API_URL;
-const LOGIN_ENDPOINT = "api/auth/login";
-const REGISTER_ENDPOINT = "api/auth/register";
-const REFRESH_TOKEN_ENDPOINT = "api/auth/refresh_token";
-const LOGOUT_ENDPOINT = "api/auth/logout";
 
 export type ServerFetchRequestContext = {
   url: string;
@@ -112,7 +108,7 @@ function logBackendError(
   status: number,
   payload: ApiResponse<unknown>,
 ): void {
-  if (status >= 200 && status < 300 && payload.success) {
+  if (status >= HTTP_STATUS.SUCCESS_MIN && status < HTTP_STATUS.SUCCESS_LIMIT && payload.success) {
     return;
   }
 
@@ -133,10 +129,10 @@ export function buildAuthHeaders(
 ): Headers {
   const headers = new Headers(options.headers);
   headers.set("Accept", "application/json");
-  headers.delete("Authorization");
+  headers.delete(AUTHORIZATION_HEADER);
 
   if (!skipAuth && token) {
-    headers.set("Authorization", "Bearer " + token);
+    headers.set(AUTHORIZATION_HEADER, "Bearer " + token);
   }
 
   return headers;
@@ -177,7 +173,7 @@ async function refreshAccessToken(): Promise<string | undefined> {
 
   const requestBody: RefreshTokenRequest = { refreshToken };
   const result = await serverFetch<RefreshTokenResponse>(
-    REFRESH_TOKEN_ENDPOINT,
+    API_ENDPOINTS.REFRESH_TOKEN,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -187,8 +183,8 @@ async function refreshAccessToken(): Promise<string | undefined> {
   );
 
   if (
-    result.status < 200 ||
-    result.status >= 300 ||
+    result.status < HTTP_STATUS.SUCCESS_MIN ||
+    result.status >= HTTP_STATUS.SUCCESS_LIMIT ||
     !result.payload.success ||
     !result.payload.data
   ) {
@@ -217,8 +213,8 @@ async function handleAuthResponse<T>(
   payload: ApiResponse<T>,
 ): Promise<ApiResponse<T>> {
   const isAuthEndpoint =
-    endpointPath === LOGIN_ENDPOINT ||
-    endpointPath === REGISTER_ENDPOINT;
+    endpointPath === API_ENDPOINTS.LOGIN ||
+    endpointPath === API_ENDPOINTS.REGISTER;
 
   if (!isAuthEndpoint || !response.ok || !payload.data) {
     return payload;
@@ -284,7 +280,7 @@ export async function serverFetch<T>(
     ? undefined
     : options.accessToken ?? (await getAccessToken());
   const isLogoutRequest =
-    endpointPath === LOGOUT_ENDPOINT &&
+    endpointPath === API_ENDPOINTS.LOGOUT &&
     (options.method ?? "GET").toUpperCase() === "POST";
 
   let requestOptions: ServerFetchOptions = { ...options };
@@ -307,7 +303,7 @@ export async function serverFetch<T>(
   );
 
   // Private request 401 sẽ refresh token rồi thử lại đúng một lần.
-  if (response.status === 401 && !skipAuth) {
+  if (response.status === HTTP_STATUS.UNAUTHORIZED && !skipAuth) {
     const refreshedAccessToken = await refreshAccessTokenSingleFlight();
 
     if (!refreshedAccessToken) {
@@ -328,7 +324,7 @@ export async function serverFetch<T>(
         timeoutMs,
       );
 
-      if (response.status === 401) {
+      if (response.status === HTTP_STATUS.UNAUTHORIZED) {
         await clearAuthTokens();
       }
     }

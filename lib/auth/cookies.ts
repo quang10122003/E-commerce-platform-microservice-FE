@@ -1,10 +1,11 @@
+import { AUTH_COOKIE_NAMES } from "@/lib/constants";
 //  tương tác với cooki chỉ qua server
 import "server-only";
 
 import { cookies } from "next/headers";
 
-const accessTokenCookieName = process.env.ACCESS_TOKEN_COOKIE_NAME ?? "access_token";
-const refreshTokenCookieName = process.env.REFRESH_TOKEN_COOKIE_NAME ?? "refresh_token";
+const accessTokenCookieName = process.env.ACCESS_TOKEN_COOKIE_NAME ?? AUTH_COOKIE_NAMES.ACCESS_TOKEN;
+const refreshTokenCookieName = process.env.REFRESH_TOKEN_COOKIE_NAME ?? AUTH_COOKIE_NAMES.REFRESH_TOKEN;
 
 export type AuthTokens = {
   accessToken: string;

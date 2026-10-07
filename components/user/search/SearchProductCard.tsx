@@ -4,7 +4,7 @@ import { MapPin, PackageSearch, Star } from "lucide-react";
 
 import { Badge } from "@/components/ui";
 import { formatCompactNumber, formatCurrency } from "@/lib/utils";
-import type { ProductCatalogItem, ProductSortOption } from "@/types/product";
+import type { ProductCatalogItem, ProductSortOption } from "@/types/user/product";
 
 type SearchProductCardProps = {
   product: ProductCatalogItem;

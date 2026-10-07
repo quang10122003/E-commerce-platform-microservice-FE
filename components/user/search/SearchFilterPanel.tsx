@@ -1,4 +1,4 @@
-import type { ProductBrandOption } from "@/types/product";
+import type { ProductBrandOption } from "@/types/shared/product";
 import { BrandFilter, ProvinceFilter } from "./SearchChoiceFilters";
 
 type SearchFilterPanelProps = {

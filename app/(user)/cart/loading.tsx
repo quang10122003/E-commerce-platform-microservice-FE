@@ -5,7 +5,7 @@ export default function CartLoading() {
   return (
     <Loading
       label="Đang tải giỏ hàng..."
-      className="min-h-72 border-surface-border bg-surface-card shadow-none"
+      className="min-h-[calc(100svh-10rem)] w-full border-surface-border bg-surface-card shadow-none"
     />
   );
 }

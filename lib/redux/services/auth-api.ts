@@ -1,10 +1,11 @@
-import type { ApiResponse } from "@/types/common";
+import { API_ENDPOINTS } from "@/lib/constants";
+import type { ApiResponse } from "@/types/shared/api";
 import type {
   AccessTokenValidationResponse,
   AuthenticatedUser,
   LoginRequest,
   RegisterRequest,
-} from "@/types/auth";
+} from "@/types/shared/auth";
 
 import { baseApi } from "./base-api";
 
@@ -13,27 +14,27 @@ export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     login: builder.mutation<ApiResponse<AuthenticatedUser>, LoginRequest>({
       query: (credentials) => ({
-        url: "/api/auth/login",
+        url: `/${API_ENDPOINTS.LOGIN}`,
         method: "POST",
         body: credentials,
       }),
     }),
     register: builder.mutation<ApiResponse<AuthenticatedUser>, RegisterRequest>({
       query: (credentials) => ({
-        url: "/api/auth/register",
+        url: `/${API_ENDPOINTS.REGISTER}`,
         method: "POST",
         body: credentials,
       }),
     }),
     checkToken: builder.query<ApiResponse<AccessTokenValidationResponse>, void>({
       query: () => ({
-        url: "/api/auth/check_token",
+        url: `/${API_ENDPOINTS.CHECK_TOKEN}`,
         method: "GET",
       }),
     }),
     logout: builder.mutation<void, void>({
       query: () => ({
-        url: "/api/auth/logout",
+        url: `/${API_ENDPOINTS.LOGOUT}`,
         method: "POST",
       }),
     }),

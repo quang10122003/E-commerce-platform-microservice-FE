@@ -1,4 +1,5 @@
-import type { UpdateCartQuantityRequest } from "@/types/cart";
+import { API_ENDPOINTS } from "@/lib/constants";
+import type { UpdateCartQuantityRequest } from "@/types/user/cart";
 import { baseApi } from "./base-api";
 
 // Các thao tác cập nhật giỏ hàng qua BFF; GET được tải từ Server Component.
@@ -6,14 +7,14 @@ export const cartApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     updateCartQuantity: builder.mutation<void, UpdateCartQuantityRequest>({
       query: ({ productVariantId, quantity }) => ({
-        url: "/api/cart",
+        url: `/${API_ENDPOINTS.CART}`,
         method: "PUT",
         params: { productVariantId, quantity },
       }),
     }),
     removeCartItem: builder.mutation<void, number>({
       query: (productVariantId) => ({
-        url: "/api/cart",
+        url: `/${API_ENDPOINTS.CART}`,
         method: "DELETE",
         params: { productVariantId },
       }),

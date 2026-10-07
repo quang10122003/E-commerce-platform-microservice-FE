@@ -1,4 +1,4 @@
-import type { CartItem } from "@/types/cart";
+import type { CartItem } from "@/types/user/cart";
 
 // Trạng thái ngừng bán hoặc không còn tồn kho đều không thể thanh toán.
 export function isCartItemAvailable(item: CartItem): boolean {

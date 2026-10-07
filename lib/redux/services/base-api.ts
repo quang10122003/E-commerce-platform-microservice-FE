@@ -1,3 +1,4 @@
+import { HTTP_STATUS } from "@/lib/constants";
 import {
   createApi,
   fetchBaseQuery,
@@ -20,7 +21,7 @@ const baseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> =
 ) => {
   const result = await rawBaseQuery(args, api, extraOptions);
 
-  if (result.error && result.error.status === 401) {
+  if (result.error && result.error.status === HTTP_STATUS.UNAUTHORIZED) {
     api.dispatch(clearUser());
   }
 

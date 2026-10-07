@@ -1,17 +1,12 @@
+import { HTTP_STATUS, API_ENDPOINTS } from "@/lib/constants";
 import "server-only";
 
 import { serverFetch } from "@/lib/api/server-client";
-import {
-  resolveProductCatalogField,
-  type ResolvedFetchField,
-} from "@/lib/utils";
-import type {
-  ProductBrandOption,
-  ProductCatalogPage,
-  ProductCatalogQuery,
-  ProductCategoryOption,
-} from "@/types/product";
-import type { SellerProductPage, SellerProductQuery } from "@/types/shop-product";
+import { resolveProductCatalogField } from "@/lib/utils";
+import type { ResolvedFetchField } from "@/types/shared/api";
+import type { ProductBrandOption } from "@/types/shared/product";
+import type { ProductCatalogPage, ProductCatalogQuery } from "@/types/user/product";
+import type { ProductCategoryOption, SellerProductPage, SellerProductQuery } from "@/types/shop/product";
 
 type GetDataForCreateProductResult = {
   category: ResolvedFetchField<ProductCategoryOption[]>;
@@ -21,11 +16,11 @@ type GetDataForCreateProductResult = {
 // Lấy dữ liệu category và brand song song cho form tạo sản phẩm trên Server Component.
 export async function GetDataForCareteProduct(): Promise<GetDataForCreateProductResult> {
   const [categoriesResult, brandsResult] = await Promise.allSettled([
-    serverFetch<ProductCategoryOption[]>("api/categories", {
+    serverFetch<ProductCategoryOption[]>(API_ENDPOINTS.CATEGORIES, {
       method: "GET",
       cache: "no-store",
     }),
-    serverFetch<ProductBrandOption[]>("api/brands", {
+    serverFetch<ProductBrandOption[]>(API_ENDPOINTS.BRANDS, {
       method: "GET",
       cache: "no-store",
     }),
@@ -39,12 +34,12 @@ export async function GetDataForCareteProduct(): Promise<GetDataForCreateProduct
 
 // Lấy danh mục ngành hàng để người bán lọc danh sách sản phẩm.
 export async function getSellerProductCategories(): Promise<ProductCategoryOption[]> {
-  const result = await serverFetch<ProductCategoryOption[]>("api/categories", {
+  const result = await serverFetch<ProductCategoryOption[]>(API_ENDPOINTS.CATEGORIES, {
     method: "GET",
     cache: "no-store",
   });
 
-  if (result.status < 200 || result.status >= 300 || !result.payload.success || !result.payload.data) {
+  if (result.status < HTTP_STATUS.SUCCESS_MIN || result.status >= HTTP_STATUS.SUCCESS_LIMIT || !result.payload.success || !result.payload.data) {
     throw new Error("Không thể tải danh mục ngành hàng.");
   }
 
@@ -58,12 +53,12 @@ export async function getSellerProducts(query: SellerProductQuery): Promise<Sell
   if (query.status) params.set("status", query.status);
   if (query.keyword) params.set("keyword", query.keyword);
 
-  const result = await serverFetch<SellerProductPage>(`api/products/shop?${params}`, {
+  const result = await serverFetch<SellerProductPage>(`${API_ENDPOINTS.SHOP_PRODUCTS}?${params}`, {
     method: "GET",
     cache: "no-store",
   });
 
-  if (result.status < 200 || result.status >= 300 || !result.payload.success || !result.payload.data) {
+  if (result.status < HTTP_STATUS.SUCCESS_MIN || result.status >= HTTP_STATUS.SUCCESS_LIMIT || !result.payload.success || !result.payload.data) {
     throw new Error("Không thể tải danh sách sản phẩm.");
   }
 
@@ -87,13 +82,13 @@ export async function getProductCatalog(
   });
 
   const result = await serverFetch<ProductCatalogPage>(
-    `api/products?${params.toString()}`,
+    `${API_ENDPOINTS.PRODUCTS}?${params.toString()}`,
     { method: "GET", cache: "no-store" },
   );
 
   if (
-    result.status < 200 ||
-    result.status >= 300 ||
+    result.status < HTTP_STATUS.SUCCESS_MIN ||
+    result.status >= HTTP_STATUS.SUCCESS_LIMIT ||
     !result.payload.success ||
     !result.payload.data
   ) {

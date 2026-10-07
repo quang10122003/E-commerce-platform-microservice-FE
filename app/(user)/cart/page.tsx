@@ -1,6 +1,6 @@
 import { CartView } from "@/components/user/cart/CartView";
 import { getCart } from "@/lib/service/cartService";
-import type { CartResponse } from "@/types/cart";
+import type { CartResponse } from "@/types/user/cart";
 
 export default async function CartPage() {
   let cart: CartResponse | null = null;

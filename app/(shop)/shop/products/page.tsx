@@ -1,7 +1,8 @@
-import { SellerProductsView } from "@/components/shop/shop-products-view";
+import { FIRST_PAGE, PAGE_SIZE } from "@/lib/constants";
+import { SellerProductsView } from "@/components/shop/products/shop-products-view";
 import sellerProductStatuses from "@/data/shop-product-statuses.json";
 import { getSellerProductCategories, getSellerProducts } from "@/lib/service/productService";
-import type { SellerProductPage, SellerProductStatus } from "@/types/shop-product";
+import type { SellerProductPage, SellerProductStatus } from "@/types/shop/product";
 
 type SellerProductsPageProps = {
   searchParams: Promise<{ page?: string; categoryId?: string; status?: string; keyword?: string }>;
@@ -17,7 +18,7 @@ function parsePositiveInteger(value?: string) {
 // Tải danh mục và trang sản phẩm theo URL rồi truyền dữ liệu xuống giao diện.
 export default async function SellerProductsPage({ searchParams }: SellerProductsPageProps) {
   const params = await searchParams;
-  const page = parsePositiveInteger(params.page) ?? 1;
+  const page = parsePositiveInteger(params.page) ?? FIRST_PAGE;
   const categoryId = parsePositiveInteger(params.categoryId);
   const keyword = params.keyword?.trim() || undefined;
   const status = sellerProductStatuses.some((item) => item.value === params.status && item.value !== "")
@@ -26,12 +27,12 @@ export default async function SellerProductsPage({ searchParams }: SellerProduct
 
   const [categoriesResult, productsResult] = await Promise.allSettled([
     getSellerProductCategories(),
-    getSellerProducts({ page, size: 10, categoryId, status, keyword }),
+    getSellerProducts({ page, size: PAGE_SIZE.SHOP_PRODUCTS, categoryId, status, keyword }),
   ]);
 
   // Dữ liệu rỗng chỉ dùng để render thông báo khi API sản phẩm lỗi.
   const emptyPage: SellerProductPage = {
-    items: [], page, pageSize: 10, totalItems: 0, totalPages: 0,
+    items: [], page, pageSize: PAGE_SIZE.SHOP_PRODUCTS, totalItems: 0, totalPages: 0,
   };
 
   return (

@@ -1,4 +1,5 @@
-import type { SellerProductItem } from "@/types/shop-product";
+import { ISO_DATE_LENGTH, FIRST_PAGE, PAGINATION_VISIBLE_PAGES } from "@/lib/constants";
+import type { SellerProductItem } from "@/types/shop/product";
 
 // Tính giá và tồn kho từ các phân loại để hiển thị một dòng sản phẩm.
 export function summarizeSellerProduct(product: SellerProductItem) {
@@ -19,26 +20,26 @@ export function getSellerVariantLabel(variant: SellerProductItem["variants"][num
 
 // Đổi ngày tạo từ LocalDateTime thành định dạng ngày/tháng/năm.
 export function formatSellerProductDate(createdAt: string) {
-  const [year, month, day] = createdAt.slice(0, 10).split("-");
+  const [year, month, day] = createdAt.slice(0, ISO_DATE_LENGTH).split("-");
   return year && month && day ? `${day}/${month}/${year}` : createdAt;
 }
 
 // Giữ danh mục, trạng thái và từ khóa khi chuyển trang hoặc chọn bộ lọc.
-export function getSellerProductsUrl(categoryId?: number, status?: string, page = 1, keyword?: string) {
+export function getSellerProductsUrl(categoryId?: number, status?: string, page = FIRST_PAGE, keyword?: string) {
   const params = new URLSearchParams();
   if (categoryId) params.set("categoryId", String(categoryId));
   if (status) params.set("status", status);
   if (keyword?.trim()) params.set("keyword", keyword.trim());
-  if (page > 1) params.set("page", String(page));
+  if (page > FIRST_PAGE) params.set("page", String(page));
   const query = params.toString();
   return query ? `/shop/products?${query}` : "/shop/products";
 }
 
 // Lấy tối đa năm số trang gần trang hiện tại, bù ở hai đầu khi cần.
 export function getNearbySellerPages(currentPage: number, totalPages: number) {
-  const visibleCount = Math.min(5, totalPages);
+  const visibleCount = Math.min(PAGINATION_VISIBLE_PAGES, totalPages);
   const firstPage = Math.min(
-    Math.max(1, currentPage - 2),
+    Math.max(1, currentPage - Math.floor(PAGINATION_VISIBLE_PAGES / 2)),
     Math.max(1, totalPages - visibleCount + 1),
   );
   return Array.from({ length: visibleCount }, (_, index) => firstPage + index);

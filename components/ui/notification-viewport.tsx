@@ -8,7 +8,7 @@ import {
   dismissNotification,
   notificationStore,
   type NotificationItem,
-} from "@/hooks/useNotification";
+} from "@/hooks/shared/useNotification";
 
 const notificationPositions = [
   "top-left",

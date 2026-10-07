@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 
-import { useAuthInitializer } from "@/hooks/useAuthInitializer";
+import { useAuthInitializer } from "@/hooks/auth/useAuthInitializer";
 
 type AuthInitializerProps = {
   children: ReactNode;

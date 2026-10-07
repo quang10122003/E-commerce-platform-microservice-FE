@@ -2,7 +2,7 @@
 
 import { ArrowDownUp, Filter } from "lucide-react";
 
-import type { ProductSortOption } from "@/types/product";
+import type { ProductSortOption } from "@/types/user/product";
 
 type SearchSortBarProps = {
   sort: ProductSortOption;
