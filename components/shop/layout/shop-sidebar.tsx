@@ -14,6 +14,7 @@ import {
   X,
   BarChart3,
   MessagesSquare,
+  History,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -44,9 +45,15 @@ const sellerNavigation = [
     badge: null,
   },
   {
-    title: "Flash Sale",
+    title: "Đăng ký Flash Sale",
     href: "/shop/flash-sales",
     icon: Zap,
+    badge: null,
+  },
+  {
+    title: "Lịch sử Flash Sale của tôi",
+    href: "/shop/flash-sales/history",
+    icon: History,
     badge: null,
   },
   {
@@ -71,6 +78,9 @@ interface SellerSidebarProps {
 
 export function SellerSidebar({ isOpen, onClose }: SellerSidebarProps) {
   const pathname = usePathname();
+  const activeHref = sellerNavigation
+    .filter(({ href }) => pathname === href || (href !== "/shop" && pathname.startsWith(`${href}/`)))
+    .sort((first, second) => second.href.length - first.href.length)[0]?.href;
 
   return (
     <>
@@ -142,9 +152,7 @@ export function SellerSidebar({ isOpen, onClose }: SellerSidebarProps) {
             </p>
             {sellerNavigation.map((item) => {
               const Icon = item.icon;
-              const isActive =
-                pathname === item.href ||
-                (item.href !== "/shop" && pathname.startsWith(item.href));
+              const isActive = activeHref === item.href;
 
               return (
                 <Link

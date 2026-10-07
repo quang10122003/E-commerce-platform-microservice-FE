@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { MapPin, PackageSearch, Star } from "lucide-react";
 
-import { Badge } from "@/components/ui";
 import { formatCompactNumber, formatCurrency } from "@/lib/utils";
 import type { ProductCatalogItem, ProductSortOption } from "@/types/user/product";
 
@@ -39,12 +38,6 @@ export function SearchProductCard({ product, sort }: SearchProductCardProps) {
         ) : (
           <PackageSearch className="absolute inset-0 m-auto h-10 w-10 text-primary/30" />
         )}
-
-        {/* Badge Mall và Freeship Xtra góc trên trái. */}
-        <div className="absolute left-2 top-2 z-10 flex flex-col gap-1">
-          <Badge variant="mall" size="xs">Mall</Badge>
-          <Badge variant="freeship-xtra" size="xs">Freeship Xtra</Badge>
-        </div>
 
         {/* Tag phần trăm giảm giá góc trên phải. */}
         <div className="absolute right-0 top-0 z-10">
