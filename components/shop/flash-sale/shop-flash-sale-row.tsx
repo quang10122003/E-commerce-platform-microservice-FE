@@ -8,9 +8,10 @@ import { formatSellerProductDate } from "@/lib/utils/shop-product.utils";
 import { formatRegistrationRemaining } from "@/lib/utils/flash-sale.utils";
 import type { ShopFlashSaleCampaign } from "@/types/shop/flash-sale";
 import { useRegistrationCountdown } from "@/hooks/shop/flash-sale/useRegistrationCountdown";
-import { ArrowRight, Package, Timer } from "lucide-react";
+import { Package, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { ShopFlashSaleRegistrationAction } from "./shop-flash-sale-registration-action";
 
 // Hiển thị lịch theo múi giờ thiết bị, giữ kết quả SSR ổn định trước khi mount.
 export function ShopFlashSaleRow({ campaign, now }: { campaign: ShopFlashSaleCampaign; now: number }) {
@@ -57,10 +58,7 @@ export function ShopFlashSaleRow({ campaign, now }: { campaign: ShopFlashSaleCam
       {/* Nút xem giữ nguyên ở cả chương trình còn hạn và đã đóng đăng ký. */}
       <td className="px-5 py-4">
         <div className="flex flex-col items-stretch gap-2">
-          <Button type="button" variant={registrationActive ? "gradient-cta" : "secondary"} size="sm" disabled={!registrationActive} aria-disabled="true" title="Giao diện mẫu, chưa kết nối đăng ký" className="rounded-lg shadow-none hover:shadow-none">
-            {registrationActive ? "Đăng ký sản phẩm" : "Đã đóng đăng ký"}
-            {registrationActive && <ArrowRight className="size-3.5" aria-hidden="true" />}
-          </Button>
+          <ShopFlashSaleRegistrationAction campaign={campaign} disabled={!registrationActive} />
           <Button type="button" variant="outline" size="sm" aria-disabled="true" title="Giao diện mẫu, chưa kết nối danh sách sản phẩm" className="rounded-lg text-primary shadow-none">
             <Package className="size-3.5" aria-hidden="true" />Sản phẩm đã đăng ký
           </Button>

@@ -16,10 +16,11 @@ import { ProductVariantSection } from "./product-variant-section";
 type CreateProductViewProps = {
   category: ResolvedFetchField<ProductCategoryOption[]>;
   brand: ResolvedFetchField<ProductBrandOption[]>;
+  isModal?: boolean;
 };
 
 // Hiển thị form tạo sản phẩm với category và brand do Server Component truyền xuống.
-export function CreateProductView({ category, brand }: CreateProductViewProps) {
+export function CreateProductView({ category, brand, isModal = false }: CreateProductViewProps) {
   const categories = category.data ?? [];
   const brands = brand.data ?? [];
   // Cờ khóa form khi gọi API khởi tạo bị lỗi.
@@ -49,14 +50,14 @@ export function CreateProductView({ category, brand }: CreateProductViewProps) {
   return (
     <form
       onSubmit={hasCatalogError ? (event) => event.preventDefault() : productForm.onSubmit}
-      className="space-y-6 pb-24"
+      className={`space-y-6 ${isModal ? "pb-2" : "pb-24"}`}
     >
       <CreateProductBasicSection productForm={productForm} categories={categories} brands={brands} />
       <CreateProductImageSection preview={productForm.coverImagePreview} onChange={productForm.handleCoverImageChange} />
       <ProductVariantSection productForm={productForm} />
 
       {/* 5. STICKY FOOTER ACTION BAR */}
-      <div className="fixed bottom-0 left-0 right-0 lg:left-64 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200/80 py-3.5 px-6 shadow-lg flex items-center justify-between rounded-t-3xl">
+      <div className={`${isModal ? "sticky bottom-0 -mx-3 mt-6 border-t border-slate-200 px-3 sm:-mx-5 sm:px-5" : "fixed bottom-0 left-0 right-0 border-t border-slate-200/80 px-6 lg:left-64"} z-30 flex items-center justify-between gap-3 bg-white/95 py-3.5 backdrop-blur-md`}>
         <div className="text-xs text-muted-foreground hidden sm:block">
           Hãy kiểm tra kỹ thông tin giá và tồn kho trước khi bấm đăng bán.
         </div>

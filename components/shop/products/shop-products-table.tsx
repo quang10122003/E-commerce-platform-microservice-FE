@@ -8,9 +8,9 @@ import { formatSellerProductDate, getNearbySellerPages, getSellerProductsUrl, ge
 import type { SellerProductPage, SellerProductStatus } from "@/types/shop/product";
 import type { MouseEvent } from "react";
 
-type ShopProductsTableProps = { products: SellerProductPage; productError: boolean; isPending: boolean; categoryId?: number; status?: SellerProductStatus; keyword?: string; handleLinkClick: (event: MouseEvent<HTMLAnchorElement>, href: string) => void; deletingProductId: number | null; deletingVariantId: number | null; handleDeleteProduct: (productId: number, productName: string) => Promise<void>; handleDeleteVariant: (productId: number, variantId: number, variantLabel: string) => Promise<void>; };
+type ShopProductsTableProps = { retry: () => void; products: SellerProductPage; productError: boolean; isPending: boolean; categoryId?: number; status?: SellerProductStatus; keyword?: string; handleLinkClick: (event: MouseEvent<HTMLAnchorElement>, href: string) => void; deletingProductId: number | null; deletingVariantId: number | null; handleDeleteProduct: (productId: number, productName: string) => Promise<void>; handleDeleteVariant: (productId: number, variantId: number, variantLabel: string) => Promise<void>; };
 
-export function ShopProductsTable({ products, productError, isPending, categoryId, status, keyword, handleLinkClick, deletingProductId, deletingVariantId, handleDeleteProduct, handleDeleteVariant }: ShopProductsTableProps) {
+export function ShopProductsTable({ retry, products, productError, isPending, categoryId, status, keyword, handleLinkClick, deletingProductId, deletingVariantId, handleDeleteProduct, handleDeleteVariant }: ShopProductsTableProps) {
   const [expandedProductId, setExpandedProductId] = useState<number | null>(null);
   const firstItem = products.totalItems === 0 ? 0 : (products.page - 1) * products.pageSize + 1;
   const lastItem = Math.min(products.page * products.pageSize, products.totalItems);
@@ -49,7 +49,7 @@ export function ShopProductsTable({ products, productError, isPending, categoryI
             </table>
           </div>
         ) : productError ? (
-          <p role="alert" className="p-6 text-center text-sm text-danger">Không thể tải danh sách sản phẩm. Hãy tải lại trang.</p>
+          <p role="alert" className="p-6 text-center text-sm text-danger">Không thể tải danh sách sản phẩm. <button type="button" onClick={retry} className="ml-2 font-semibold underline underline-offset-2">Thử lại</button></p>
         ) : products.items.length === 0 ? (
           <p className="p-6 text-center text-sm text-slate-500">Không có sản phẩm phù hợp bộ lọc.</p>
         ) : (
@@ -115,8 +115,8 @@ export function ShopProductsTable({ products, productError, isPending, categoryI
                         </td>
                         <td className="px-3 py-3.5 text-right sm:px-4">
                           <div className="flex items-center justify-end gap-0.5 sm:gap-1">
-                            <Link href={`/shop/products/${product.id}/edit`} className={cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "h-7.5 w-7.5 rounded-lg text-slate-500 hover:bg-indigo-50 hover:text-primary")} title="Chỉnh sửa sản phẩm" aria-label={`Chỉnh sửa sản phẩm ${product.name}`}><Edit className="h-3.5 w-3.5" /></Link>
-                            <Button variant="ghost" size="icon-sm" className="h-7.5 w-7.5 cursor-pointer rounded-lg text-slate-500 hover:bg-rose-50 hover:text-rose-600" title="Xóa sản phẩm" aria-label={`Xóa sản phẩm ${product.name}`} disabled={deletingProductId !== null || deletingVariantId !== null} onClick={() => void handleDeleteProduct(product.id, product.name)}>{deletingProductId === product.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}</Button>
+                            <Link href={`/shop/products/${product.id}/edit`} className={cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "h-7.5 w-7.5 rounded-lg text-indigo-800 hover:bg-indigo-50 hover:text-indigo-900")} title="Chỉnh sửa sản phẩm" aria-label={`Chỉnh sửa sản phẩm ${product.name}`}><Edit className="h-3.5 w-3.5" /></Link>
+                            <Button variant="ghost" size="icon-sm" className="h-7.5 w-7.5 cursor-pointer rounded-lg text-rose-800 hover:bg-rose-50 hover:text-rose-900" title="Xóa sản phẩm" aria-label={`Xóa sản phẩm ${product.name}`} disabled={deletingProductId !== null || deletingVariantId !== null} onClick={() => void handleDeleteProduct(product.id, product.name)}>{deletingProductId === product.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}</Button>
                           </div>
                         </td>
                       </tr>
@@ -133,7 +133,7 @@ export function ShopProductsTable({ products, productError, isPending, categoryI
                                       <td className="px-3 py-2 font-semibold text-slate-700">{getSellerVariantLabel(variant)}<span className="block font-mono text-[10px] font-normal text-slate-400">{variant.sku}</span></td>
                                       <td className="whitespace-nowrap px-3 py-2 font-mono text-[10px] font-bold text-cta">{formatCurrency(variant.price)}</td>
                                       <td className="px-3 py-2 font-mono text-[10px] font-bold text-slate-600">{variant.stockQuantity}</td>
-                                      <td className="px-3 py-2"><div className="flex items-center justify-end gap-0.5 sm:gap-1"><Button variant="ghost" size="icon-sm" className="h-7.5 w-7.5 cursor-pointer rounded-lg text-slate-500 hover:bg-rose-50 hover:text-rose-600" title={product.variants.length <= 1 ? "Không thể xóa phân loại cuối cùng" : "Xóa phân loại"} aria-label={`Xóa phân loại ${getSellerVariantLabel(variant)}`} disabled={product.variants.length <= 1 || deletingProductId !== null || deletingVariantId !== null} onClick={() => void handleDeleteVariant(product.id, variant.id, getSellerVariantLabel(variant))}>{deletingVariantId === variant.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}</Button></div></td>
+                                      <td className="px-3 py-2"><div className="flex items-center justify-end gap-0.5 sm:gap-1"><Button variant="ghost" size="icon-sm" className="h-7.5 w-7.5 cursor-pointer rounded-lg text-rose-800 hover:bg-rose-50 hover:text-rose-900" title={product.variants.length <= 1 ? "Không thể xóa phân loại cuối cùng" : "Xóa phân loại"} aria-label={`Xóa phân loại ${getSellerVariantLabel(variant)}`} disabled={product.variants.length <= 1 || deletingProductId !== null || deletingVariantId !== null} onClick={() => void handleDeleteVariant(product.id, variant.id, getSellerVariantLabel(variant))}>{deletingVariantId === variant.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}</Button></div></td>
                                     </tr>
                                   ))}
                                 </tbody>

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Card } from "@/components/ui";
 
 const tasks = [
   { label: "Đơn hàng chờ xác nhận", count: 8, href: "/shop/orders?status=pending", color: "text-cta", bg: "bg-orange-50/70 border-orange-200/60" },
@@ -10,22 +9,22 @@ const tasks = [
 
 export function DashboardTasks() {
   return (
-    <Card variant="3d" className="p-5">
-      <div className="flex items-center justify-between mb-3.5">
+    <section className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
+      <div className="mb-4 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <div className="w-2 h-5 rounded-full bg-cta" />
-          <h3 className="text-sm font-black text-main uppercase tracking-tight">Danh Sách Cần Xử Lý Ngay</h3>
+          <div className="h-5 w-1 rounded-sm bg-cta" />
+          <h3 className="text-sm font-semibold tracking-tight text-main">Danh sách cần xử lý</h3>
         </div>
-        <span className="text-[11px] text-muted-foreground font-medium">Cập nhật theo thời gian thực</span>
+        <span className="text-right text-[11px] font-medium text-muted-foreground">Cập nhật theo thời gian thực</span>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {tasks.map((task) => (
-          <Link key={task.label} href={task.href} className={`p-4 rounded-2xl border ${task.bg} hover:shadow-3d hover:-translate-y-1 text-center transition-all duration-200 group cursor-pointer`}>
-            <div className={`text-2xl sm:text-3xl font-black ${task.color} group-hover:scale-105 transition-transform`}>{task.count}</div>
-            <div className="text-[11px] sm:text-xs font-bold text-slate-700 mt-1.5 line-clamp-1">{task.label}</div>
+          <Link key={task.label} href={task.href} className={`group rounded-lg border p-3.5 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm sm:p-4 ${task.bg}`}>
+            <div className={`text-2xl font-bold tracking-tight sm:text-3xl ${task.color}`}>{task.count}</div>
+            <div className="mt-1.5 text-[11px] font-medium text-slate-700 line-clamp-1 sm:text-xs">{task.label}</div>
           </Link>
         ))}
       </div>
-    </Card>
+    </section>
   );
 }

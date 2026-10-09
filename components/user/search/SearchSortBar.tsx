@@ -21,20 +21,21 @@ export function SearchSortBar({
   onOpenMobileFilter,
 }: SearchSortBarProps) {
   return (
-    <div className="flex items-center justify-between gap-2 rounded-xs bg-slate-100/90 px-3 sm:px-4 py-2">
+    <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2.5 sm:px-4">
       {/* Nhóm nút sắp xếp chính */}
       <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-        <span className="hidden sm:inline-block mr-1 text-xs font-medium text-slate-600 sm:text-sm">
+        <span className="mr-1 text-xs font-medium text-slate-600 sm:text-sm">
           Sắp xếp theo
         </span>
         <button
           type="button"
           onClick={() => onSortChange("RELEVANCE")}
           disabled={isPending}
-          className={`h-8 rounded-xs px-3 sm:px-4 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm ${
+          aria-pressed={sort === "RELEVANCE"}
+          className={`h-9 rounded-md px-3 sm:px-4 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm ${
             sort === "RELEVANCE"
               ? "bg-cta text-white font-semibold"
-              : "bg-white text-slate-800 hover:bg-white/80"
+              : "bg-slate-50 text-slate-800 hover:bg-slate-100 hover:text-cta"
           }`}
         >
           Liên quan
@@ -43,10 +44,11 @@ export function SearchSortBar({
           type="button"
           onClick={() => onSortChange("MOST_SOLD")}
           disabled={isPending}
-          className={`flex h-8 items-center gap-1.5 rounded-xs px-3 sm:px-4 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm ${
+          aria-pressed={sort === "MOST_SOLD"}
+          className={`flex h-9 items-center gap-1.5 rounded-md px-3 sm:px-4 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm ${
             sort === "MOST_SOLD"
               ? "bg-cta text-white font-semibold"
-              : "bg-white text-slate-800 hover:bg-white/80"
+              : "bg-slate-50 text-slate-800 hover:bg-slate-100 hover:text-cta"
           }`}
         >
           <ArrowDownUp className="h-3.5 w-3.5" />
@@ -65,7 +67,7 @@ export function SearchSortBar({
         <button
           type="button"
           onClick={onOpenMobileFilter}
-          className="lg:hidden relative flex h-8 items-center gap-1.5 rounded-xs bg-white px-3 text-xs font-semibold text-slate-800 shadow-2xs border border-slate-200/80 hover:bg-slate-50 transition active:scale-95"
+          className="lg:hidden relative flex h-9 items-center gap-1.5 rounded-md border border-slate-200 bg-slate-50 px-3 text-xs font-semibold text-slate-800 transition hover:bg-slate-100 hover:text-cta active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           aria-label="Mở bộ lọc tìm kiếm"
         >
           <Filter className="h-3.5 w-3.5 text-cta" />

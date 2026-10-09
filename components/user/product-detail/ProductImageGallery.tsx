@@ -8,7 +8,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 const PRODUCT_IMAGES = [
   "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80",
   "https://images.unsplash.com/photo-1611930022073-b7a4ba5fcccd?w=600&q=80",
-  "https://images.unsplash.com/photo-1542496658-e33a6d0d4f17?w=600&q=80",
+  "https://images.unsplash.com/photo-1610820270236-3118408a09c2?w=600&auto=format&fit=crop&q=80",
   "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=600&q=80",
   "https://images.unsplash.com/photo-1434056886845-dac89ffe9b56?w=600&q=80",
 ];

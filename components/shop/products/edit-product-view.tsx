@@ -29,19 +29,19 @@ type EditProductViewProps = {
   productId: number;
   categories: ResolvedFetchField<ProductCategoryOption[]>;
   brands: ResolvedFetchField<ProductBrandOption[]>;
+  isModal?: boolean;
 };
 
 type FormState = ReturnType<typeof useUpdateProduct>;
 
 // Đọc chi tiết từ API trước khi dựng trang chỉnh sửa để giữ đúng ID phân loại và ảnh.
-export function EditProductView({ productId, categories, brands }: EditProductViewProps) {
+export function EditProductView({ productId, categories, brands, isModal = false }: EditProductViewProps) {
   const { data, error, isLoading, refetch } = useGetShopProductDetailQuery(productId);
   const product = data?.success ? data.data : null;
 
   return (
     <div className="w-full space-y-6">
-      {/* Tiêu đề trang hiển thị sản phẩm đang chỉnh sửa. */}
-      <div>
+      {!isModal && <div>
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-black font-heading text-main">Chỉnh Sửa Sản Phẩm</h1>
           <span className="rounded bg-indigo-50 px-2 py-0.5 font-mono text-xs font-bold text-primary">
@@ -51,7 +51,7 @@ export function EditProductView({ productId, categories, brands }: EditProductVi
         <p className="mt-1 text-xs text-muted-foreground">
           Cập nhật thông tin, thuộc tính, phân loại và ảnh sản phẩm
         </p>
-      </div>
+      </div>}
 
       {(categories.error || brands.error) && (
         <p role="alert" className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">

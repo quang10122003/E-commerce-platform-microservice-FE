@@ -22,7 +22,7 @@ export function SearchProductCard({ product, sort }: SearchProductCardProps) {
   return (
     <Link
       href={`/products/${product.id}`}
-      className="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-card transition-all duration-300 hover:-translate-y-2 hover:border-indigo-300 hover:shadow-3d-hover"
+      className="group flex w-full min-w-0 max-w-[240px] justify-self-start flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-card transition-all duration-300 hover:-translate-y-2 hover:border-indigo-300 hover:shadow-3d-hover"
     >
       {/* Ảnh và nhãn ngành hàng của sản phẩm. */}
       <div className="relative aspect-square w-full overflow-hidden bg-slate-100">

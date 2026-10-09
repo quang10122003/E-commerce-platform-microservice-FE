@@ -92,19 +92,19 @@ export function ProductSearchResultsView({
   };
 
   return (
-    <section className="space-y-3">
+    <section className="space-y-5">
       <SearchResultHeader keyword={keyword} />
 
-      <div className="grid gap-4 sm:gap-5 lg:grid-cols-[190px_minmax(0,1fr)] lg:items-start pt-1">
+      <div className="grid gap-4 sm:gap-5 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-start">
         {/* Sidebar bộ lọc desktop cuộn riêng khi nội dung vượt chiều cao màn hình. */}
-        <aside className="hidden lg:block space-y-4 lg:sticky lg:top-24 lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto lg:overscroll-y-contain lg:[scrollbar-width:none] lg:[&::-webkit-scrollbar]:hidden">
-          <div className="flex items-center gap-2 border-b border-slate-200/90 pb-3">
+        <aside className="hidden space-y-3 lg:sticky lg:top-24 lg:block lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto lg:overscroll-y-contain lg:[scrollbar-width:none] lg:[&::-webkit-scrollbar]:hidden">
+          <div className="flex items-center gap-2 px-1">
             <Filter className="h-4 w-4 text-slate-700" />
-            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-800">
-              Bộ lọc tìm kiếm
-            </h2>
+            <h2 className="text-sm font-semibold text-slate-800">Bộ lọc</h2>
           </div>
-          <SearchFilterPanel {...filterPanelProps} />
+          <div className="rounded-lg border border-slate-200 bg-white p-3.5">
+            <SearchFilterPanel {...filterPanelProps} />
+          </div>
         </aside>
 
         {/* Cột nội dung chính: sort bar + danh sách sản phẩm. */}

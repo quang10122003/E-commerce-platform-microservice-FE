@@ -81,5 +81,8 @@ export function useSellerProductFilters({ categoryId, status, keyword }: SellerF
     }, SEARCH_DEBOUNCE_MS);
   }, [navigateWithFilters]);
 
-  return { keywordInput, handleKeywordChange, handleCategoryChange, handleStatusChange, handleLinkClick, isPending };
+  // Tải lại dữ liệu server theo URL hiện tại khi sản phẩm hoặc danh mục bị lỗi.
+  const retry = () => startTransition(() => router.refresh());
+
+  return { retry, keywordInput, handleKeywordChange, handleCategoryChange, handleStatusChange, handleLinkClick, isPending };
 }

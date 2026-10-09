@@ -42,7 +42,7 @@ const playfairDisplay = Playfair_Display({
   subsets: ["latin", "vietnamese"],
   variable: "--font-serif",
   display: "swap",
-  weight: ["600", "700", "800", "900"],
+  weight: "variable",
   style: ["normal", "italic"],
 });
 

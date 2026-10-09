@@ -36,11 +36,13 @@ export function SellerTopbar({ onToggleSidebar }: SellerTopbarProps) {
           variant="outline"
           size="icon-sm"
           onClick={onToggleSidebar}
-          className="lg:hidden text-slate-700 hover:text-main rounded-xl"
-          aria-label="Toggle menu"
+          className="lg:hidden h-11 w-11 rounded-lg text-slate-700 hover:text-main"
+          aria-label="Mở hoặc đóng menu người bán"
         >
           <Menu className="w-5 h-5" />
         </Button>
+        {/* Vùng nhận thao tác của trang khi cuộn khỏi vị trí ban đầu. */}
+        <div id="shop-navbar-actions" className="min-w-0" />
       </div>
 
       {/* Thông báo và thông tin shop trên topbar. */}

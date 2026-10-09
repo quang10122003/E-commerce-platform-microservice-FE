@@ -11,9 +11,12 @@ export function VoucherStrip() {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
       {vouchers.map((voucher) => (
-        <div key={voucher.code} className={`rounded-2xl p-4 bg-gradient-to-r ${voucher.color} text-white shadow-3d hover:shadow-3d-hover hover:-translate-y-1.5 transition-all flex items-center justify-between cursor-pointer group`}>
-          <div className="space-y-0.5"><div className="flex items-center gap-1.5"><Ticket className="w-4 h-4 text-white/90" /><span className="font-black text-sm sm:text-base tracking-tight">{voucher.discount}</span></div><p className="text-[11px] text-white/80">{voucher.desc}</p></div>
-          <button type="button" className="bg-white/20 hover:bg-white text-white hover:text-slate-900 px-3 py-1.5 rounded-xl text-xs font-black backdrop-blur-xs transition-all cursor-pointer shadow-xs">Lưu</button>
+      <div key={voucher.code} className="group flex overflow-hidden rounded-lg border border-slate-200 bg-gradient-to-r from-white via-white to-orange-50/70 transition-all duration-200 hover:-translate-y-0.5 hover:border-cta/40 hover:shadow-sm">
+          <div aria-hidden="true" className={`w-1 shrink-0 bg-gradient-to-b ${voucher.color}`} />
+          <div className="flex min-w-0 flex-1 items-center justify-between gap-3 px-3.5 py-3">
+            <div className="min-w-0 space-y-1"><div className="flex items-center gap-2"><Ticket className="h-4 w-4 shrink-0 text-cta" /><span className="text-sm font-semibold tracking-tight text-main sm:text-base">{voucher.discount}</span></div><p className="truncate text-[11px] text-muted-foreground">{voucher.desc}</p></div>
+            <button type="button" className="shrink-0 rounded-md border border-cta/25 bg-white px-3 py-1.5 text-xs font-semibold text-cta transition-colors hover:border-cta hover:bg-cta hover:text-white">Lưu</button>
+          </div>
         </div>
       ))}
     </div>
@@ -29,9 +32,9 @@ export function TrustPerks() {
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/90 shadow-3d">
+    <div className="grid grid-cols-2 gap-x-4 gap-y-5 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-4 sm:p-5">
       {perks.map(({ title, description, icon: Icon, color }) => (
-        <div key={title} className="flex items-center gap-3 p-2"><div className={`w-11 h-11 rounded-2xl ${color} flex items-center justify-center shrink-0 shadow-xs`}><Icon className="w-5 h-5" /></div><div><h4 className="text-xs sm:text-sm font-bold text-main">{title}</h4><p className="text-[11px] text-muted-foreground">{description}</p></div></div>
+        <div key={title} className="flex items-center gap-3"><div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-md ${color}`}><Icon className="h-5 w-5" /></div><div className="min-w-0"><h4 className="text-xs font-semibold text-main sm:text-sm">{title}</h4><p className="text-[11px] leading-relaxed text-muted-foreground">{description}</p></div></div>
       ))}
     </div>
   );

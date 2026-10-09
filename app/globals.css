@@ -63,7 +63,6 @@
      - Card Surface: #FFFFFF (Thuần trắng) nổi khối 3D trên nền
      - Border: #E2E8F0 (Viền sắc nét)
      ========================================================================== */
-  --color-surface-bg: #F8FAFC;
   --color-surface-bg: #EEF2F6;
   --color-surface-card: #FFFFFF;
   --color-surface-border: #E2E8F0;
@@ -102,7 +101,6 @@
 }
 
 :root {
-  --background: #F8FAFC;
   --background: #EEF2F6;
   --foreground: #0F172A;
 }
@@ -117,7 +115,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom visual utilities for rich, vibrant e-commerce components */
 /* Custom 3D visual utilities for strong depth and tactile separation */
 @layer utilities {
   .skeleton-shimmer {
@@ -148,11 +145,9 @@ body {
   }
 
   .shadow-card {
-    box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
     box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04), 0 0 0 1px rgba(15, 23, 42, 0.06);
   }
   .shadow-card-hover {
-    box-shadow: 0 12px 24px -4px rgba(15, 23, 42, 0.08), 0 4px 8px -2px rgba(15, 23, 42, 0.04);
     box-shadow: 0 20px 30px -6px rgba(15, 23, 42, 0.14), 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(79, 70, 229, 0.18);
   }
   .shadow-3d {
@@ -162,17 +157,12 @@ body {
     box-shadow: 0 24px 40px -8px rgba(15, 23, 42, 0.16), 0 12px 20px -4px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(15, 23, 42, 0.08);
   }
   .shadow-glow-cta {
-    box-shadow: 0 8px 20px -4px rgba(255, 87, 34, 0.35);
     box-shadow: 0 8px 24px -4px rgba(255, 87, 34, 0.42), 0 2px 6px -1px rgba(255, 87, 34, 0.2);
   }
   .shadow-glow-primary {
-    box-shadow: 0 8px 20px -4px rgba(79, 70, 229, 0.3);
     box-shadow: 0 8px 24px -4px rgba(79, 70, 229, 0.4), 0 2px 6px -1px rgba(79, 70, 229, 0.2);
   }
   .glass-header {
-    background: rgba(255, 255, 255, 0.92);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
     background: rgba(255, 255, 255, 0.96);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);

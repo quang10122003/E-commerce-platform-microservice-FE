@@ -22,6 +22,7 @@ export const LOCAL_DATE_TIME_LENGTH = 16;
 // Thời lượng tương tác và ngưỡng hiển thị không phụ thuộc component.
 export const CART_QUANTITY_DEBOUNCE_MS = 500;
 export const SEARCH_DEBOUNCE_MS = 400;
+export const PRICE_PREVIEW_DEBOUNCE_MS = 500;
 export const HERO_CAROUSEL_INTERVAL_MS = 4_500;
 export const FLASH_SALE_CLOSING_SOON_MS = 3 * TIME.HOUR_MS;
 export const SEARCH_VISIBLE_LOCATIONS = 7;
@@ -52,6 +53,8 @@ export const API_ENDPOINTS = {
   BRANDS: "api/brands",
   CART: "api/cart",
   SHOP_FLASH_SALES: "api/shop/flash-sales",
+  SHOP_FLASH_SALE_PRODUCTS: "api/shop/flash-sales/products",
+  USER_FLASH_SALE_ITEMS: "api/user/flash-sales/items",
 } as const;
 export const DEFAULT_TIMEOUT_MS = 15_000;
 

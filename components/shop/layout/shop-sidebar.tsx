@@ -123,8 +123,10 @@ export function SellerSidebar({ isOpen, onClose }: SellerSidebarProps) {
 
             {/* Mobile Close Button */}
             <button
+              type="button"
               onClick={onClose}
-              className="lg:hidden p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              aria-label="Đóng menu người bán"
+              className="lg:hidden inline-flex h-11 w-11 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
             >
               <X className="w-5 h-5" />
             </button>

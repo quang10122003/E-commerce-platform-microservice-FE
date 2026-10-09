@@ -4,9 +4,9 @@ import { RecentOrders } from "./recent-orders";
 
 export default function SellerDashboardPage() {
   return (
-    <div className="space-y-6">
-      <DashboardTasks />
+    <div className="space-y-5 sm:space-y-6">
       <DashboardStats />
+      <DashboardTasks />
       <RecentOrders />
     </div>
   );

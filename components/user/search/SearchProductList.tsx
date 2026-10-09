@@ -39,7 +39,7 @@ export function SearchProductList({
         {Array.from({ length: 10 }).map((_, index) => (
           <div
             key={index}
-            className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-card"
+            className="flex w-full min-w-0 max-w-[240px] justify-self-start flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-card"
           >
             {/* Khung ảnh skeleton */}
             <div className="relative aspect-square w-full skeleton-shimmer" />

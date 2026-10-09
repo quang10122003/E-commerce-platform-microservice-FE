@@ -29,13 +29,14 @@ export function CartView({ initialCart, loadError }: CartViewProps) {
   }
 
   return (
-    <div className="mx-auto grid max-w-[1440px] gap-3 pb-10 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start lg:gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
+    <div className="mx-auto max-w-[1440px] space-y-5 pb-20 sm:pb-10">
       {/* Chặn thao tác lặp khi xóa hoặc đổi số lượng đang được xử lý. */}
       {pending && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-main/20 p-4 backdrop-blur-[2px]">
           <Loading label={loadingLabel} className="min-h-0 w-full max-w-xs border-surface-border bg-surface-card shadow-none" />
         </div>
       )}
+      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_280px] xl:grid-cols-[minmax(0,1fr)_300px]">
       {/* Danh sách sản phẩm chiếm cột chính trên màn hình PC. */}
       <div className="min-w-0 space-y-3">
         {/* Hàng tiêu đề giữ cùng nhịp cột với các dòng sản phẩm. */}
@@ -48,10 +49,13 @@ export function CartView({ initialCart, loadError }: CartViewProps) {
           const selected = group.items.every(isCartItemAvailable);
           return (
             <section key={group.shopId} className="overflow-hidden rounded-lg border border-surface-border bg-surface-card" aria-label={`Sản phẩm từ ${group.name}`}>
-              <div className="flex items-center gap-3 border-b border-surface-border px-4 py-3 sm:px-5">
+              <div className="flex items-center gap-3 border-b border-surface-border bg-slate-50/80 px-4 py-3.5 sm:px-5">
                 <span className={cn("flex h-4 w-4 shrink-0 items-center justify-center rounded-sm", selected ? "bg-primary text-primary-foreground" : "border border-surface-border bg-surface-card")}>{selected && <Check className="h-3 w-3" />}</span>
-                <Store className="h-4 w-4 shrink-0 text-primary" strokeWidth={1.75} aria-hidden="true" />
-                <span className="text-sm font-semibold text-main">{group.name}</span>
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-indigo-50 text-primary"><Store className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" /></span>
+                <div className="min-w-0 flex-1">
+                  <h2 className="truncate text-sm font-semibold text-main">{group.name}</h2>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">{group.items.length} sản phẩm</p>
+                </div>
               </div>
               {group.items.map((item) => <CartItemView key={item.cartItemId} item={item} pending={pending} onChangeQuantity={changeQuantity} onDelete={deleteItem} />)}
             </section>
@@ -59,6 +63,7 @@ export function CartView({ initialCart, loadError }: CartViewProps) {
         })}
       </div>
       <CartSummary {...summary} />
+      </div>
     </div>
   );
 }

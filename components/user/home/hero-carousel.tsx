@@ -15,50 +15,47 @@ export function HeroCarousel() {
 
   return (
     <div
-      className="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-3d hover:shadow-3d-hover transition-all duration-300 group min-h-[350px] sm:min-h-[420px] lg:min-h-[450px]"
+      className="group relative min-h-[350px] w-full overflow-hidden rounded-xl border border-slate-200/70 sm:min-h-[420px] lg:min-h-[450px]"
       onMouseEnter={() => setIsAutoPlaying(false)}
       onMouseLeave={() => setIsAutoPlaying(true)}
     >
       {slides.map((s, index) => {
         const isActive = index === currentSlide;
+        const SlideHeading = isActive ? "h1" : "h2";
         return (
           <div
             key={s.id}
-            className={`absolute inset-0 w-full h-full transition-all duration-700 ease-in-out bg-gradient-to-r ${
-              s.bgGradient
-            } p-6 sm:p-10 lg:p-14 text-white flex flex-col sm:flex-row items-center justify-between gap-6 ${
-              isActive ? "opacity-100 z-10 scale-100" : "opacity-0 z-0 scale-98 pointer-events-none"
+            aria-hidden={!isActive}
+            inert={!isActive}
+            className={`absolute inset-0 grid h-full w-full grid-cols-1 bg-slate-950 text-white transition-opacity duration-500 sm:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] ${
+              isActive ? "z-10 opacity-100" : "pointer-events-none z-0 opacity-0"
             }`}
           >
-            {/* Vùng ánh sáng môi trường tạo chiều sâu cho banner lớn */}
-            <div className="absolute top-0 right-1/4 w-96 h-96 bg-white/15 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-10 left-1/3 w-80 h-80 bg-orange-500/15 rounded-full blur-3xl pointer-events-none" />
-
             {/* Khu vực nội dung bên trái */}
-            <div className="max-w-xl lg:max-w-2xl space-y-3.5 sm:space-y-4.5 relative z-10">
+            <div className={`relative z-10 flex flex-col justify-center space-y-4 bg-gradient-to-br p-6 sm:p-10 lg:p-14 ${s.bgGradient}`}>
               {/* Nhãn sự kiện */}
-              <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold font-heading backdrop-blur-md bg-white/20 border border-white/30 shadow-xs">
+              <div className="inline-flex items-center gap-2 rounded-md border border-white/25 bg-black/10 px-2.5 py-1.5 text-xs font-semibold font-heading">
                 {s.tagIcon}
                 <span>{s.tag}</span>
               </div>
 
               {/* Tiêu đề chính sử dụng font nghệ thuật cách tân */}
-              <h1 className={cn("text-2xl sm:text-4xl lg:text-5xl leading-tight drop-shadow-sm", s.titleFont || "font-heading font-black tracking-tight")}>
+              <SlideHeading className={cn("text-2xl leading-tight sm:text-4xl lg:text-5xl", s.titleFont || "font-heading font-bold tracking-tight")}>
                 {s.title} <br />
-                <span className={cn("bg-gradient-to-r from-amber-300 via-yellow-200 to-orange-300 bg-clip-text text-transparent drop-shadow-md", s.highlightFont)}>
+                <span className={cn("text-amber-200", s.highlightFont)}>
                   {s.highlight}
                 </span>
-              </h1>
+              </SlideHeading>
 
               {/* Mô tả chi tiết */}
-              <p className="text-xs sm:text-sm lg:text-base text-slate-100/90 leading-relaxed max-w-lg font-sans">
+              <p className="max-w-lg font-sans text-sm leading-relaxed text-slate-100/90 sm:text-base">
                 {s.description}
               </p>
 
               {/* Danh sách quyền lợi nổi bật */}
-              <div className="flex flex-wrap items-center gap-3.5 text-xs sm:text-sm font-semibold font-heading text-slate-200 pt-1">
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-1 font-heading text-xs font-medium text-slate-100 sm:text-sm">
                 {s.perks.map((perk, pIdx) => (
-                  <div key={pIdx} className="flex items-center gap-1.5 bg-black/20 backdrop-blur-xs px-2.5 py-1 rounded-lg border border-white/10">
+                  <div key={pIdx} className="flex items-center gap-2">
                     {perk.icon}
                     <span>{perk.text}</span>
                   </div>
@@ -66,12 +63,12 @@ export function HeroCarousel() {
               </div>
 
               {/* Nút kêu gọi hành động CTA */}
-              <div className="pt-2 sm:pt-3">
+              <div className="pt-1">
                 <Link href={s.ctaLink}>
                   <Button
                     variant={s.ctaVariant}
                     size="lg"
-                    className="rounded-xl px-6 font-bold font-heading shadow-glow-cta gap-2 text-sm sm:text-base hover:scale-105 transition-transform"
+                    className="gap-2 rounded-md px-6 font-semibold font-heading text-sm transition-colors sm:text-base"
                   >
                     <span>{s.ctaText}</span>
                     <ArrowRight className="w-4 h-4" />
@@ -81,25 +78,15 @@ export function HeroCarousel() {
             </div>
 
             {/* Hình ảnh sản phẩm nổi bật bên phải của Hero Banner */}
-            <div className="hidden sm:block relative z-10 w-52 sm:w-64 lg:w-88 aspect-square shrink-0">
-              <div className="relative w-full h-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border-2 border-white/25 transform group-hover:scale-105 transition-transform duration-500">
-                <Image
-                  fill
-                  src={s.imageUrl}
-                  alt={s.title}
-                  sizes="(min-width: 1024px) 22rem, 16rem"
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                <div className="absolute bottom-3.5 left-3.5 right-3.5 flex items-center justify-between text-xs font-bold font-heading text-white">
-                  <span className="bg-cta px-2.5 py-1 rounded-lg shadow-md tracking-wider uppercase text-[11px]">
-                    TOP DEAL
-                  </span>
-                  <span className="backdrop-blur-md bg-black/50 px-2.5 py-1 rounded-lg border border-white/20">
-                    HOT 2026
-                  </span>
-                </div>
-              </div>
+            <div className="relative z-10 hidden min-h-full overflow-hidden sm:block">
+              <Image
+                fill
+                src={s.imageUrl}
+                alt={s.title}
+                sizes="(min-width: 1024px) 45vw, 40vw"
+                className="object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+              <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-slate-950/25 via-transparent to-transparent" />
             </div>
           </div>
         );
@@ -109,8 +96,8 @@ export function HeroCarousel() {
       <button
         type="button"
         onClick={prevSlide}
-        className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 hover:scale-110 shadow-md cursor-pointer"
-        aria-label="Previous slide"
+        className="absolute left-3 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-md border border-white/30 bg-black/25 text-white transition-colors hover:bg-black/45 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        aria-label="Slide trước"
       >
         <ChevronLeft className="w-6 h-6" />
       </button>
@@ -118,23 +105,23 @@ export function HeroCarousel() {
       <button
         type="button"
         onClick={nextSlide}
-        className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 hover:scale-110 shadow-md cursor-pointer"
-        aria-label="Next slide"
+        className="absolute right-3 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-md border border-white/30 bg-black/25 text-white transition-colors hover:bg-black/45 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        aria-label="Slide tiếp theo"
       >
         <ChevronRight className="w-6 h-6" />
       </button>
 
       {/* Dải chấm chỉ báo chuyển slide */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/35 backdrop-blur-md border border-white/10">
+      <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-md border border-white/20 bg-black/25 px-2.5 py-1.5">
         {slides.map((_, index) => (
           <button
             key={index}
             type="button"
             onClick={() => selectSlide(index)}
             className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
-              index === currentSlide ? "w-7 bg-white shadow-xs" : "w-2 bg-white/40 hover:bg-white/80"
+              index === currentSlide ? "w-6 bg-white" : "w-2 bg-white/45 hover:bg-white/80"
             }`}
-            aria-label={`Go to slide ${index + 1}`}
+            aria-label={`Đến chương trình ${index + 1}`}
           />
         ))}
       </div>

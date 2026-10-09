@@ -55,8 +55,8 @@ const slides: SlideData[] = [
     ctaText: "Thu Thập Mã Ngay",
     ctaLink: "/vouchers",
     ctaVariant: "gradient-cta",
-    bgGradient: "from-orange-600 via-rose-600 to-purple-900",
-    imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=80",
+    bgGradient: "from-orange-500 via-cta to-rose-800",
+    imageUrl: "https://images.unsplash.com/photo-1607082349566-187342175e2f?w=800&auto=format&fit=crop&q=80",
     perks: [
       { icon: <Tag className="w-4 h-4 text-amber-300" />, text: "Giảm Đến 500k" },
       { icon: <Zap className="w-4 h-4 text-yellow-300" />, text: "Áp Dụng Toàn Sàn" },

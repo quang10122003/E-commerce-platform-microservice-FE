@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Flame } from "lucide-react";
-import { Badge, Card } from "@/components/ui";
+import { Badge } from "@/components/ui";
 import { formatCurrency } from "@/lib/utils";
 
 const products = [
@@ -14,21 +14,21 @@ const products = [
 
 export function FlashSaleSection() {
   return (
-    <Card variant="3d" className="border-orange-200/80 bg-gradient-to-b from-orange-50/70 via-white to-white overflow-hidden shadow-3d">
-      <div className="p-4 sm:p-5 border-b border-orange-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-3 flex-wrap"><div className="flex items-center gap-2 text-cta font-black text-lg sm:text-xl"><Flame className="w-6 h-6 fill-cta text-cta animate-bounce" /><span className="bg-gradient-to-r from-orange-600 via-cta to-red-600 bg-clip-text text-transparent">FLASH SALE</span></div><div className="flex items-center gap-1 text-xs font-black text-white"><span className="px-2 py-1 rounded-lg bg-slate-900 shadow-xs">02</span><span className="text-slate-900 font-bold">:</span><span className="px-2 py-1 rounded-lg bg-slate-900 shadow-xs">45</span><span className="text-slate-900 font-bold">:</span><span className="px-2 py-1 rounded-lg bg-slate-900 shadow-xs">18</span></div><Badge variant="flame" size="xs" className="hidden sm:inline-flex">ĐANG DIỄN RA</Badge></div>
-        <Link href="/flash-sale" className="text-xs font-bold text-cta hover:text-cta-hover flex items-center gap-1 group cursor-pointer"><span>Xem tất cả Flash Sale</span><ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" /></Link>
+    <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <div className="flex flex-col justify-between gap-3 border-b border-slate-200 px-4 py-4 sm:flex-row sm:items-center sm:px-5">
+        <div className="flex flex-wrap items-center gap-3"><div className="flex items-center gap-2 text-cta"><Flame className="h-5 w-5" /><span className="text-base font-bold tracking-tight sm:text-lg">FLASH SALE</span></div><div className="flex items-center gap-1 font-mono text-xs font-semibold text-main"><span className="rounded border border-slate-200 bg-slate-50 px-2 py-1">02</span><span>:</span><span className="rounded border border-slate-200 bg-slate-50 px-2 py-1">45</span><span>:</span><span className="rounded border border-slate-200 bg-slate-50 px-2 py-1">18</span></div><Badge variant="cta-soft" size="xs" className="hidden sm:inline-flex">ĐANG DIỄN RA</Badge></div>
+        <Link href="/flash-sale" className="group flex items-center gap-1 text-xs font-semibold text-cta transition-colors hover:text-cta-hover"><span>Xem tất cả Flash Sale</span><ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" /></Link>
       </div>
-      <div className="p-4 sm:p-5 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-4">
+      <div className="grid grid-cols-2 gap-3 p-4 sm:gap-4 sm:p-5 lg:grid-cols-5">
         {products.map((item) => (
-          <Link key={item.id} href={`/products/${item.id}`} className="rounded-2xl border border-slate-200/90 bg-white p-3 sm:p-3.5 space-y-3 shadow-card hover:shadow-3d-hover hover:border-cta/60 hover:-translate-y-2 transition-all duration-300 flex flex-col justify-between group cursor-pointer">
-            <div><div className="relative aspect-square w-full rounded-xl overflow-hidden bg-slate-100"><Image fill src={item.imageUrl} alt={item.title} sizes="(min-width: 1024px) 20vw, 50vw" className="object-cover group-hover:scale-105 transition-transform duration-500" /><div className="absolute top-2 right-2"><Badge variant="flame" size="sm">-{item.discount}%</Badge></div></div>
-              <div className="space-y-1.5 pt-2"><h4 className="text-xs sm:text-sm font-semibold text-main line-clamp-2 leading-snug group-hover:text-primary transition-colors min-h-[38px]">{item.title}</h4><div className="flex items-baseline gap-2"><span className="text-sm sm:text-base font-black text-cta">{formatCurrency(item.price)}</span><span className="text-[11px] text-muted-foreground line-through">{formatCurrency(item.originalPrice)}</span></div></div>
+          <Link key={item.id} href={`/products/${item.id}`} className="group flex flex-col justify-between gap-3 rounded-lg border border-slate-200 p-2.5 transition-all duration-200 hover:-translate-y-1 hover:border-cta/50 hover:shadow-md sm:p-3">
+            <div><div className="relative aspect-square w-full overflow-hidden rounded-md bg-slate-100"><Image fill src={item.imageUrl} alt={item.title} sizes="(min-width: 1024px) 20vw, 50vw" className="object-cover transition-transform duration-500 group-hover:scale-105" /><div className="absolute right-2 top-2"><Badge variant="cta-soft" size="sm">-{item.discount}%</Badge></div></div>
+              <div className="space-y-1.5 pt-2"><h4 className="min-h-[38px] text-xs font-medium leading-snug text-main transition-colors group-hover:text-primary sm:text-sm line-clamp-2">{item.title}</h4><div className="flex flex-wrap items-baseline gap-x-2"><span className="text-sm font-semibold text-cta sm:text-base">{formatCurrency(item.price)}</span><span className="text-[11px] text-muted-foreground line-through">{formatCurrency(item.originalPrice)}</span></div></div>
             </div>
-            <div className="space-y-1 pt-1"><div className="h-4 w-full bg-orange-100/90 rounded-full overflow-hidden relative shadow-inner"><div className="h-full bg-gradient-to-r from-orange-500 via-cta to-red-600 rounded-full transition-all duration-500" style={{ width: `${item.soldPercent}%` }} /><span className="absolute inset-0 flex items-center justify-center text-[9px] font-black text-white uppercase tracking-tight drop-shadow-xs">🔥 ĐÃ BÁN {item.soldPercent}%</span></div></div>
+            <div className="space-y-1 pt-1"><div className="relative h-4 w-full overflow-hidden rounded-sm bg-orange-100"><div className="h-full bg-cta transition-all duration-500" style={{ width: `${item.soldPercent}%` }} /><span className="absolute inset-0 flex items-center justify-center text-[9px] font-semibold uppercase tracking-tight text-main">Đã bán {item.soldPercent}%</span></div></div>
           </Link>
         ))}
       </div>
-    </Card>
+    </section>
   );
 }
