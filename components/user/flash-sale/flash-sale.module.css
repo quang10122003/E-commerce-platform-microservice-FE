@@ -4,7 +4,7 @@
 }
 
 .saleCard {
-  transition: transform 240ms cubic-bezier(0.16, 1, 0.3, 1), border-color 200ms ease;
+  transition: border-color 200ms ease;
 }
 
 /* CTA sáng hơn, giữ tương phản của chữ tối trên nền cam. */
@@ -38,8 +38,7 @@
 
 @media (hover: hover) and (pointer: fine) {
   .saleCard:hover {
-    transform: translateY(-3px);
-    border-color: var(--color-cta);
+    border-color: color-mix(in srgb, var(--color-cta) 40%, var(--color-surface-border));
   }
 
   .saleCard:hover .buyButton::after {
@@ -69,7 +68,6 @@
     transition: none;
   }
 
-  .saleCard:hover,
   .detailButton:hover svg {
     transform: none;
   }

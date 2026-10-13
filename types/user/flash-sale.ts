@@ -1,9 +1,5 @@
 // DTO danh mục từ CategoryController.
-export interface FlashSaleCategory {
-  id: number;
-  name: string;
-  imageUrl: string | null;
-}
+export type { CategoryResponse as FlashSaleCategory } from "@/types/shared/category";
 
 // Một phân loại sản phẩm tham gia đợt sale hiện tại.
 export interface UserFlashSaleItem {
@@ -28,3 +24,14 @@ export interface UserFlashSaleResponse {
 }
 
 export type FlashSaleSort = "DEFAULT" | "PRICE_ASC" | "PRICE_DESC" | "DISCOUNT_DESC";
+
+// Dữ liệu server tải song song cho trang Flash Sale, không chứa token.
+export interface UserFlashSaleInitialData {
+  categories: import("@/types/shared/category").CategoryResponse[];
+  campaign: UserFlashSaleResponse | null;
+  selectedSale: UserFlashSaleResponse | null;
+  categoryId?: number;
+  hasError: boolean;
+  requiresLogin: boolean;
+  serverNow: number;
+}

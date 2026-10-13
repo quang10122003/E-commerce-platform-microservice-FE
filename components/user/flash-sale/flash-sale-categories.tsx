@@ -7,19 +7,20 @@ type FlashSaleCategoriesProps = {
   categories: FlashSaleCategory[];
   selectedId?: number;
   onSelect: (id?: number) => void;
-  isLoading: boolean;
-  hasError: boolean;
 };
 
 // Dải danh mục cuộn ngang giữ lựa chọn dễ chạm trên cả desktop và mobile.
-export function FlashSaleCategories({ categories, selectedId, onSelect, isLoading, hasError }: FlashSaleCategoriesProps) {
+export function FlashSaleCategories({ categories, selectedId, onSelect }: FlashSaleCategoriesProps) {
+  // Không hiển thị cả khu vực khi server không tải được danh mục hoặc danh sách rỗng.
+  if (categories.length === 0) return null;
+
   return (
     <section className="rounded-xl border border-surface-border bg-surface-card" aria-label="Lọc sale theo danh mục">
       <div className="flex items-center justify-between gap-3 px-4 pt-4 sm:px-5">
         <h2 className="font-heading text-sm font-semibold">Săn sale theo danh mục</h2>
         <p className="text-xs text-muted-foreground">Chọn ngành hàng bạn quan tâm</p>
       </div>
-      {/* Lựa chọn tất cả luôn khả dụng kể cả khi API danh mục lỗi. */}
+      {/* Lựa chọn tất cả bỏ categoryId khỏi URL để xem toàn bộ sale. */}
       <div className="flex gap-2 overflow-x-auto p-4 sm:gap-3 sm:px-5">
         {[{ id: undefined, name: "Tất cả", imageUrl: null }, ...categories].map((category) => (
           <button key={category.id ?? "all"} type="button" aria-pressed={selectedId === category.id}
@@ -30,9 +31,7 @@ export function FlashSaleCategories({ categories, selectedId, onSelect, isLoadin
             {category.name}
           </button>
         ))}
-        {isLoading && <span className="self-center text-sm text-muted-foreground" role="status">Đang tải danh mục…</span>}
       </div>
-      {hasError && <p className="px-4 pb-4 text-sm text-danger" role="status">Chưa tải được danh mục. Bạn vẫn có thể xem tất cả sản phẩm và thử tải lại.</p>}
     </section>
   );
 }

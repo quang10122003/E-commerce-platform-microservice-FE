@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, Flame, PackageSearch, Zap } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { cn, formatCurrency } from "@/lib/utils";
 import { getSaleQuotaPercent } from "@/lib/utils/user-flash-sale.utils";
 import type { UserFlashSaleItem } from "@/types/user/flash-sale";
@@ -17,14 +18,14 @@ export function FlashSaleProductCard({ item }: { item: UserFlashSaleItem }) {
   const available = item.availability === "AVAILABLE" && item.remainingQuantity > 0;
   const detailUrl = `/products/${item.productId}?variantId=${item.variantId}`;
   return (
-    <article className={cn(styles.saleCard, "group flex min-w-0 flex-col overflow-hidden rounded-xl border border-cta/20 bg-surface-card")}>
+    <article className={cn(styles.saleCard, "group flex min-w-0 flex-col overflow-hidden rounded-xl border border-surface-border bg-surface-card")}>
       {/* Ảnh thật của phân loại và mức giảm do backend tính. */}
       <Link href={detailUrl} aria-label={`Xem ${item.productName}, ${item.variantLabel || "phân loại tiêu chuẩn"}`}
         className="relative block aspect-[4/3] overflow-hidden bg-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary">
         {item.imageUrl ? <Image src={item.imageUrl} alt={item.productName} fill unoptimized sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
-          className={cn("object-cover transition-transform duration-300 motion-reduce:transition-none group-hover:scale-[1.03]", !available && "opacity-60")} />
+          className={cn("object-cover transition-transform duration-300 motion-reduce:transition-none motion-safe:group-hover:scale-[1.03]", !available && "opacity-60")} />
           : <div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground"><PackageSearch className="size-9" aria-hidden="true" /><span className="text-xs">Shop chưa cập nhật ảnh</span></div>}
-        <span className="absolute right-2 top-2 flex items-center gap-1 rounded bg-star px-2 py-1 font-heading text-xs font-bold text-main"><Zap className="size-3 fill-current" aria-hidden="true" />-{item.discountPercent}%</span>
+        <Badge variant="discount" size="sm" className="absolute right-2 top-2">-{item.discountPercent}%</Badge>
         {!available && <span className="absolute inset-x-0 bottom-0 bg-main/80 px-2 py-2 text-center text-xs font-semibold text-white">{AVAILABILITY_LABELS[item.availability]}</span>}
       </Link>
       {/* Giá theo phân loại và thông tin quota được cung cấp bởi API. */}

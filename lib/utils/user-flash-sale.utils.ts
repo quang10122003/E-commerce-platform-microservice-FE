@@ -27,3 +27,10 @@ export function getSaleQuotaPercent(item: UserFlashSaleItem) {
   return item.registeredQuantity > 0
     ? Math.min(100, Math.max(0, item.remainingQuantity / item.registeredQuantity * 100)) : 0;
 }
+
+// Chỉ nhận categoryId nguyên dương an toàn từ URL trước khi gọi backend.
+export function parseSaleCategoryId(value?: string | string[]): number | undefined {
+  if (typeof value !== "string" || !/^\d+$/.test(value)) return undefined;
+  const categoryId = Number(value);
+  return Number.isSafeInteger(categoryId) && categoryId > 0 ? categoryId : undefined;
+}
