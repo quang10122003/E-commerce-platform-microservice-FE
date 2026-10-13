@@ -25,17 +25,18 @@ export function useShopHeader() {
   // Kiểm tra quyền mở kênh quản lý dành riêng cho người bán.
   const canAccessSellerChannel = user?.role.includes("ROLE_SHOP") ?? false;
 
-  // Điều hướng đến trang kết quả với từ khóa đã được chuẩn hóa.
+  // Tìm từ khóa mới, bỏ danh mục và cursor nhưng giữ bộ lọc hiện tại trên trang search.
   const handleSearch = useCallback((keyword = searchQuery) => {
     const normalizedKeyword = keyword.trim();
     // Không gửi request tìm kiếm khi người dùng chưa nhập từ khóa.
     if (!normalizedKeyword) return;
-    const query = normalizedKeyword
-      ? `?keyword=${encodeURIComponent(normalizedKeyword)}`
-      : "";
+    const params = new URLSearchParams(pathname === "/search" ? window.location.search : "");
+    params.delete("categoryId");
+    params.delete("cursor");
+    params.set("keyword", normalizedKeyword);
 
-    router.push(`/search${query}`);
-  }, [router, searchQuery]);
+    router.push(`/search?${params.toString()}`);
+  }, [pathname, router, searchQuery]);
 
   // Đồng bộ từ khóa trên trang tìm kiếm và xóa input khi chuyển sang trang khác.
   useEffect(() => {

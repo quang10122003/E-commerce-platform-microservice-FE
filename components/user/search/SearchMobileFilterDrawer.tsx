@@ -52,14 +52,6 @@ export function SearchMobileFilterDrawer({
 
   if (!mounted) return null;
 
-  // Bọc submit giá để tự đóng drawer sau khi áp dụng thành công.
-  const handlePriceSubmitAndClose = (event: React.FormEvent<HTMLFormElement>) => {
-    onPriceSubmit(event);
-    // Chỉ đóng khi không có lỗi giá — kiểm tra qua event bị prevent hay không.
-    // onPriceSubmit đã gọi preventDefault nên nếu không có lỗi thì navigate xảy ra.
-    onClose();
-  };
-
   return createPortal(
     <div
       className={cn(
@@ -114,7 +106,7 @@ export function SearchMobileFilterDrawer({
             hasActiveFilters={hasActiveFilters}
             onMinPriceChange={onMinPriceChange}
             onMaxPriceChange={onMaxPriceChange}
-            onPriceSubmit={handlePriceSubmitAndClose}
+            onPriceSubmit={onPriceSubmit}
             onBrandChange={onBrandChange}
             onClearBrands={onClearBrands}
             onLocationChange={onLocationChange}
@@ -127,10 +119,7 @@ export function SearchMobileFilterDrawer({
           {hasActiveFilters && (
             <button
               type="button"
-              onClick={() => {
-                onClearFilters();
-                onClose();
-              }}
+              onClick={onClearFilters}
               disabled={isPending}
               className="flex-1 h-10 rounded-xs border border-slate-300 bg-white text-xs font-bold text-slate-700 hover:bg-slate-100 transition disabled:opacity-50"
             >

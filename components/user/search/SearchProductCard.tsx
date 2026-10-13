@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { MapPin, PackageSearch, Star } from "lucide-react";
 
+import { Badge } from "@/components/ui/badge";
 import { formatCompactNumber, formatCurrency } from "@/lib/utils";
 import type { ProductCatalogItem, ProductSortOption } from "@/types/user/product";
 
@@ -22,7 +23,7 @@ export function SearchProductCard({ product, sort }: SearchProductCardProps) {
   return (
     <Link
       href={`/products/${product.id}`}
-      className="group flex w-full min-w-0 max-w-[240px] justify-self-start flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-card transition-all duration-300 hover:-translate-y-2 hover:border-indigo-300 hover:shadow-3d-hover"
+      className="group flex w-full min-w-0 max-w-[240px] justify-self-start flex-col overflow-hidden rounded-xl border border-surface-border bg-surface-card transition-colors duration-200 hover:border-primary/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:transition-none"
     >
       {/* Ảnh và nhãn ngành hàng của sản phẩm. */}
       <div className="relative aspect-square w-full overflow-hidden bg-slate-100">
@@ -33,22 +34,20 @@ export function SearchProductCard({ product, sort }: SearchProductCardProps) {
             fill
             unoptimized
             sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 20vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            className="object-cover transition-transform duration-300 motion-safe:group-hover:scale-[1.03] motion-reduce:transition-none"
           />
         ) : (
           <PackageSearch className="absolute inset-0 m-auto h-10 w-10 text-primary/30" />
         )}
 
         {/* Tag phần trăm giảm giá góc trên phải. */}
-        <div className="absolute right-0 top-0 z-10">
-          <span className="block rounded-bl-xl bg-gradient-to-b from-amber-400 to-orange-500 px-2 py-1 text-[10px] font-black text-slate-900 shadow-xs sm:text-xs">
-            -{SEARCH_CARD_DEFAULTS.discount}%
-          </span>
-        </div>
+        <Badge variant="discount" size="sm" className="absolute right-2 top-2 z-10">
+          -{SEARCH_CARD_DEFAULTS.discount}%
+        </Badge>
 
         {/* Nhãn bán chạy chỉ hiển thị khi đang sắp xếp theo lượng bán. */}
         {sort === "MOST_SOLD" && (
-          <span className="absolute right-2 top-2 rounded-md bg-cta px-1.5 py-1 text-[9px] font-black uppercase text-white shadow-sm">
+          <span className="absolute left-2 top-2 rounded bg-cta-light px-1.5 py-0.5 text-[10px] font-semibold text-danger-hover">
             Bán chạy
           </span>
         )}

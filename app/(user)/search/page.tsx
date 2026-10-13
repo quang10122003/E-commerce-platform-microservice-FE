@@ -1,3 +1,4 @@
+import { rethrowSessionRefreshRequired } from "@/lib/auth/session-recovery-error";
 import { PAGE_SIZE } from "@/lib/constants";
 import { ProductSearchResultsView } from "@/components/user/search/product-search-results-view";
 import { getProductCatalog } from "@/lib/service/productService";
@@ -6,6 +7,7 @@ import type { ProductCatalogPage } from "@/types/user/product";
 type SearchPageProps = {
   searchParams: Promise<{
     keyword?: string;
+    categoryId?: string;
     sort?: string;
     brandIds?: string | string[];
     brandId?: string;
@@ -46,8 +48,12 @@ function parseLocationParams(value?: string | string[]): string[] {
 
 // Hiển thị batch đầu từ server để trang tìm kiếm tải nhanh và có thể lập chỉ mục.
 export default async function SearchPage({ searchParams }: SearchPageProps) {
-  const { keyword = "", sort, brandIds, brandId, minPrice, maxPrice, locations } = await searchParams;
+  const { keyword = "", categoryId, sort, brandIds, brandId, minPrice, maxPrice, locations } = await searchParams;
   const normalizedKeyword = keyword.trim();
+  // Chỉ gửi mã danh mục là số nguyên dương an toàn, không nhận query sai định dạng.
+  const parsedCategoryId = categoryId && /^\d+$/.test(categoryId) ? Number(categoryId) : undefined;
+  const normalizedCategoryId = parsedCategoryId !== undefined && Number.isSafeInteger(parsedCategoryId) && parsedCategoryId > 0
+    ? parsedCategoryId : undefined;
   const normalizedSort = sort === "MOST_SOLD" ? "MOST_SOLD" : "RELEVANCE";
   const normalizedBrandIds = parseBrandParams(brandIds ?? brandId);
   const normalizedLocations = parseLocationParams(locations);
@@ -61,10 +67,11 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     brands: [],
   };
 
-  if (normalizedKeyword) {
+  if (normalizedKeyword || normalizedCategoryId !== undefined) {
     try {
       initialPage = await getProductCatalog({
         keyword: normalizedKeyword,
+        categoryId: normalizedCategoryId,
         sort: normalizedSort,
         brandIds: normalizedBrandIds,
         locations: normalizedLocations,
@@ -72,16 +79,17 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         maxPrice: normalizedMaxPrice,
         size: PAGE_SIZE.PRODUCT_SEARCH,
       });
-    } catch {
+    } catch (error) {
+      rethrowSessionRefreshRequired(error);
     // Giữ dữ liệu dự phòng để Client Component hiển thị trạng thái rỗng an toàn.
     }
   }
 
   return (
     <ProductSearchResultsView
-      key={`${normalizedKeyword}:${normalizedSort}:${normalizedBrandIds.join(",")}:${normalizedLocations.join(",")}:${normalizedMinPrice ?? ""}:${normalizedMaxPrice ?? ""}`}
       initialPage={initialPage}
       keyword={normalizedKeyword}
+      categoryId={normalizedCategoryId}
       sort={normalizedSort}
       brandIds={normalizedBrandIds}
       locations={normalizedLocations}

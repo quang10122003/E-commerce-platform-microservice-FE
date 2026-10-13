@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import type { ProductSortOption } from "@/types/user/product";
@@ -51,7 +51,17 @@ export function useProductSearchFilters({
   const [maxPriceInput, setMaxPriceInput] = useState(toPriceInputValue(maxPrice));
   const [priceError, setPriceError] = useState<string | null>(null);
 
-  // Tạo URL mới và xóa cursor cũ để bộ lọc bắt đầu từ batch đầu tiên.
+  // Đồng bộ khoảng giá khi URL thay đổi mà không remount view và làm đóng drawer.
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setMinPriceInput(toPriceInputValue(minPrice));
+      setMaxPriceInput(toPriceInputValue(maxPrice));
+      setPriceError(null);
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [minPrice, maxPrice]);
+
+  // Giữ danh mục và từ khóa trên URL, chỉ đổi bộ lọc và xóa cursor của batch cũ.
   const navigateWithFilters = useCallback(
     (updates: FilterUpdates) => {
       const nextSearchParams = new URLSearchParams(searchParams.toString());
@@ -163,7 +173,7 @@ export function useProductSearchFilters({
     [maxPriceInput, minPriceInput, navigateWithFilters],
   );
 
-  // Đưa danh sách về trạng thái mặc định và giữ lại từ khóa hiện tại.
+  // Đưa bộ lọc về mặc định, giữ danh mục và từ khóa hiện tại.
   const handleClearFilters = useCallback(() => {
     setMinPriceInput("");
     setMaxPriceInput("");

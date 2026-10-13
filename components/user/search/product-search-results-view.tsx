@@ -17,6 +17,7 @@ import { SearchSortBar } from "./SearchSortBar";
 type ProductSearchResultsViewProps = {
   initialPage: ProductCatalogPage;
   keyword: string;
+  categoryId?: number;
   sort: ProductSortOption;
   brandIds: number[];
   locations: string[];
@@ -28,6 +29,7 @@ type ProductSearchResultsViewProps = {
 export function ProductSearchResultsView({
   initialPage,
   keyword,
+  categoryId,
   sort,
   brandIds,
   locations,
@@ -55,6 +57,7 @@ export function ProductSearchResultsView({
   const matchedBrands = initialPage.brands ?? [];
   const query: ProductCatalogQuery = {
     keyword: keyword || undefined,
+    categoryId,
     sort,
     brandIds,
     locations,
@@ -69,8 +72,8 @@ export function ProductSearchResultsView({
     minPrice !== undefined ||
     maxPrice !== undefined;
 
-  // Hiển thị trạng thái rỗng khi chưa có từ khoá.
-  if (!keyword) return <SearchEmptyState variant="no-keyword" />;
+  // Cho phép duyệt danh mục không có từ khóa, vẫn dùng đầy đủ bộ lọc hiện tại.
+  if (!keyword && categoryId === undefined) return <SearchEmptyState variant="no-keyword" />;
 
   // Props dùng chung cho FilterPanel ở cả desktop sidebar và mobile drawer.
   const filterPanelProps = {
@@ -93,7 +96,7 @@ export function ProductSearchResultsView({
 
   return (
     <section className="space-y-5">
-      <SearchResultHeader keyword={keyword} />
+      <SearchResultHeader keyword={keyword} categoryId={categoryId} />
 
       <div className="grid gap-4 sm:gap-5 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-start">
         {/* Sidebar bộ lọc desktop cuộn riêng khi nội dung vượt chiều cao màn hình. */}
@@ -117,6 +120,7 @@ export function ProductSearchResultsView({
             onOpenMobileFilter={openFilter}
           />
           <SearchProductList
+            key={JSON.stringify(query)}
             initialPage={initialPage}
             query={query}
             sort={sort}

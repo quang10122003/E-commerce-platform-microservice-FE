@@ -19,6 +19,9 @@ const badgeVariants = cva(
         // Tag Giảm giá % (nền cam nhạt chữ cam đậm)
         "cta-soft":
           "bg-cta-light text-cta border border-cta/30 font-bold",
+        // Tag giảm giá trên card sản phẩm: nền nhẹ, không tạo khối nổi.
+        discount:
+          "bg-cta-light text-danger-hover border border-cta/20 tabular-nums",
         // Tag Freeship / Tiện ích (Emerald Mint)
         perk:
           "bg-perk text-white shadow-xs",
