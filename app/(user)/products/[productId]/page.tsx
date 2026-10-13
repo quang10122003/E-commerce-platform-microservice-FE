@@ -3,12 +3,13 @@ import Image from "next/image";
 import {
   Star,
   MapPin,
+  ChevronRight,
   MessageCircle,
   Store,
   Clock,
 } from "lucide-react";
 import { ProductImageGallery } from "@/components/user/product-detail/ProductImageGallery";
-import { ProductActions } from "@/components/user/product-detail/ProductActions";
+import { ProductPurchaseSection } from "@/components/user/product-detail/ProductPurchaseSection";
 import { ProductReviews } from "@/components/user/product-detail/ProductReviews";
 import { ProductDescription } from "@/components/user/product-detail/ProductDescription";
 import { PersonalizedSuggestions } from "@/components/user/home/personalized-suggestions";
@@ -16,21 +17,21 @@ import { PersonalizedSuggestions } from "@/components/user/home/personalized-sug
 // Trang chi tiết sản phẩm – dữ liệu cứng, giao diện Shopee-style.
 export default function ProductDetailPage() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 max-sm:pb-[calc(5rem+env(safe-area-inset-bottom))]">
 
       {/* ── BLOCK CHÍNH: gallery trái + thông tin phải gom trong 1 card ── */}
       <div className="overflow-hidden rounded-xl border border-surface-border bg-white">
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
+        <div className="grid grid-cols-1 md:max-lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
 
           {/* Cột trái: Gallery ảnh sản phẩm sticky khi cuộn. */}
-          <div className="p-5">
+          <div className="p-5 md:max-lg:p-4">
             <div className="sticky top-4">
               <ProductImageGallery />
             </div>
           </div>
 
           {/* Cột phải: Tên, giá, phân loại, số lượng, nút mua. */}
-          <div className="flex flex-col gap-5 p-6">
+          <div className="flex flex-col gap-5 p-6 md:max-lg:gap-4 md:max-lg:p-4">
 
             {/* Tên sản phẩm. */}
             <h1 className="text-lg font-bold leading-snug text-main sm:text-xl">
@@ -64,44 +65,52 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
-            {/* Khu vực giá kèm đồng hồ đếm ngược Flash Sale. */}
-            <div className="flex flex-wrap items-end gap-3 rounded-xl bg-gradient-to-r from-orange-50 to-amber-50 p-4">
-              {/* Countdown Flash Sale. */}
-              <div className="mb-1 flex w-full items-center gap-2 text-xs text-orange-600">
-                <Clock className="h-3.5 w-3.5" />
-                <span className="font-semibold uppercase tracking-wide">Flash Sale kết thúc sau</span>
-                <div className="flex items-center gap-1">
-                  {["01", "23", "45"].map((unit, i) => (
-                    <span key={i} className="flex items-center gap-1">
-                      <span className="rounded bg-orange-500 px-1.5 py-0.5 text-xs font-black text-white">
-                        {unit}
+            {/* Block mua hàng luôn hiện trên tablet/desktop, mở theo yêu cầu trên mobile. */}
+            <ProductPurchaseSection>
+              {/* Khu vực giá kèm đồng hồ đếm ngược Flash Sale. */}
+              <div className="flex flex-wrap items-end gap-3 rounded-xl bg-gradient-to-r from-orange-50 to-amber-50 p-4">
+                {/* Countdown Flash Sale. */}
+                <div className="mb-1 flex w-full items-center gap-2 text-xs text-orange-600">
+                  <Clock className="h-3.5 w-3.5" />
+                  <span className="font-semibold uppercase tracking-wide">Flash Sale kết thúc sau</span>
+                  <div className="flex items-center gap-1">
+                    {["01", "23", "45"].map((unit, i) => (
+                      <span key={i} className="flex items-center gap-1">
+                        <span className="rounded bg-orange-500 px-1.5 py-0.5 text-xs font-black text-white">
+                          {unit}
+                        </span>
+                        {i < 2 && <span className="font-black text-orange-500">:</span>}
                       </span>
-                      {i < 2 && <span className="font-black text-orange-500">:</span>}
-                    </span>
-                  ))}
+                    ))}
+                  </div>
+                </div>
+                {/* Giá khuyến mãi và giá gốc gạch ngang. */}
+                <span className="text-3xl font-black text-cta sm:text-4xl">1.390.000₫</span>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-sm text-muted-foreground line-through">1.990.000₫</span>
+                  <span className="rounded bg-cta px-2 py-0.5 text-center text-xs font-black text-white">
+                    -30%
+                  </span>
                 </div>
               </div>
-              {/* Giá khuyến mãi và giá gốc gạch ngang. */}
-              <span className="text-3xl font-black text-cta sm:text-4xl">1.390.000₫</span>
-              <div className="flex flex-col gap-0.5">
-                <span className="text-sm text-muted-foreground line-through">1.990.000₫</span>
-                <span className="rounded bg-cta px-2 py-0.5 text-center text-xs font-black text-white">
-                  -30%
-                </span>
-              </div>
-            </div>
 
-            {/* Đường ngăn cách trước phần chọn phân loại và nút mua. */}
-            <div className="border-t border-slate-100" />
+              {/* Đường ngăn cách trước phần chọn phân loại và nút mua. */}
+              <div className="border-t border-slate-100" />
 
-            {/* Chọn màu sắc, phiên bản, số lượng và nút mua. */}
-            <ProductActions />
+            </ProductPurchaseSection>
           </div>
         </div>
       </div>
 
       {/* ── BLOCK THÔNG TIN SHOP – full-width bên ngoài lưới 2 cột ── */}
-      <div className="rounded-xl border border-surface-border bg-white">
+      <div id="product-shop-chat" className="relative rounded-xl border border-surface-border bg-white">
+        {/* Toàn bộ block shop là vùng bấm trên mobile; URL tạm chưa có trang đích. */}
+        <Link
+          href="/shops/1"
+          prefetch={false}
+          className="absolute inset-0 z-10 rounded-xl transition-colors active:bg-primary/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:hidden"
+          aria-label="Xem shop SmartX Official Store"
+        />
         <div className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between">
 
           {/* Avatar và tên shop. */}
@@ -126,6 +135,7 @@ export default function ProductDetailPage() {
                 <span>⭐ 4.9/5 · 8.4k sản phẩm</span>
               </div>
             </div>
+            <ChevronRight className="ml-auto h-5 w-5 shrink-0 text-muted-foreground sm:hidden" aria-hidden="true" />
           </div>
 
           {/* Số liệu thống kê shop chia theo các cột. */}
@@ -141,18 +151,19 @@ export default function ProductDetailPage() {
             ))}
           </div>
 
-          {/* Nút hành động với shop. */}
-          <div className="flex gap-3 sm:flex-col sm:gap-2">
+          {/* Nút hành động với shop chỉ hiển thị trên tablet và desktop. */}
+          <div className="hidden gap-2 sm:flex sm:flex-col">
             <Link
-              href="#"
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-slate-200 px-4 py-2 text-xs font-medium text-slate-600 transition hover:border-primary hover:bg-primary-light hover:text-primary sm:flex-none"
+              href="/shops/1"
+              prefetch={false}
+              className="flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 px-4 py-2 text-xs font-medium text-slate-600 transition hover:border-primary hover:bg-primary-light hover:text-primary"
             >
               <Store className="h-3.5 w-3.5" />
               Xem Shop
             </Link>
             <Link
               href="#"
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-primary/30 bg-primary-light px-4 py-2 text-xs font-semibold text-primary transition hover:bg-primary hover:text-white sm:flex-none"
+              className="flex items-center justify-center gap-1.5 rounded-lg border border-primary/30 bg-primary-light px-4 py-2 text-xs font-semibold text-primary transition hover:bg-primary hover:text-white"
             >
               <MessageCircle className="h-3.5 w-3.5" />
               Chat ngay

@@ -16,7 +16,7 @@ const COLOR_OPTIONS = [
 const SIZE_OPTIONS = ["Tiêu chuẩn", "Pro", "Pro Max", "Ultra"];
 
 // Khu vực chọn phân loại, số lượng và nút hành động mua hàng.
-export function ProductActions() {
+export function ProductActions({ mobileAction }: { mobileAction?: "cart" | "buy" }) {
   // Màu sắc đang được chọn.
   const [selectedColor, setSelectedColor] = useState(COLOR_OPTIONS[0].id);
   // Kích cỡ đang được chọn.
@@ -91,7 +91,7 @@ export function ProductActions() {
       </div>
 
       {/* Bộ điều chỉnh số lượng và tồn kho. */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 max-sm:flex-wrap md:max-lg:flex-wrap md:max-lg:gap-3">
         <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Số lượng
         </span>
@@ -117,12 +117,12 @@ export function ProductActions() {
         </span>
       </div>
 
-      {/* Nút Thêm giỏ hàng và Mua ngay. */}
-      <div className="flex flex-col gap-3 sm:flex-row">
+      {/* Nút mua trên màn hình lớn; bảng mobile hiện nút theo thao tác đã chọn. */}
+      <div className={`${mobileAction ? "flex" : "hidden"} gap-3 sm:flex sm:flex-row md:max-lg:flex-col`}>
         <Button
           variant="cta-outline"
           size="lg"
-          className="flex-1"
+          className={`flex-1 md:max-lg:flex-none ${mobileAction === "cart" ? "max-sm:flex-none max-sm:w-full" : "max-sm:hidden"}`}
           leftIcon={<ShoppingCart className="h-4 w-4" />}
         >
           Thêm vào giỏ hàng
@@ -130,8 +130,8 @@ export function ProductActions() {
         <Button
           variant="gradient-cta"
           size="lg"
-          className="flex-1"
-          leftIcon={<Zap className="h-4 w-4" />}
+          className={`flex-1 md:max-lg:flex-none ${mobileAction === "buy" ? "max-sm:flex-none max-sm:w-full" : "max-sm:hidden"}`}
+          leftIcon={mobileAction ? undefined : <Zap className="h-4 w-4" />}
         >
           Mua ngay
         </Button>
