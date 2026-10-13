@@ -56,3 +56,14 @@ GEMINI.md
 .gemini/
 codex/
 .agents/
+.claude/
+.cursor/
+.windsurf/
+.impeccable/
+.playwright-cli/
+/output/playwright/
+.windsurfrules
+.github/copilot-instructions.md
+PRODUCT.md
+DESIGN.md
+API_REQUEST_FLOW.md
