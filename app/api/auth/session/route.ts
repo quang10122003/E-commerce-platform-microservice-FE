@@ -1,0 +1,49 @@
+import { NextResponse } from "next/server";
+import { setSessionRefreshAttempt } from "@/lib/auth/cookies";
+import { normalizeSessionReturnPath } from "@/lib/auth/session-refresh-redirect";
+import { serverFetch } from "@/lib/api/server-client";
+import type { ApiResponse } from "@/types/shared/api";
+import type { AccessTokenValidationResponse } from "@/types/shared/auth";
+
+// Trả lỗi BFF theo cấu trúc API chung, không đưa chi tiết nội bộ xuống client.
+function errorResponse(status: number, code: string, message: string) {
+  return NextResponse.json({
+    success: false, message, data: null, error: { code, message }, timestamp: new Date().toISOString(),
+  } satisfies ApiResponse<never>, { status });
+}
+
+// Dùng endpoint kiểm tra token sẵn có; serverFetch tự refresh và ghi cookie tại Route Handler.
+export async function POST(request: Request) {
+  const origin = request.headers.get("origin");
+  if (origin && origin !== new URL(request.url).origin) {
+    return errorResponse(403, "INVALID_ORIGIN", "Nguồn request không hợp lệ.");
+  }
+  try {
+    const result = await serverFetch<AccessTokenValidationResponse>("api/auth/check_token", {
+      method: "GET", cache: "no-store", cookieMode: "read-write",
+    });
+    return NextResponse.json(result.payload, { status: result.status });
+  } catch {
+    return errorResponse(502, "SESSION_RECOVERY_FAILED", "Chưa thể khôi phục phiên. Vui lòng thử lại.");
+  }
+}
+
+// Server page đi qua cùng flow POST để refresh/ghi cookie rồi trở lại URL ban đầu.
+export async function GET(request: Request) {
+  const origin = request.headers.get("origin");
+  if (request.headers.get("sec-fetch-site") === "cross-site" || (origin && origin !== new URL(request.url).origin)) {
+    return errorResponse(403, "INVALID_ORIGIN", "Nguồn request không hợp lệ.");
+  }
+  const nextPath = normalizeSessionReturnPath(new URL(request.url).searchParams.get("next"));
+  const result = await POST(request);
+  const payload = await result.json() as ApiResponse<AccessTokenValidationResponse>;
+  if (result.ok && payload.success && payload.data) {
+    await setSessionRefreshAttempt("recovered");
+  } else if (result.status !== 401) {
+    // Lỗi hạ tầng vẫn giữ token; page hiển thị fallback lỗi thay vì tiếp tục redirect.
+    await setSessionRefreshAttempt("failed");
+  }
+  const response = NextResponse.redirect(new URL(nextPath, request.url), 303);
+  response.headers.set("Cache-Control", "no-store");
+  return response;
+}

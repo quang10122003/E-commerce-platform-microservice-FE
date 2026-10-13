@@ -1,3 +1,4 @@
+import { rethrowSessionRefreshRequired } from "@/lib/auth/session-recovery-error";
 import { FIRST_PAGE, PAGE_SIZE } from "@/lib/constants";
 import { ShopFlashSaleView } from "@/components/shop/flash-sale/shop-flash-sale-view";
 import { FlashSaleApiError, getShopFlashSales } from "@/lib/service/flashSaleService";
@@ -23,6 +24,7 @@ export default async function ShopFlashSalePage({ searchParams }: PageProps) {
     data = result.data;
     now = result.now;
   } catch (cause) {
+    rethrowSessionRefreshRequired(cause);
     // Ưu tiên message backend; lỗi kết nối hoặc framework dùng thông báo dự phòng.
     error = cause instanceof FlashSaleApiError
       ? cause.message

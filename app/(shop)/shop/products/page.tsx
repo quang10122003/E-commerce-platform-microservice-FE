@@ -1,3 +1,4 @@
+import { rethrowSessionRefreshRequired } from "@/lib/auth/session-recovery-error";
 import { FIRST_PAGE, PAGE_SIZE } from "@/lib/constants";
 import { SellerProductsView } from "@/components/shop/products/shop-products-view";
 import sellerProductStatuses from "@/data/shop-product-statuses.json";
@@ -29,6 +30,10 @@ export default async function SellerProductsPage({ searchParams }: SellerProduct
     getSellerProductCategories(),
     getSellerProducts({ page, size: PAGE_SIZE.SHOP_PRODUCTS, categoryId, status, keyword }),
   ]);
+
+  for (const result of [categoriesResult, productsResult]) {
+    if (result.status === "rejected") rethrowSessionRefreshRequired(result.reason);
+  }
 
   // Dữ liệu rỗng chỉ dùng để render thông báo khi API sản phẩm lỗi.
   const emptyPage: SellerProductPage = {

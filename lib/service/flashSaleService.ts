@@ -1,4 +1,4 @@
-import { HTTP_STATUS, API_ENDPOINTS, PAGE_SIZE } from "@/lib/constants";
+import { HTTP_STATUS, PAGE_SIZE } from "@/lib/constants";
 import "server-only";
 import { serverFetch } from "@/lib/api/server-client";
 import type { ShopFlashSalePage, ShopFlashSaleQuery, ShopFlashSaleProduct, ShopFlashSaleCampaignDetail } from "@/types/shop/flash-sale";
@@ -12,7 +12,7 @@ export async function getShopFlashSales(query: ShopFlashSaleQuery): Promise<{ da
   if (query.from) params.set("from", query.from);
   if (query.to) params.set("to", query.to);
   if (query.registrationOpen !== undefined) params.set("registrationOpen", String(query.registrationOpen));
-  const result = await serverFetch<ShopFlashSalePage>(`${API_ENDPOINTS.SHOP_FLASH_SALES}?${params}`, { method: "GET", cache: "no-store" });
+  const result = await serverFetch<ShopFlashSalePage>(`api/shop/flash-sales?${params}`, { method: "GET", cache: "no-store" });
   if (result.status < HTTP_STATUS.SUCCESS_MIN || result.status >= HTTP_STATUS.SUCCESS_LIMIT || !result.payload.success || !result.payload.data) {
     throw new FlashSaleApiError(result.payload.message || "Không thể tải danh sách chương trình. Vui lòng thử lại.");
   }
@@ -21,7 +21,7 @@ export async function getShopFlashSales(query: ShopFlashSaleQuery): Promise<{ da
 
 // Tải toàn bộ sản phẩm và phân loại của Shop qua serverFetch, không chia sẻ cache giữa tài khoản.
 export async function getShopFlashSaleProducts(): Promise<ShopFlashSaleProduct[]> {
-  const result = await serverFetch<ShopFlashSaleProduct[]>(API_ENDPOINTS.SHOP_FLASH_SALE_PRODUCTS,
+  const result = await serverFetch<ShopFlashSaleProduct[]>("api/shop/flash-sales/products",
     { method: "GET", cache: "no-store" });
   if (result.status < HTTP_STATUS.SUCCESS_MIN || result.status >= HTTP_STATUS.SUCCESS_LIMIT
       || !result.payload.success || !Array.isArray(result.payload.data)) {
@@ -35,7 +35,7 @@ export async function getShopFlashSaleCampaignDetail(campaignId: string): Promis
   if (!/^\d+$/.test(campaignId) || !Number.isSafeInteger(Number(campaignId)) || Number(campaignId) <= 0) {
     throw new FlashSaleApiError("Chưa chọn chương trình đăng ký.");
   }
-  const result = await serverFetch<ShopFlashSaleCampaignDetail>(`${API_ENDPOINTS.SHOP_FLASH_SALES}/${campaignId}`,
+  const result = await serverFetch<ShopFlashSaleCampaignDetail>(`api/shop/flash-sales/${campaignId}`,
     { method: "GET", cache: "no-store" });
   if (result.status < HTTP_STATUS.SUCCESS_MIN || result.status >= HTTP_STATUS.SUCCESS_LIMIT
       || !result.payload.success || !result.payload.data) {

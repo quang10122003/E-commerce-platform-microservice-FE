@@ -1,4 +1,4 @@
-import { HTTP_STATUS, API_ENDPOINTS } from "@/lib/constants";
+import { HTTP_STATUS } from "@/lib/constants";
 import "server-only";
 
 import { serverFetch } from "@/lib/api/server-client";
@@ -16,11 +16,11 @@ type GetDataForCreateProductResult = {
 // Lấy dữ liệu category và brand song song cho form tạo sản phẩm trên Server Component.
 export async function GetDataForCareteProduct(): Promise<GetDataForCreateProductResult> {
   const [categoriesResult, brandsResult] = await Promise.allSettled([
-    serverFetch<ProductCategoryOption[]>(API_ENDPOINTS.CATEGORIES, {
+    serverFetch<ProductCategoryOption[]>("api/categories", {
       method: "GET",
       cache: "no-store",
     }),
-    serverFetch<ProductBrandOption[]>(API_ENDPOINTS.BRANDS, {
+    serverFetch<ProductBrandOption[]>("api/brands", {
       method: "GET",
       cache: "no-store",
     }),
@@ -34,7 +34,7 @@ export async function GetDataForCareteProduct(): Promise<GetDataForCreateProduct
 
 // Lấy danh mục ngành hàng để người bán lọc danh sách sản phẩm.
 export async function getSellerProductCategories(): Promise<ProductCategoryOption[]> {
-  const result = await serverFetch<ProductCategoryOption[]>(API_ENDPOINTS.CATEGORIES, {
+  const result = await serverFetch<ProductCategoryOption[]>("api/categories", {
     method: "GET",
     cache: "no-store",
   });
@@ -53,7 +53,7 @@ export async function getSellerProducts(query: SellerProductQuery): Promise<Sell
   if (query.status) params.set("status", query.status);
   if (query.keyword) params.set("keyword", query.keyword);
 
-  const result = await serverFetch<SellerProductPage>(`${API_ENDPOINTS.SHOP_PRODUCTS}?${params}`, {
+  const result = await serverFetch<SellerProductPage>(`api/products/shop?${params}`, {
     method: "GET",
     cache: "no-store",
   });
@@ -82,7 +82,7 @@ export async function getProductCatalog(
   });
 
   const result = await serverFetch<ProductCatalogPage>(
-    `${API_ENDPOINTS.PRODUCTS}?${params.toString()}`,
+    `api/products?${params.toString()}`,
     { method: "GET", cache: "no-store" },
   );
 

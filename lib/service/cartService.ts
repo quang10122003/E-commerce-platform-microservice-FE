@@ -1,4 +1,4 @@
-import { HTTP_STATUS, API_ENDPOINTS } from "@/lib/constants";
+import { HTTP_STATUS } from "@/lib/constants";
 import "server-only";
 
 import { serverFetch } from "@/lib/api/server-client";
@@ -6,7 +6,7 @@ import type { CartResponse } from "@/types/user/cart";
 
 // Lấy giỏ hàng làm dữ liệu ban đầu cho Server Component.
 export async function getCart(): Promise<CartResponse> {
-  const result = await serverFetch<CartResponse>(API_ENDPOINTS.CART, {
+  const result = await serverFetch<CartResponse>("api/cart", {
     method: "GET",
     cache: "no-store",
   });

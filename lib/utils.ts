@@ -1,3 +1,4 @@
+import { rethrowSessionRefreshRequired } from "@/lib/auth/session-recovery-error";
 import type { ApiResponse, ResolvedFetchField } from "@/types/shared/api";
 import type { ServerFetchResult } from "@/lib/api/server-client";
 
@@ -126,6 +127,7 @@ export function resolveProductCatalogField<T>(
   result: PromiseSettledResult<ServerFetchResult<T>>,
 ): ResolvedFetchField<T> {
   if (result.status === "rejected") {
+    rethrowSessionRefreshRequired(result.reason);
     return {
       data: null,
       error: getFetchServiceErrorMessage(result.reason),

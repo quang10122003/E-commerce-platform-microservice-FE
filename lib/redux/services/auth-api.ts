@@ -1,4 +1,3 @@
-import { API_ENDPOINTS } from "@/lib/constants";
 import type { ApiResponse } from "@/types/shared/api";
 import type {
   AccessTokenValidationResponse,
@@ -14,27 +13,30 @@ export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     login: builder.mutation<ApiResponse<AuthenticatedUser>, LoginRequest>({
       query: (credentials) => ({
-        url: `/${API_ENDPOINTS.LOGIN}`,
+        url: "/api/auth/login",
         method: "POST",
         body: credentials,
       }),
     }),
     register: builder.mutation<ApiResponse<AuthenticatedUser>, RegisterRequest>({
       query: (credentials) => ({
-        url: `/${API_ENDPOINTS.REGISTER}`,
+        url: "/api/auth/register",
         method: "POST",
         body: credentials,
       }),
     }),
     checkToken: builder.query<ApiResponse<AccessTokenValidationResponse>, void>({
       query: () => ({
-        url: `/${API_ENDPOINTS.CHECK_TOKEN}`,
+        url: "/api/auth/check_token",
         method: "GET",
       }),
     }),
+    recoverSession: builder.mutation<ApiResponse<AccessTokenValidationResponse>, void>({
+      query: () => ({ url: "/api/auth/session", method: "POST" }),
+    }),
     logout: builder.mutation<void, void>({
       query: () => ({
-        url: `/${API_ENDPOINTS.LOGOUT}`,
+        url: "/api/auth/logout",
         method: "POST",
       }),
     }),
@@ -43,6 +45,7 @@ export const authApi = baseApi.injectEndpoints({
 
 export const {
   useCheckTokenQuery,
+  useRecoverSessionMutation,
   useLoginMutation,
   useLogoutMutation,
   useRegisterMutation,

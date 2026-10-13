@@ -20,3 +20,4 @@ export {
   PUBLIC_ENDPOINTS,
 } from "@/lib/api/public-endpoints";
 export { AUTHORIZATION_HEADER } from "@/lib/api/constants";
+export { SessionRefreshRequiredError, rethrowSessionRefreshRequired } from "@/lib/auth/session-recovery-error";

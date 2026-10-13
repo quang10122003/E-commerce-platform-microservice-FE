@@ -1,5 +1,9 @@
-import { AUTHORIZATION_HEADER, HTTP_STATUS, DEFAULT_TIMEOUT_MS, API_ENDPOINTS } from "@/lib/constants";
+import { AUTHORIZATION_HEADER, HTTP_STATUS, DEFAULT_TIMEOUT_MS } from "@/lib/constants";
 import "server-only";
+import { createHash } from "node:crypto";
+import { redirect } from "next/navigation";
+import { headers as requestHeaders } from "next/headers";
+import { normalizeSessionReturnPath, SESSION_RETURN_PATH_HEADER } from "@/lib/auth/session-refresh-redirect";
 
 import {
   AUTH_TOKEN_FIELDS,
@@ -8,6 +12,7 @@ import {
 import {
   clearAuthTokens,
   getAccessToken,
+  getSessionRefreshAttempt,
   getRefreshToken,
   setAuthTokens,
 } from "@/lib/auth/cookies";
@@ -33,7 +38,7 @@ export type ServerFetchUnauthorizedContext = {
 };
 
 export type ServerFetchOptions = RequestInit & {
-  accessToken?: string;
+  cookieMode?: "read-only" | "read-write";
   skipAuth?: boolean;
   timeoutMs?: number;
 };
@@ -43,8 +48,8 @@ export type ServerFetchResult<T> = {
   status: number;
 };
 
-// Dùng một promise chung để nhiều request 401 chỉ refresh token một lần.
-let refreshPromise: Promise<string | undefined> | null = null;
+// Chỉ chia sẻ kết quả refresh giữa request cùng phiên; không chia sẻ token giữa người dùng.
+const refreshPromises = new Map<string, Promise<RefreshTokenResponse | undefined>>();
 
 // Chuẩn hóa path loại bỏ query string và dấu gạch chéo thừa ở 2 đầu.
 export function getEndpointPath(path: string): string {
@@ -82,14 +87,7 @@ export async function parseApiResponse<T>(
 
   try {
     return JSON.parse(responseText) as ApiResponse<T>;
-  } catch (error) {
-    if (process.env.NODE_ENV !== "production") {
-      console.error("Backend trả về JSON không hợp lệ.", {
-        error,
-        status: response.status,
-        url: response.url,
-      });
-    }
+  } catch {
 
     return {
       success: false,
@@ -160,20 +158,34 @@ export async function fetchWithTimeout(
       ...options,
       signal: controller.signal,
     });
+  } catch (cause) {
+    // Log lỗi kết nối một lần bằng logger chung, không đưa headers/token vào log.
+    const message = controller.signal.aborted ? "Request backend bị hủy hoặc hết thời gian chờ." : "Không thể kết nối backend.";
+    logBackendError(getEndpointPath(new URL(url).pathname), (options.method ?? "GET").toUpperCase(), 502, {
+      success: false, data: null, message,
+      error: { code: controller.signal.aborted ? "REQUEST_ABORTED" : "NETWORK_ERROR", message },
+      timestamp: new Date().toISOString(),
+    });
+    throw cause;
   } finally {
     clearTimeout(timeoutId);
     options.signal?.removeEventListener("abort", abortHandler);
   }
 }
 
-// Refresh token trong serverFetch và cập nhật lại cookie httpOnly.
-async function refreshAccessToken(): Promise<string | undefined> {
-  const refreshToken = await getRefreshToken();
-  if (!refreshToken) return undefined;
+// Kiểm tra cặp token trước khi ghi cookie, không chấp nhận response sai cấu trúc.
+function isValidTokenPair(value: unknown): value is RefreshTokenResponse {
+  return typeof value === "object" && value !== null
+    && "accessToken" in value && typeof value.accessToken === "string" && value.accessToken.length > 0
+    && "refreshToken" in value && typeof value.refreshToken === "string" && value.refreshToken.length > 0;
+}
+
+// Refresh token trong serverFetch; response Route Handler chịu trách nhiệm ghi cookie của từng request.
+async function refreshAccessToken(refreshToken: string): Promise<RefreshTokenResponse | undefined> {
 
   const requestBody: RefreshTokenRequest = { refreshToken };
   const result = await serverFetch<RefreshTokenResponse>(
-    API_ENDPOINTS.REFRESH_TOKEN,
+    "api/auth/refresh_token",
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -182,30 +194,38 @@ async function refreshAccessToken(): Promise<string | undefined> {
     },
   );
 
-  if (
-    result.status < HTTP_STATUS.SUCCESS_MIN ||
-    result.status >= HTTP_STATUS.SUCCESS_LIMIT ||
-    !result.payload.success ||
-    !result.payload.data
-  ) {
-    return undefined;
+  if ([400, HTTP_STATUS.UNAUTHORIZED, 403].includes(result.status)) return undefined;
+  if (result.status < HTTP_STATUS.SUCCESS_MIN || result.status >= HTTP_STATUS.SUCCESS_LIMIT
+    || !result.payload.success || !isValidTokenPair(result.payload.data)) {
+    throw new Error("Dịch vụ khôi phục phiên tạm thời không khả dụng hoặc trả dữ liệu không hợp lệ.");
   }
-
-  await setAuthTokens(result.payload.data);
-  return result.payload.data.accessToken;
+  return result.payload.data;
 }
 
-// Điều phối refresh token theo cơ chế single-flight.
-function refreshAccessTokenSingleFlight(): Promise<string | undefined> {
-  if (!refreshPromise) {
-    refreshPromise = refreshAccessToken().finally(() => {
-      refreshPromise = null;
+// Single-flight theo hash refresh token; từng response tự ghi cookie trong context của nó.
+async function refreshAccessTokenSingleFlight(): Promise<RefreshTokenResponse | undefined> {
+  const refreshToken = await getRefreshToken();
+  if (!refreshToken) return undefined;
+  const key = createHash("sha256").update(refreshToken).digest("hex");
+  let pending = refreshPromises.get(key);
+  if (!pending) {
+    pending = refreshAccessToken(refreshToken).then((tokens) => {
+      if (!tokens) {
+        refreshPromises.delete(key);
+      } else {
+        // Giữ kết quả rất ngắn để request 401 đến muộn không refresh lại token vừa được rotate.
+        const cleanup = setTimeout(() => refreshPromises.delete(key), 5_000);
+        cleanup.unref();
+      }
+      return tokens;
+    }).catch((cause) => {
+      refreshPromises.delete(key);
+      throw cause;
     });
+    refreshPromises.set(key, pending);
   }
-
-  return refreshPromise;
+  return pending;
 }
-
 // Lưu token sau login/register và loại token khỏi dữ liệu trả về client.
 async function handleAuthResponse<T>(
   endpointPath: string,
@@ -213,8 +233,8 @@ async function handleAuthResponse<T>(
   payload: ApiResponse<T>,
 ): Promise<ApiResponse<T>> {
   const isAuthEndpoint =
-    endpointPath === API_ENDPOINTS.LOGIN ||
-    endpointPath === API_ENDPOINTS.REGISTER;
+    endpointPath === "api/auth/login" ||
+    endpointPath === "api/auth/register";
 
   if (!isAuthEndpoint || !response.ok || !payload.data) {
     return payload;
@@ -224,8 +244,8 @@ async function handleAuthResponse<T>(
   const accessToken = authData[AUTH_TOKEN_FIELDS.ACCESS_TOKEN];
   const refreshToken = authData[AUTH_TOKEN_FIELDS.REFRESH_TOKEN];
 
-  if (!accessToken || !refreshToken) {
-    return payload;
+  if (!isValidTokenPair(authData)) {
+    throw new Error("Backend trả về dữ liệu xác thực không hợp lệ.");
   }
 
   await setAuthTokens({ accessToken, refreshToken });
@@ -266,6 +286,7 @@ export async function serverFetch<T>(
   path: string,
   options: ServerFetchOptions = {},
 ): Promise<ServerFetchResult<T>> {
+  const { cookieMode = "read-only", skipAuth: internalSkipAuth, timeoutMs = DEFAULT_TIMEOUT_MS, ...fetchOptions } = options;
   const endpointPath = getEndpointPath(path);
   const backendUrl = getBackendUrl(path);
 
@@ -273,24 +294,35 @@ export async function serverFetch<T>(
     throw new Error("Thiếu biến môi trường BACKEND_API_URL");
   }
 
+  // Các thao tác thay đổi phiên chỉ được thực hiện trong context được phép ghi cookie.
+  if (cookieMode === "read-only" && ["api/auth/login", "api/auth/register", "api/auth/logout"].includes(endpointPath)) {
+    throw new Error("Thao tác xác thực phải được gọi qua Route Handler hoặc Server Action.");
+  }
   const isPublic = isPublicEndpoint(endpointPath, options.method);
-  const skipAuth = options.skipAuth ?? isPublic;
-  const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+  const skipAuth = internalSkipAuth ?? isPublic;
   const token = skipAuth
     ? undefined
-    : options.accessToken ?? (await getAccessToken());
+    : await getAccessToken();
   const isLogoutRequest =
-    endpointPath === API_ENDPOINTS.LOGOUT &&
+    endpointPath === "api/auth/logout" &&
     (options.method ?? "GET").toUpperCase() === "POST";
 
-  let requestOptions: ServerFetchOptions = { ...options };
+  let requestOptions: ServerFetchOptions = { ...fetchOptions };
   if (isLogoutRequest) {
     requestOptions = {
-      ...options,
-      ...(await prepareLogoutRequest(options)),
+      ...fetchOptions,
+      ...(await prepareLogoutRequest(fetchOptions)),
     };
   }
 
+  // Refresh được gọi từ BFF chỉ đọc token từ cookie, không nhận token do client truyền lên.
+  if (endpointPath === "api/auth/refresh_token" && cookieMode === "read-write") {
+    requestOptions.body = JSON.stringify({ refreshToken: (await getRefreshToken()) ?? "" });
+    const refreshHeaders = new Headers(requestOptions.headers);
+    refreshHeaders.set("Content-Type", "application/json");
+    refreshHeaders.delete("content-length");
+    requestOptions.headers = refreshHeaders;
+  }
   const headers = buildAuthHeaders(requestOptions, token, skipAuth);
   let response = await fetchWithTimeout(
     backendUrl,
@@ -302,16 +334,31 @@ export async function serverFetch<T>(
     timeoutMs,
   );
 
-  // Private request 401 sẽ refresh token rồi thử lại đúng một lần.
+  // Private 401: context render redirect, context ghi cookie refresh rồi retry một lần.
   if (response.status === HTTP_STATUS.UNAUTHORIZED && !skipAuth) {
-    const refreshedAccessToken = await refreshAccessTokenSingleFlight();
+    if (cookieMode === "read-only") {
+      if (await getRefreshToken()) {
+        const attempt = await getSessionRefreshAttempt(token);
+        if (attempt === "failed") throw new Error("Dịch vụ khôi phục phiên tạm thời không khả dụng. Vui lòng thử lại.");
+        // Không refresh trong render; dấu vết cùng token chặn lặp khi retry vẫn 401.
+        if (!attempt) {
+          const nextPath = normalizeSessionReturnPath((await requestHeaders()).get(SESSION_RETURN_PATH_HEADER));
+          redirect(`/api/auth/session?next=${encodeURIComponent(nextPath)}`);
+        }
+      }
+      const payload = await parseApiResponse<T>(response);
+      logBackendError(endpointPath, (options.method ?? "GET").toUpperCase(), response.status, payload);
+      return { payload, status: response.status };
+    }
+    const refreshedTokens = await refreshAccessTokenSingleFlight();
 
-    if (!refreshedAccessToken) {
+    if (!refreshedTokens) {
       await clearAuthTokens();
     } else {
+      await setAuthTokens(refreshedTokens);
       const retryHeaders = buildAuthHeaders(
         requestOptions,
-        refreshedAccessToken,
+        refreshedTokens.accessToken,
         false,
       );
       response = await fetchWithTimeout(
@@ -337,6 +384,15 @@ export async function serverFetch<T>(
     response.status,
     payload,
   );
+  // Không để endpoint refresh công khai trả token xuống client qua BFF.
+  if (endpointPath === "api/auth/refresh_token" && cookieMode === "read-write") {
+    if (response.ok && payload.success && isValidTokenPair(payload.data)) {
+      await setAuthTokens(payload.data as unknown as RefreshTokenResponse);
+    } else if (response.status === HTTP_STATUS.UNAUTHORIZED || response.status === 400 || response.status === 403) {
+      await clearAuthTokens();
+    }
+    return { payload: { ...payload, data: null }, status: response.status };
+  }
   const normalizedPayload = await handleAuthResponse(
     endpointPath,
     response,

@@ -13,6 +13,7 @@ async function proxyRequest(request: Request, context: ApiRouteContext) {
   const endpointPath = `api/${path.join("/")}${requestUrl.search}`;
   const hasBody = !["GET", "HEAD"].includes(request.method);
   const requestOptions: ServerFetchOptions = {
+    cookieMode: "read-write",
     method: request.method,
     headers: request.headers,
     body: hasBody ? await request.arrayBuffer() : undefined,

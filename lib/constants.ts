@@ -38,24 +38,6 @@ export const SUGGESTIONS_LOAD_MORE_COUNT = 5;
 export const SUGGESTIONS_LOAD_MORE_DELAY_MS = 600;
 export const BEST_SELLER_MIN_SOLD = 2_000;
 
-// Endpoint không có dấu slash đầu để dùng với serverFetch và BFF hiện có.
-export const API_ENDPOINTS = {
-  LOGIN: "api/auth/login",
-  REGISTER: "api/auth/register",
-  REFRESH_TOKEN: "api/auth/refresh_token",
-  LOGOUT: "api/auth/logout",
-  CHECK_TOKEN: "api/auth/check_token",
-  FORGOT_PASSWORD: "api/auth/forgot-password",
-  PRODUCTS: "api/products",
-  SHOP_PRODUCTS: "api/products/shop",
-  SELLER_PRODUCTS: "api/products/seller",
-  CATEGORIES: "api/categories",
-  BRANDS: "api/brands",
-  CART: "api/cart",
-  SHOP_FLASH_SALES: "api/shop/flash-sales",
-  SHOP_FLASH_SALE_PRODUCTS: "api/shop/flash-sales/products",
-  USER_FLASH_SALE_ITEMS: "api/user/flash-sales/items",
-} as const;
 export const DEFAULT_TIMEOUT_MS = 15_000;
 
 // Tên header chuẩn gửi access token đến backend.

@@ -1,4 +1,3 @@
-import { API_ENDPOINTS } from "@/lib/constants";
 import type { ApiResponse } from "@/types/shared/api";
 import type { ProductCatalogPage, ProductCatalogQuery } from "@/types/user/product";
 import type { ProductResponse, SellerProductListItem, ShopProductDetail } from "@/types/shop/product";
@@ -29,7 +28,7 @@ export const productApi = baseApi.injectEndpoints({
     // Tạo sản phẩm mới gửi dữ liệu multipart/form-data đến backend qua BFF.
     createProduct: builder.mutation<ApiResponse<ProductResponse>, FormData>({
       query: (formData) => ({
-        url: `/${API_ENDPOINTS.PRODUCTS}`,
+        url: "/api/products",
         method: "POST",
         body: formData,
       }),
@@ -38,14 +37,14 @@ export const productApi = baseApi.injectEndpoints({
 
     // Đọc đủ ID thuộc tính, phân loại và ảnh để điền form chỉnh sửa.
     getShopProductDetail: builder.query<ApiResponse<ShopProductDetail>, number>({
-      query: (productId) => ({ url: `/${API_ENDPOINTS.SHOP_PRODUCTS}/${productId}`, method: "GET" }),
+      query: (productId) => ({ url: `/api/products/shop/${productId}`, method: "GET" }),
       providesTags: ["Product"],
     }),
 
     // Gửi JSON và ảnh mới qua BFF; không tự đặt Content-Type cho multipart.
     updateProduct: builder.mutation<ApiResponse<ShopProductDetail>, { productId: number; formData: FormData }>({
       query: ({ productId, formData }) => ({
-        url: `/${API_ENDPOINTS.PRODUCTS}/${productId}`,
+        url: `/api/products/${productId}`,
         method: "PUT",
         body: formData,
       }),
@@ -55,7 +54,7 @@ export const productApi = baseApi.injectEndpoints({
     // Xóa sản phẩm của người bán; backend tiếp tục dọn ảnh qua outbox.
     deleteProduct: builder.mutation<ApiResponse<null>, number>({
       query: (productId) => ({
-        url: `/${API_ENDPOINTS.PRODUCTS}/${productId}`,
+        url: `/api/products/${productId}`,
         method: "DELETE",
       }),
       invalidatesTags: ["Product"],
@@ -64,7 +63,7 @@ export const productApi = baseApi.injectEndpoints({
     // Xóa một phân loại thuộc sản phẩm của người bán qua BFF.
     deleteProductVariant: builder.mutation<ApiResponse<null>, { productId: number; variantId: number }>({
       query: ({ productId, variantId }) => ({
-        url: `/${API_ENDPOINTS.PRODUCTS}/${productId}/variants/${variantId}`,
+        url: `/api/products/${productId}/variants/${variantId}`,
         method: "DELETE",
       }),
       invalidatesTags: ["Product"],
@@ -73,7 +72,7 @@ export const productApi = baseApi.injectEndpoints({
     // Lấy danh sách sản phẩm thuộc quản lý của gian hàng người bán.
     getSellerProducts: builder.query<ApiResponse<SellerProductListItem[]>, void>({
       query: () => ({
-        url: `/${API_ENDPOINTS.SELLER_PRODUCTS}`,
+        url: "/api/products/seller",
         method: "GET",
       }),
       providesTags: ["Product"],
@@ -84,7 +83,7 @@ export const productApi = baseApi.injectEndpoints({
       query: (params) => {
         const queryString = buildProductCatalogQuery(params);
         return {
-        url: queryString ? `/${API_ENDPOINTS.PRODUCTS}?${queryString}` : `/${API_ENDPOINTS.PRODUCTS}`,
+        url: queryString ? `/api/products?${queryString}` : "/api/products",
         method: "GET",
         };
       },

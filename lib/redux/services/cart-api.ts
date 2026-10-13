@@ -1,4 +1,3 @@
-import { API_ENDPOINTS } from "@/lib/constants";
 import type { UpdateCartQuantityRequest } from "@/types/user/cart";
 import { baseApi } from "./base-api";
 
@@ -7,14 +6,14 @@ export const cartApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     updateCartQuantity: builder.mutation<void, UpdateCartQuantityRequest>({
       query: ({ productVariantId, quantity }) => ({
-        url: `/${API_ENDPOINTS.CART}`,
+        url: "/api/cart",
         method: "PUT",
         params: { productVariantId, quantity },
       }),
     }),
     removeCartItem: builder.mutation<void, number>({
       query: (productVariantId) => ({
-        url: `/${API_ENDPOINTS.CART}`,
+        url: "/api/cart",
         method: "DELETE",
         params: { productVariantId },
       }),
