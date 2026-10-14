@@ -44,7 +44,7 @@ export function useUpdateProduct(product: ShopProductDetail) {
   const [draftValues, setDraftValues] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState("");
   const previewUrls = useRef<string[]>([]);
-  const { register, handleSubmit, formState: { errors } } = useForm<UpdateProductFields>({
+  const { control, register, handleSubmit, formState: { errors } } = useForm<UpdateProductFields>({
     defaultValues: {
       name: product.name,
       categoryId: String(product.categoryId),
@@ -240,7 +240,7 @@ export function useUpdateProduct(product: ShopProductDetail) {
   });
 
   return {
-    attributes, variants, coverPreview, coverFile, draftValues, formError, errors, register, submit, isSubmitting,
+    attributes, variants, coverPreview, coverFile, draftValues, formError, errors, control, register, submit, isSubmitting,
     setDraftValues, selectCover, addAttribute, updateAttribute, removeAttribute, isAttributeRemovalBlocked,
     addValue, updateValue, removeValue, isValueInUse,
     addVariant, updateVariant, addImages, removeImage, setPrimaryImage,

@@ -1,3 +1,5 @@
+import { Controller } from "react-hook-form";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import type { ProductBrandOption } from "@/types/shared/product";
 import type { ProductCategoryOption } from "@/types/shop/product";
 import { Card, Input } from "@/components/ui";
@@ -101,14 +103,22 @@ export function CreateProductBasicSection({ productForm, categories, brands }: {
 
           {/* Product Description */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-main">
+            <label htmlFor="create-description" className="text-xs font-bold text-main">
               Mô tả chi tiết sản phẩm
             </label>
-            <textarea
-              rows={4}
-              placeholder="Mô tả công năng, chất liệu, hướng dẫn sử dụng và chính sách bảo hành của sản phẩm..."
-              {...register("description")}
-              className="w-full p-3.5 rounded-xl border border-slate-200 bg-white text-xs text-main focus:outline-none focus:ring-2 focus:ring-primary shadow-xs resize-y"
+            <Controller
+              name="description"
+              control={productForm.form.control}
+              render={({ field, fieldState }) => (
+                <RichTextEditor
+                  {...field}
+                  id="create-description"
+                  label="Mô tả chi tiết sản phẩm"
+                  placeholder="Mô tả công năng, chất liệu, hướng dẫn sử dụng và chính sách bảo hành của sản phẩm..."
+                  disabled={productForm.isSubmitting}
+                  error={fieldState.error?.message}
+                />
+              )}
             />
           </div>
         </div>

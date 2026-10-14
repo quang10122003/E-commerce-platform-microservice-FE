@@ -1,5 +1,7 @@
 "use client";
 
+import { Controller } from "react-hook-form";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -205,11 +207,18 @@ function BasicSection({
       </div>
       <div className="space-y-1">
         <label htmlFor="edit-description" className="text-xs font-bold text-main">Mô tả sản phẩm</label>
-        <textarea
-          id="edit-description"
-          rows={3}
-          className="w-full resize-y rounded-lg border border-slate-200 bg-white p-3 text-xs text-main"
-          {...form.register("description")}
+        <Controller
+          name="description"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <RichTextEditor
+              {...field}
+              id="edit-description"
+              label="Mô tả sản phẩm"
+              disabled={form.isSubmitting}
+              error={fieldState.error?.message}
+            />
+          )}
         />
       </div>
     </Card>
