@@ -4,6 +4,7 @@ import { useSyncExternalStore } from "react";
 import type { CSSProperties } from "react";
 
 import { NotificationToast } from "@/components/ui/notification-toast";
+import { useNotificationLayer } from "@/hooks/shared/useNotificationLayer";
 import {
   dismissNotification,
   notificationStore,
@@ -45,12 +46,15 @@ function NotificationStack({
   items: NotificationItem[];
   position: (typeof notificationPositions)[number];
 }) {
+  const layerRef = useNotificationLayer(items.at(-1)?.id);
   const activeItems = items.filter((item) => !item.isExiting);
   const exitingItems = items.filter((item) => item.isExiting);
 
   return (
     <div
-      className={`pointer-events-none fixed z-[9999] h-28 w-[calc(100vw-32px)] max-w-[380px] sm:w-[380px] ${positionClasses[position]} [perspective:1200px]`}
+      ref={layerRef}
+      popover="manual"
+      className={`pointer-events-none fixed inset-auto z-[9999] m-0 h-28 w-[calc(100vw-32px)] max-w-[380px] overflow-visible border-0 bg-transparent p-0 text-inherit sm:w-[380px] ${positionClasses[position]} [perspective:1200px]`}
       aria-live="polite"
       aria-label="Danh sách thông báo"
     >

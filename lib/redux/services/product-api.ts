@@ -1,5 +1,12 @@
 import type { ApiResponse } from "@/types/shared/api";
-import type { ProductCatalogPage, ProductCatalogQuery } from "@/types/user/product";
+import type {
+  ProductCatalogPage,
+  ProductCatalogQuery,
+  UserProductDetailParams,
+  UserProductDetailResponse,
+  VariantSaleParams,
+  VariantSaleResponse,
+} from "@/types/user/product";
 import type { ProductResponse, SellerProductListItem, ShopProductDetail } from "@/types/shop/product";
 
 import { baseApi } from "./base-api";
@@ -25,6 +32,22 @@ function buildProductCatalogQuery(query: ProductCatalogQuery): string {
 // Quản lý các endpoint API sản phẩm cho Kênh Người Bán và Người Mua.
 export const productApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    // Đọc chi tiết công khai qua BFF, giữ wrapper ApiResponse từ gateway.
+    getUserProductDetail: builder.query<ApiResponse<UserProductDetailResponse>, UserProductDetailParams>({
+      query: ({ productId }) => ({ url: `/api/products/${productId}`, method: "GET" }),
+      providesTags: ["Product"],
+    }),
+
+    // Đọc giá gốc và sale của variant; không giữ cache sau khi ngừng theo dõi.
+    getVariantSale: builder.query<ApiResponse<VariantSaleResponse>, VariantSaleParams>({
+      query: ({ productId, variantId }) => ({
+        url: `/api/products/${productId}/variants/${variantId}/sale`,
+        method: "GET",
+      }),
+      keepUnusedDataFor: 0,
+      providesTags: ["Product"],
+    }),
+
     // Tạo sản phẩm mới gửi dữ liệu multipart/form-data đến backend qua BFF.
     createProduct: builder.mutation<ApiResponse<ProductResponse>, FormData>({
       query: (formData) => ({
@@ -100,6 +123,9 @@ export const productApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useGetUserProductDetailQuery,
+  useGetVariantSaleQuery,
+  useLazyGetVariantSaleQuery,
   useCreateProductMutation,
   useGetShopProductDetailQuery,
   useUpdateProductMutation,

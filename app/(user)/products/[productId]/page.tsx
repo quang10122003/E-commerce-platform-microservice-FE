@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -6,17 +7,31 @@ import {
   ChevronRight,
   MessageCircle,
   Store,
-  Clock,
 } from "lucide-react";
+import { ProductDetailName, ProductDetailSold, ProductDetailLocation, ProductDetailShopLink } from "@/components/user/product-detail/ProductDetailInfoView";
+import { ProductDetailLoadingView } from "@/components/user/product-detail/ProductDetailLoadingView";
 import { ProductImageGallery } from "@/components/user/product-detail/ProductImageGallery";
+import { ProductPriceView } from "@/components/user/product-detail/ProductPriceView";
 import { ProductPurchaseSection } from "@/components/user/product-detail/ProductPurchaseSection";
 import { ProductReviews } from "@/components/user/product-detail/ProductReviews";
 import { ProductDescription } from "@/components/user/product-detail/ProductDescription";
 import { PersonalizedSuggestions } from "@/components/user/home/personalized-suggestions";
 
-// Trang chi tiết sản phẩm – dữ liệu cứng, giao diện Shopee-style.
-export default function ProductDetailPage() {
+type ProductDetailPageProps = {
+  params: Promise<{ productId: string }>;
+};
+
+// Trang chi tiết sản phẩm; dữ liệu thật được gắn ở component client, các phần chưa có API giữ mock.
+export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
+  const { productId } = await params;
+  const parsedProductId = Number(productId);
+  // Chỉ gọi API với mã nguyên dương hợp lệ từ đường dẫn trang.
+  if (!/^\d+$/.test(productId) || !Number.isSafeInteger(parsedProductId) || parsedProductId <= 0) {
+    notFound();
+  }
+
   return (
+    <ProductDetailLoadingView key={parsedProductId} productId={parsedProductId}>
     <div className="space-y-4 max-sm:pb-[calc(5rem+env(safe-area-inset-bottom))]">
 
       {/* ── BLOCK CHÍNH: gallery trái + thông tin phải gom trong 1 card ── */}
@@ -34,10 +49,7 @@ export default function ProductDetailPage() {
           <div className="flex flex-col gap-5 p-6 md:max-lg:gap-4 md:max-lg:p-4">
 
             {/* Tên sản phẩm. */}
-            <h1 className="text-lg font-bold leading-snug text-main sm:text-xl">
-              Đồng Hồ Thông Minh SmartX Pro Ultra 2026 – Màn Hình AMOLED,
-              Theo Dõi Sức Khỏe 24/7, Pin 7 Ngày, GPS Tích Hợp, Kháng Nước 5ATM
-            </h1>
+            <ProductDetailName />
 
             {/* Đánh giá tổng hợp: sao, lượt đánh giá, đã bán, khu vực. */}
             <div className="flex flex-wrap items-center gap-3 border-b border-slate-100 pb-4">
@@ -57,42 +69,18 @@ export default function ProductDetailPage() {
               <span className="h-4 w-px bg-slate-200" />
               <span className="text-sm text-muted-foreground">
                 Đã bán{" "}
-                <span className="font-semibold text-main underline decoration-dotted">12.4k</span>
+                <ProductDetailSold />
               </span>
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <MapPin className="h-3 w-3" />
-                <span>Hà Nội</span>
+                <ProductDetailLocation />
               </div>
             </div>
 
             {/* Block mua hàng luôn hiện trên tablet/desktop, mở theo yêu cầu trên mobile. */}
             <ProductPurchaseSection>
               {/* Khu vực giá kèm đồng hồ đếm ngược Flash Sale. */}
-              <div className="flex flex-wrap items-end gap-3 rounded-xl bg-gradient-to-r from-orange-50 to-amber-50 p-4">
-                {/* Countdown Flash Sale. */}
-                <div className="mb-1 flex w-full items-center gap-2 text-xs text-orange-600">
-                  <Clock className="h-3.5 w-3.5" />
-                  <span className="font-semibold uppercase tracking-wide">Flash Sale kết thúc sau</span>
-                  <div className="flex items-center gap-1">
-                    {["01", "23", "45"].map((unit, i) => (
-                      <span key={i} className="flex items-center gap-1">
-                        <span className="rounded bg-orange-500 px-1.5 py-0.5 text-xs font-black text-white">
-                          {unit}
-                        </span>
-                        {i < 2 && <span className="font-black text-orange-500">:</span>}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                {/* Giá khuyến mãi và giá gốc gạch ngang. */}
-                <span className="text-3xl font-black text-cta sm:text-4xl">1.390.000₫</span>
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-sm text-muted-foreground line-through">1.990.000₫</span>
-                  <span className="rounded bg-cta px-2 py-0.5 text-center text-xs font-black text-white">
-                    -30%
-                  </span>
-                </div>
-              </div>
+              <ProductPriceView />
 
               {/* Đường ngăn cách trước phần chọn phân loại và nút mua. */}
               <div className="border-t border-slate-100" />
@@ -105,9 +93,7 @@ export default function ProductDetailPage() {
       {/* ── BLOCK THÔNG TIN SHOP – full-width bên ngoài lưới 2 cột ── */}
       <div id="product-shop-chat" className="relative rounded-xl border border-surface-border bg-white">
         {/* Toàn bộ block shop là vùng bấm trên mobile; URL tạm chưa có trang đích. */}
-        <Link
-          href="/shops/1"
-          prefetch={false}
+        <ProductDetailShopLink
           className="absolute inset-0 z-10 rounded-xl transition-colors active:bg-primary/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:hidden"
           aria-label="Xem shop SmartX Official Store"
         />
@@ -153,14 +139,13 @@ export default function ProductDetailPage() {
 
           {/* Nút hành động với shop chỉ hiển thị trên tablet và desktop. */}
           <div className="hidden gap-2 sm:flex sm:flex-col">
-            <Link
-              href="/shops/1"
-              prefetch={false}
+            <ProductDetailShopLink
+
               className="flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 px-4 py-2 text-xs font-medium text-slate-600 transition hover:border-primary hover:bg-primary-light hover:text-primary"
             >
               <Store className="h-3.5 w-3.5" />
               Xem Shop
-            </Link>
+            </ProductDetailShopLink>
             <Link
               href="#"
               className="flex items-center justify-center gap-1.5 rounded-lg border border-primary/30 bg-primary-light px-4 py-2 text-xs font-semibold text-primary transition hover:bg-primary hover:text-white"
@@ -181,6 +166,7 @@ export default function ProductDetailPage() {
         <PersonalizedSuggestions showTabs={false} />
       </section>
     </div>
+    </ProductDetailLoadingView>
   );
 }
 

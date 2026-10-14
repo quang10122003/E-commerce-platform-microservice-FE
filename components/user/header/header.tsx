@@ -71,6 +71,7 @@ export function ShopHeader() {
               {/* Giỏ hàng */}
               <Link href="/cart">
                 <Button
+                  data-cart-flight-target
                   variant="outline"
                   size="sm"
                   className="relative rounded-xl border-slate-200 hover:border-primary/50 hover:bg-indigo-50/40 h-10 px-3.5 gap-2"
@@ -153,7 +154,7 @@ export function ShopHeader() {
 
             {/* 2.4 MOBILE HAMBURGER BUTTON */}
             <div className="md:hidden flex items-center gap-2 shrink-0">
-              <Link href="/cart" className="relative p-2 text-slate-700 hover:text-primary">
+              <Link href="/cart" data-cart-flight-target className="relative p-2 text-slate-700 hover:text-primary">
                 <ShoppingCart className="w-5 h-5" />
                 <span className="absolute top-0 right-0 bg-cta text-white text-[9px] font-black rounded-full h-4 w-4 flex items-center justify-center">
                   3

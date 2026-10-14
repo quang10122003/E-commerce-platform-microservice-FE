@@ -7,7 +7,7 @@ import { MessageCircle, ShoppingCart, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useProductPurchaseSection } from "@/hooks/user/product-detail/useProductPurchaseSection";
 import { ProductActions } from "./ProductActions";
-import styles from "./product-purchase.module.css";
+import { ProductPurchasePreview } from "./ProductPurchasePreview";
 
 // Giữ block mua hàng trên màn hình lớn và dùng bảng trượt riêng trên mobile.
 export function ProductPurchaseSection({ children }: { children: ReactNode }) {
@@ -30,7 +30,7 @@ export function ProductPurchaseSection({ children }: { children: ReactNode }) {
         aria-labelledby="product-purchase-title"
         onCancel={closePurchase}
         onClick={handleBackdropClick}
-        className={`${styles.sheet} fixed inset-x-0 top-auto bottom-0 m-0 max-h-[85dvh] w-full max-w-none overflow-y-auto overscroll-contain rounded-t-xl border-0 bg-white p-0 text-main sm:hidden`}
+        className="fixed inset-x-0 top-auto bottom-0 m-0 max-h-[85dvh] w-full max-w-none overflow-y-auto overscroll-contain rounded-t-xl border-0 bg-white p-0 text-main backdrop:bg-slate-900/50 motion-safe:[&[open]]:animate-purchase-slide-up motion-reduce:animate-none sm:hidden"
       >
         {/* Tiêu đề và nút đóng luôn nằm đầu bảng khi cuộn nội dung. */}
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-surface-border bg-white px-4 py-3">
@@ -48,6 +48,8 @@ export function ProductPurchaseSection({ children }: { children: ReactNode }) {
         </div>
         {/* Giá, phân loại và số lượng dùng lại nội dung mua hàng hiện có. */}
         <div className="flex flex-col gap-4 px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+          {/* Ảnh preview theo variant chỉ hiển thị trong bảng chọn thuộc tính mobile. */}
+          <ProductPurchasePreview />
           {children}
           <ProductActions mobileAction={purchaseAction ?? "cart"} />
         </div>

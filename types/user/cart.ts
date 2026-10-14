@@ -1,3 +1,4 @@
+import type { ApiResponse } from "@/types/shared/api";
 import type { ProductStatus } from "@/types/user/product";
 
 // Giá trị phân loại của biến thể trong giỏ hàng.
@@ -36,3 +37,21 @@ export interface UpdateCartQuantityRequest {
   productVariantId: number;
   quantity: number;
 }
+
+// Query param của API thêm variant vào giỏ hàng.
+export interface AddCartItemParams {
+  productVariantId: number;
+}
+
+// Body tùy chọn; quantity null hoặc không truyền thì backend thêm một sản phẩm.
+export interface AddCartItemRequest {
+  quantity?: number | null;
+}
+
+// Gộp query và body để Redux gửi đúng hợp đồng CartCotroller.
+export interface AddCartItemArgs extends AddCartItemParams {
+  request?: AddCartItemRequest;
+}
+
+// Backend trả 201 rỗng; BFF có thể giữ envelope ApiResponse với data null.
+export type AddCartItemResponse = ApiResponse<null> | null;
