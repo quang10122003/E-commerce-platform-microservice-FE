@@ -7,16 +7,17 @@ import { isCartItemAvailable } from "@/utils/cart.utils";
 interface CartItemViewProps {
   item: CartItem;
   pending: boolean;
+  quantityPending: boolean;
   onChangeQuantity: (item: CartItem, delta: -1 | 1) => void;
   onDelete: (item: CartItem) => void;
 }
 
 // Hiển thị một sản phẩm và các thao tác số lượng, xóa trong giỏ hàng.
-export function CartItemView({ item, pending, onChangeQuantity, onDelete }: CartItemViewProps) {
+export function CartItemView({ item, pending, quantityPending, onChangeQuantity, onDelete }: CartItemViewProps) {
   const isAvailable = isCartItemAvailable(item);
   const availabilityLabel = item.status === "INACTIVE" ? "Ngừng bán" : isAvailable ? "Còn hàng" : "Hết hàng";
-  const canDecrease = isAvailable && !pending && item.quantity > 1;
-  const canIncrease = isAvailable && !pending && item.quantity < item.stockQuantity;
+  const canDecrease = isAvailable && !pending && !quantityPending && item.quantity > 1;
+  const canIncrease = isAvailable && !pending && !quantityPending && item.quantity < item.stockQuantity;
 
   return (
     <article aria-label={`${item.productName} - ${availabilityLabel}`} className={cn("group grid grid-cols-[minmax(0,1fr)_64px] border-b border-surface-border last:border-b-0 sm:grid-cols-[minmax(0,1fr)_76px] xl:block", !isAvailable && "bg-surface-muted/70")}>

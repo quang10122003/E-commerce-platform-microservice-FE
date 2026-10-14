@@ -20,57 +20,66 @@ export function useCart(initialCart: CartResponse | null) {
   const [draftQuantities, setDraftQuantities] = useState<Record<number, number>>({});
   // Giữ số lượng mới nhất đồng bộ để nhiều lần bấm nhanh không dùng state cũ.
   const draftRef = useRef<Record<number, number>>({});
-  // Chờ người dùng dừng bấm trước khi gửi số lượng cuối cùng lên BE.
-  const quantityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Lưu thao tác đang gửi để chặn request lặp và chọn nhãn loading phù hợp.
-  const [pendingAction, setPendingAction] = useState<"quantity" | "delete" | null>(null);
+  // Chờ riêng từng sản phẩm trước khi gửi số lượng cuối cùng lên BE.
+  const quantityTimerRef = useRef(new Map<number, ReturnType<typeof setTimeout>>());
+  // Theo dõi đồng bộ các sản phẩm đang gửi để chặn request trùng.
+  const updatingVariantIdsRef = useRef(new Set<number>());
+  // Lưu các sản phẩm cần khóa nút tăng giảm trong lúc gọi API.
+  const [updatingVariantIds, setUpdatingVariantIds] = useState(new Set<number>());
+  // Lưu thao tác xóa để giữ loading của flow hiện có.
+  const [pendingAction, setPendingAction] = useState<"delete" | null>(null);
   // Giữ trạng thái chờ trong lúc Server Component tải lại giỏ hàng.
   const [isRefreshing, startTransition] = useTransition();
   const items = applyCartQuantityDrafts(initialCart?.item ?? [], draftQuantities);
 
-  useEffect(() => () => {
-    if (quantityTimerRef.current) clearTimeout(quantityTimerRef.current);
+  useEffect(() => {
+    const timers = quantityTimerRef.current;
+    return () => timers.forEach(clearTimeout);
   }, []);
 
   // Làm mới giỏ hàng từ Server Component, không gọi GET ở client.
   const refreshCart = () => startTransition(() => router.refresh());
 
-  // Gửi từng biến thể một lần với số lượng cuối cùng sau khoảng chờ.
-  const saveQuantities = async () => {
-    quantityTimerRef.current = null;
-    const changes = getCartQuantityChanges(initialCart?.item ?? [], draftRef.current);
-    if (changes.length === 0) return;
+  // Gửi số lượng của một biến thể và chỉ khóa nút của biến thể đó.
+  const saveQuantity = async (item: CartItem) => {
+    const productVariantId = item.productVariantId;
+    quantityTimerRef.current.delete(productVariantId);
+    const quantity = draftRef.current[productVariantId];
+    if (quantity === undefined || quantity === item.quantity || updatingVariantIdsRef.current.has(productVariantId)) return;
 
-    setPendingAction("quantity");
+    updatingVariantIdsRef.current.add(productVariantId);
+    setUpdatingVariantIds(new Set(updatingVariantIdsRef.current));
     try {
-      for (const change of changes) await updateQuantity(change).unwrap();
+      await updateQuantity({ productVariantId, quantity }).unwrap();
     } catch (requestError) {
       notifyError(getApiErrorMessage(requestError, "Không thể cập nhật số lượng. Vui lòng thử lại."));
-      draftRef.current = {};
-      setDraftQuantities({});
+      delete draftRef.current[productVariantId];
+      setDraftQuantities({ ...draftRef.current });
     } finally {
-      refreshCart();
-      setPendingAction(null);
+      // Làm mới âm thầm, không dùng trạng thái loading toàn trang.
+      router.refresh();
+      updatingVariantIdsRef.current.delete(productVariantId);
+      setUpdatingVariantIds(new Set(updatingVariantIdsRef.current));
     }
   };
 
   // Cập nhật UI tức thời và đặt lại thời gian chờ sau mỗi lần bấm.
   const changeQuantity = (item: CartItem, delta: -1 | 1) => {
-    if (pendingAction !== null || isRefreshing) return;
+    if (pendingAction !== null || isRefreshing || updatingVariantIdsRef.current.has(item.productVariantId)) return;
     const quantity = (draftRef.current[item.productVariantId] ?? item.quantity) + delta;
     if (quantity < 1 || quantity > item.stockQuantity) return;
 
     draftRef.current = { ...draftRef.current, [item.productVariantId]: quantity };
     setDraftQuantities(draftRef.current);
-    if (quantityTimerRef.current) clearTimeout(quantityTimerRef.current);
-    quantityTimerRef.current = setTimeout(() => void saveQuantities(), CART_QUANTITY_DEBOUNCE_MS);
+    clearTimeout(quantityTimerRef.current.get(item.productVariantId));
+    quantityTimerRef.current.set(item.productVariantId, setTimeout(() => void saveQuantity(item), CART_QUANTITY_DEBOUNCE_MS));
   };
 
   // Xóa sản phẩm sau khi xử lý các thay đổi số lượng của sản phẩm khác.
   const deleteItem = async (item: CartItem) => {
-    if (pendingAction !== null || isRefreshing) return;
-    if (quantityTimerRef.current) clearTimeout(quantityTimerRef.current);
-    quantityTimerRef.current = null;
+    if (pendingAction !== null || isRefreshing || updatingVariantIdsRef.current.size > 0) return;
+    quantityTimerRef.current.forEach(clearTimeout);
+    quantityTimerRef.current.clear();
     setPendingAction("delete");
 
     try {
@@ -92,7 +101,8 @@ export function useCart(initialCart: CartResponse | null) {
     groups: groupCartItemsByShop(items),
     summary: getCartSummary(items),
     pending: pendingAction !== null || isRefreshing,
-    loadingLabel: pendingAction === "delete" ? "Đang xóa sản phẩm..." : pendingAction === "quantity" ? "Đang cập nhật số lượng..." : "Đang cập nhật giỏ hàng...",
+    updatingVariantIds,
+    loadingLabel: pendingAction === "delete" ? "Đang xóa sản phẩm..." : "Đang cập nhật giỏ hàng...",
     refreshCart,
     changeQuantity,
     deleteItem,
