@@ -7,6 +7,11 @@ export interface CartVariantOption {
   value: string;
 }
 
+// Giá ưu đãi của một đơn vị; endsAt giữ nguyên ISO offset từ OffsetDateTime của BE.
+export interface CartItemSale {
+  salePrice: number;
+  endsAt: string;
+}
 // Một dòng sản phẩm trong response giỏ hàng của BE.
 export interface CartItem {
   cartItemId: number;
@@ -22,8 +27,14 @@ export interface CartItem {
   quantity: number;
   stockQuantity: number;
   status: ProductStatus;
+  sale: CartItemSale | null;
 }
 
+// Dữ liệu hiển thị đã xác định giá còn hiệu lực, không sửa giá gốc BE trả về.
+export interface CartPricedItem extends CartItem {
+  effectivePrice: number;
+  hasSale: boolean;
+}
 // Response GET /api/cart; giữ nguyên tên CartId theo BE.
 export interface CartResponse {
   CartId: number | null;

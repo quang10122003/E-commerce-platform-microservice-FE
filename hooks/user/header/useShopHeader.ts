@@ -21,6 +21,8 @@ export function useShopHeader() {
   const [logout, { isLoading: isLogoutLoading }] = useLogoutMutation();
   const user = useAppSelector((state) => state.auth.user);
   const isAuthChecking = useAppSelector((state) => state.auth.isCheckingAuth);
+  const itemCount = useAppSelector((state) => state.cart.itemCount);
+  const showCartBadge = !isAuthChecking && Boolean(user) && itemCount > 0;
 
   // Kiểm tra quyền mở kênh quản lý dành riêng cho người bán.
   const canAccessSellerChannel = user?.role.includes("ROLE_SHOP") ?? false;
@@ -97,6 +99,8 @@ export function useShopHeader() {
     closeMenu: () => setIsMobileMenuOpen(false),
     isAccountMenuOpen,
     isAuthChecking,
+    itemCount,
+    showCartBadge,
     isAuthModalOpen,
     isMobileMenuOpen,
     isLogoutLoading,

@@ -25,24 +25,21 @@ export function useAuthInitializer(hasAuthTokens: boolean) {
       return;
     }
 
-    dispatch(setAuthChecked());
-  }, [dispatch, isFetching, isLoading]);
-
-  // Cập nhật user khi access token hợp lệ hoặc xóa state khi response lỗi.
-  useEffect(() => {
-    if (isError) return;
-    if (!data?.success || !data.data) {
-      if (data) dispatch(clearUser());
-      return;
+    // Cập nhật user khi access token hợp lệ hoặc xóa state khi response lỗi.
+    if (!isError && data) {
+      if (data.success && data.data) {
+        dispatch(setUser({
+          userId: data.data.userId,
+          email: data.data.email,
+          fullName: data.data.fullName,
+          role: data.data.role,
+        }));
+      } else {
+        dispatch(clearUser());
+      }
     }
 
-    dispatch(
-      setUser({
-        userId: data.data.userId,
-        email: data.data.email,
-        fullName: data.data.fullName,
-        role: data.data.role,
-      })
-    );
-  }, [data, dispatch, isError]);
+    // Chỉ mở đồng bộ count sau khi kết quả kiểm tra phiên đã được đưa vào Redux.
+    dispatch(setAuthChecked());
+  }, [data, dispatch, isError, isFetching, isLoading]);
 }

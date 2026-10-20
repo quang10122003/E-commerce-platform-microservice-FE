@@ -1,11 +1,12 @@
 import Image from "next/image";
 import { Check, Minus, Plus, Package, Trash2 } from "lucide-react";
 import { cn, formatCurrency } from "@/lib/utils";
-import type { CartItem } from "@/types/user/cart";
+import type { CartItem, CartPricedItem } from "@/types/user/cart";
+import { CartItemPriceView } from "./CartItemPriceView";
 import { isCartItemAvailable } from "@/utils/cart.utils";
 
 interface CartItemViewProps {
-  item: CartItem;
+  item: CartPricedItem;
   pending: boolean;
   quantityPending: boolean;
   onChangeQuantity: (item: CartItem, delta: -1 | 1) => void;
@@ -39,7 +40,8 @@ export function CartItemView({ item, pending, quantityPending, onChangeQuantity,
             {item.hasOption && item.variantOptions.length > 0 && <p className="mt-1.5 inline-flex max-w-full rounded-sm bg-slate-100 px-2 py-1 text-[11px] text-slate-600 sm:mt-1">Phân loại: {item.variantOptions.map((option) => `${option.name} ${option.value}`).join(" · ")}</p>}
           </div>
         </div>
-        <div className={cn("hidden text-sm xl:block", isAvailable ? "text-main" : "text-placeholder")}>{formatCurrency(item.price)}</div>
+        {/* Đơn giá ưu đãi và giá gốc, không hiển thị thời gian còn lại. */}
+        <CartItemPriceView item={item} className="hidden justify-center text-sm xl:flex" />
         {/* Căn cụm số lượng với mép trái ảnh trên mobile và tablet. */}
         <div className="ml-6 flex justify-start sm:ml-7 xl:ml-0 xl:justify-center">
           <div className={cn("flex h-8 items-center overflow-hidden rounded-sm border border-surface-border text-xs", isAvailable ? "bg-surface-card text-main" : "bg-surface-muted text-placeholder")} aria-label={`Số lượng ${item.quantity}`}>
@@ -49,8 +51,8 @@ export function CartItemView({ item, pending, quantityPending, onChangeQuantity,
           </div>
         </div>
         <div className="text-right xl:text-center">
-          <span className={cn("block text-[11px] xl:hidden", isAvailable ? "text-muted-foreground" : "text-placeholder")}>Đơn giá {formatCurrency(item.price)}</span>
-          <strong className={cn("block text-xs font-semibold xl:text-sm", isAvailable ? "text-cta" : "text-placeholder")}>{formatCurrency(item.price * item.quantity)}</strong>
+          <span className={cn("block text-[11px] xl:hidden", isAvailable ? "text-muted-foreground" : "text-placeholder")}>Đơn giá <CartItemPriceView item={item} /></span>
+          <strong className={cn("block text-xs font-semibold xl:text-sm", isAvailable ? "text-cta" : "text-placeholder")}>{formatCurrency(item.effectivePrice * item.quantity)}</strong>
         </div>
         <button type="button" disabled={pending} onClick={() => onDelete(item)} className="hidden cursor-pointer items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium text-danger-hover transition-colors hover:bg-danger-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger xl:inline-flex disabled:cursor-not-allowed disabled:opacity-50"><Trash2 className="h-3.5 w-3.5" aria-hidden="true" />Xóa</button>
       </div>

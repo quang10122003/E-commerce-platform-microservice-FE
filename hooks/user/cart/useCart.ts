@@ -1,6 +1,7 @@
 "use client";
 
 import { CART_QUANTITY_DEBOUNCE_MS } from "@/lib/constants";
+import { useCartSalePricing } from "./useCartSalePricing";
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -30,7 +31,8 @@ export function useCart(initialCart: CartResponse | null) {
   const [pendingAction, setPendingAction] = useState<"delete" | null>(null);
   // Giữ trạng thái chờ trong lúc Server Component tải lại giỏ hàng.
   const [isRefreshing, startTransition] = useTransition();
-  const items = applyCartQuantityDrafts(initialCart?.item ?? [], draftQuantities);
+  const pricedItems = useCartSalePricing(initialCart?.item);
+  const items = applyCartQuantityDrafts(pricedItems, draftQuantities);
 
   useEffect(() => {
     const timers = quantityTimerRef.current;

@@ -1,4 +1,5 @@
-import type { CartItem } from "@/types/user/cart";
+import type { CartItem, CartPricedItem } from "@/types/user/cart";
+import { getSaleCountdown } from "@/lib/utils/user-flash-sale.utils";
 
 // Trạng thái ngừng bán hoặc không còn tồn kho đều không thể thanh toán.
 export function isCartItemAvailable(item: CartItem): boolean {
@@ -6,8 +7,8 @@ export function isCartItemAvailable(item: CartItem): boolean {
 }
 
 // Nhóm các dòng giỏ hàng theo cửa hàng, giữ thứ tự BE trả về.
-export function groupCartItemsByShop(items: CartItem[]) {
-  const groups = new Map<number, { shopId: number; name: string; items: CartItem[] }>();
+export function groupCartItemsByShop<T extends CartItem>(items: T[]) {
+  const groups = new Map<number, { shopId: number; name: string; items: T[] }>();
   for (const item of items) {
     const group = groups.get(item.shopId);
     if (group) {
@@ -20,18 +21,18 @@ export function groupCartItemsByShop(items: CartItem[]) {
 }
 
 // Tổng kết các sản phẩm hiện có thể thanh toán, không tính dòng ngừng bán.
-export function getCartSummary(items: CartItem[]) {
+export function getCartSummary(items: CartPricedItem[]) {
   const availableItems = items.filter(isCartItemAvailable);
   return {
     itemCount: availableItems.length,
     quantity: availableItems.reduce((total, item) => total + item.quantity, 0),
-    total: availableItems.reduce((total, item) => total + item.price * item.quantity, 0),
+    total: availableItems.reduce((total, item) => total + item.effectivePrice * item.quantity, 0),
     shopCount: new Set(availableItems.map((item) => item.shopId)).size,
   };
 }
 
 // Áp dụng số lượng tạm để giá từng dòng và tổng tiền cập nhật ngay khi bấm.
-export function applyCartQuantityDrafts(items: CartItem[], drafts: Record<number, number>): CartItem[] {
+export function applyCartQuantityDrafts<T extends CartItem>(items: T[], drafts: Record<number, number>): T[] {
   return items.map((item) => {
     const quantity = drafts[item.productVariantId];
     return quantity === undefined ? item : { ...item, quantity };
@@ -45,4 +46,23 @@ export function getCartQuantityChanges(items: CartItem[], drafts: Record<number,
       ? [{ productVariantId: item.productVariantId, quantity }]
       : [];
   });
+}
+// Chỉ áp dụng giá giảm hợp lệ trước deadline; helper hiện có xử lý ISO có offset.
+export function applyCartItemPricing(items: CartItem[], now: number): CartPricedItem[] {
+  return items.map((item) => {
+    const sale = item.sale;
+    const hasSale = !!sale && Number.isFinite(Date.parse(sale.endsAt))
+      && !getSaleCountdown(sale.endsAt, now).expired
+      && Number.isFinite(sale.salePrice) && sale.salePrice >= 0 && sale.salePrice < item.price;
+    return { ...item, effectivePrice: hasSale && sale ? sale.salePrice : item.price, hasSale };
+  });
+}
+
+// Tìm deadline gần nhất để cả giỏ chỉ cần một timer, không cập nhật countdown mỗi giây.
+export function getNextCartSaleExpiry(items: CartItem[], now: number): number | null {
+  const deadlines = items.flatMap((item) => {
+    const deadline = item.sale ? Date.parse(item.sale.endsAt) : NaN;
+    return Number.isFinite(deadline) && deadline > now ? [deadline] : [];
+  });
+  return deadlines.length ? Math.min(...deadlines) : null;
 }

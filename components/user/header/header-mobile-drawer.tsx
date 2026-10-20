@@ -135,7 +135,7 @@ export function HeaderMobileDrawer({ mounted, isMobileMenuOpen, isAuthChecking, 
                   )}
                 </div>
 
-                <HeaderMobileNavigation closeMenu={closeMenu} />
+                <HeaderMobileNavigation closeMenu={closeMenu} showMessages={Boolean(user) && !isAuthChecking} />
               </div>
 
               {/* Drawer Footer */}

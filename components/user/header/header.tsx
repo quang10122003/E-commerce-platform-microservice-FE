@@ -3,15 +3,17 @@
 import React from "react";
 import { HeaderMobileDrawer } from "./header-mobile-drawer";
 import { HeaderSearch } from "./header-search";
+import { HeaderCartView } from "./header-cart-view";
+import { PlatformShopBrand } from "./platform-shop-brand";
 import Link from "next/link";
 import {
-  ShoppingCart,
   Store,
   LogIn,
   Menu,
   User,
   ChevronDown,
   Package,
+  MessageCircle,
   LogOut,
   Settings,
 } from "lucide-react";
@@ -28,6 +30,8 @@ export function ShopHeader() {
     closeMenu,
     isAccountMenuOpen,
     isAuthChecking,
+    itemCount,
+    showCartBadge,
     isAuthModalOpen,
     isMobileMenuOpen,
     isLogoutLoading,
@@ -50,42 +54,14 @@ export function ShopHeader() {
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between gap-3 sm:gap-6">
             {/* 2.1 LOGO */}
-            <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary via-indigo-600 to-indigo-800 flex items-center justify-center text-white font-black text-xl shadow-md shadow-primary/25 group-hover:scale-105 transition-transform">
-                M
-              </div>
-              <div className="hidden sm:flex flex-col">
-                <span className="text-lg sm:text-xl font-black tracking-tight text-main leading-none">
-                  MODERN<span className="text-cta">SHOP</span>
-                </span>
-                <span className="text-[9px] text-muted-foreground font-bold tracking-widest mt-0.5">
-                  PREMIUM STORE
-                </span>
-              </div>
-            </Link>
+            <PlatformShopBrand />
 
             <HeaderSearch searchQuery={searchQuery} setSearchQuery={setSearchQuery} handleSearch={handleSearch} />
 
             {/* 2.3 DESKTOP ACTIONS */}
             <div className="hidden md:flex items-center gap-3 shrink-0">
               {/* Giỏ hàng */}
-              <Link href="/cart">
-                <Button
-                  data-cart-flight-target
-                  variant="outline"
-                  size="sm"
-                  className="relative rounded-xl border-slate-200 hover:border-primary/50 hover:bg-indigo-50/40 h-10 px-3.5 gap-2"
-                >
-                  <div className="relative">
-                    <ShoppingCart className="w-4 h-4 text-slate-700" />
-                    <span className="absolute -top-2.5 -right-2.5 bg-gradient-to-r from-orange-500 to-red-600 text-white text-[10px] font-black rounded-full h-4.5 w-4.5 flex items-center justify-center shadow-md shadow-cta/30 animate-pulse">
-                      3
-                    </span>
-                  </div>
-                  <span className="font-semibold text-xs text-slate-800">Giỏ hàng</span>
-                </Button>
-              </Link>
-
+              <HeaderCartView isAuthChecking={isAuthChecking} itemCount={itemCount} showCartBadge={showCartBadge} variant="desktop" />
               {/* Khu vực tài khoản và các thao tác nhanh của người dùng. */}
               {isAuthChecking ? (
                 <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white/80 px-3 py-1.5" aria-label="Đang kiểm tra tài khoản">
@@ -121,6 +97,13 @@ export function ShopHeader() {
                       <Link href="/user/orders" onClick={() => setIsAccountMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50" role="menuitem">
                         <Package className="w-4 h-4 text-primary" /> Đơn mua
                       </Link>
+                                            <Link href="/user/chat" onClick={() => setIsAccountMenuOpen(false)} className="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors" role="menuitem">
+                        <div className="flex items-center gap-3">
+                          <MessageCircle className="w-4 h-4 text-primary" />
+                          <span>Tin nhắn</span>
+                        </div>
+                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-cta text-white">1</span>
+                      </Link>
                       {canAccessSellerChannel && (
                         <Link href="/shop" onClick={() => setIsAccountMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50" role="menuitem">
                           <Store className="w-4 h-4 text-cta" /> Kênh người bán
@@ -154,12 +137,7 @@ export function ShopHeader() {
 
             {/* 2.4 MOBILE HAMBURGER BUTTON */}
             <div className="md:hidden flex items-center gap-2 shrink-0">
-              <Link href="/cart" data-cart-flight-target className="relative p-2 text-slate-700 hover:text-primary">
-                <ShoppingCart className="w-5 h-5" />
-                <span className="absolute top-0 right-0 bg-cta text-white text-[9px] font-black rounded-full h-4 w-4 flex items-center justify-center">
-                  3
-                </span>
-              </Link>
+              <HeaderCartView isAuthChecking={isAuthChecking} itemCount={itemCount} showCartBadge={showCartBadge} variant="mobile" />
               <button
                 type="button"
                 onClick={openMenu}

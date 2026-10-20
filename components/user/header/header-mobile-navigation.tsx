@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { ChevronRight, HelpCircle, Package, Settings, User } from "lucide-react";
+import { ChevronRight, HelpCircle, MessageCircle, Package, Settings, User } from "lucide-react";
 
-export function HeaderMobileNavigation({ closeMenu }: { closeMenu: () => void }) {
+export function HeaderMobileNavigation({ closeMenu, showMessages }: { closeMenu: () => void; showMessages: boolean }) {
   return (
     <>
                 {/* Navigation Links */}
@@ -56,6 +56,26 @@ export function HeaderMobileNavigation({ closeMenu }: { closeMenu: () => void })
                     </div>
                     <ChevronRight className="w-4 h-4 text-slate-400" />
                   </Link>
+
+                  {/* Mục tin nhắn dành cho tài khoản đã đăng nhập */}
+                  {showMessages && (
+                    <Link
+                      href="/user/chat"
+                      onClick={closeMenu}
+                      className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 text-main transition-colors border border-surface-border/60"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-indigo-50 text-primary flex items-center justify-center">
+                          <MessageCircle className="w-4 h-4" />
+                        </div>
+                        <span className="text-sm font-semibold">Tin nhắn</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-cta text-white">1</span>
+                        <ChevronRight className="w-4 h-4 text-slate-400" />
+                      </div>
+                    </Link>
+                  )}
 
                   {/* Trợ giúp */}
                   <Link
