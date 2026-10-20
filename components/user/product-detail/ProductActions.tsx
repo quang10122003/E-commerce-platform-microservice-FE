@@ -2,14 +2,14 @@
 
 import { useProductDetailContext } from "@/hooks/user/product-detail/useProductDetailContext";
 import { Minus, Plus, ShoppingCart, Zap, Share2, Check } from "lucide-react";
-import { formatNumberInput } from "@/lib/utils";
+import { cn, formatNumberInput } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
 // Khu vực chọn phân loại, số lượng và nút hành động mua hàng.
 export function ProductActions({ mobileAction }: { mobileAction?: "cart" | "buy" }) {
   const {
-    attributes, selectedAttributeValueIds, selectedVariant, selectAttribute,
-    quantity, handleDecrement, handleIncrement,
+    attributes, selectedAttributeValueIds, selectableAttributeValueIds, selectedVariant, selectAttribute,
+    quantity, isQuantityDisabled, canDecrease, canIncrease, handleDecrement, handleIncrement,
     handleAddToCart, isAddingToCart, cartValidationMessage,
   } = useProductDetailContext();
 
@@ -27,9 +27,10 @@ export function ProductActions({ mobileAction }: { mobileAction?: "cart" | "buy"
                 key={value.id}
                 type="button"
                 onClick={() => selectAttribute(attribute.id, value.id)}
-                title={value.value}
+                disabled={!selectableAttributeValueIds.has(value.id)}
+                title={selectableAttributeValueIds.has(value.id) ? value.value : `${value.value} — Không có tổ hợp còn hàng`}
                 aria-pressed={selectedAttributeValueIds.includes(value.id)}
-                className={`group relative flex min-h-9 items-center gap-2 rounded-lg border-2 px-3 py-2 text-xs font-medium transition-colors duration-200 ${
+                className={`group relative flex min-h-9 items-center gap-2 rounded-lg border-2 px-3 py-2 text-xs font-medium transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-surface-border disabled:hover:bg-surface-muted ${
                   selectedAttributeValueIds.includes(value.id)
                     ? "border-primary bg-primary-light text-primary"
                     : "border-surface-border bg-surface-card text-muted-foreground hover:border-primary/40 hover:bg-surface-subtle"
@@ -52,25 +53,29 @@ export function ProductActions({ mobileAction }: { mobileAction?: "cart" | "buy"
         <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Số lượng
         </span>
-        <div className="flex items-center overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <div className={cn("flex items-center overflow-hidden rounded-lg border border-slate-200", isQuantityDisabled ? "bg-surface-muted" : "bg-surface-card")}>
           <button
+            type="button"
+            aria-label="Giảm số lượng"
             onClick={handleDecrement}
-            disabled={quantity <= 1}
+            disabled={!canDecrease}
             className="flex h-9 w-9 items-center justify-center border-r border-slate-200 text-slate-500 transition hover:bg-slate-50 active:bg-slate-100 disabled:opacity-40"
           >
             <Minus className="h-3.5 w-3.5" />
           </button>
-          <span className="w-12 text-center text-sm font-bold text-main">{quantity}</span>
+          <span className={cn("w-12 text-center text-sm font-bold", isQuantityDisabled ? "text-placeholder" : "text-main")}>{quantity}</span>
           <button
+            type="button"
+            aria-label="Tăng số lượng"
             onClick={handleIncrement}
-            disabled={quantity >= 99}
+            disabled={!canIncrease}
             className="flex h-9 w-9 items-center justify-center border-l border-slate-200 text-slate-500 transition hover:bg-slate-50 active:bg-slate-100 disabled:opacity-40"
           >
             <Plus className="h-3.5 w-3.5" />
           </button>
         </div>
         <span className="text-xs text-muted-foreground">
-          <span className="font-semibold text-perk">{formatNumberInput(selectedVariant?.stockQuantity ?? 0)}</span> sản phẩm có sẵn
+          <span className={cn("font-semibold", isQuantityDisabled ? "text-placeholder" : "text-perk")}>{formatNumberInput(selectedVariant?.stockQuantity ?? 0)}</span> sản phẩm có sẵn
         </span>
       </div>
 
@@ -90,6 +95,9 @@ export function ProductActions({ mobileAction }: { mobileAction?: "cart" | "buy"
           Thêm vào giỏ hàng
         </Button>
         <Button
+          type="button"
+          disabled={Boolean(cartValidationMessage)}
+          title={cartValidationMessage ?? undefined}
           variant="gradient-cta"
           size="lg"
           className={`flex-1 md:max-lg:flex-none ${mobileAction === "buy" ? "max-sm:flex-none max-sm:w-full" : "max-sm:hidden"}`}

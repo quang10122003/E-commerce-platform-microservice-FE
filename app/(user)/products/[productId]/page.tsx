@@ -8,7 +8,7 @@ import {
   MessageCircle,
   Store,
 } from "lucide-react";
-import { ProductDetailName, ProductDetailSold, ProductDetailLocation, ProductDetailShopLink } from "@/components/user/product-detail/ProductDetailInfoView";
+import { ProductDetailName, ProductDetailSold, ProductDetailLocation, ProductDetailShopLink, ProductDetailChatButton } from "@/components/user/product-detail/ProductDetailInfoView";
 import { ProductDetailLoadingView } from "@/components/user/product-detail/ProductDetailLoadingView";
 import { ProductImageGallery } from "@/components/user/product-detail/ProductImageGallery";
 import { ProductPriceView } from "@/components/user/product-detail/ProductPriceView";
@@ -19,11 +19,13 @@ import { PersonalizedSuggestions } from "@/components/user/home/personalized-sug
 
 type ProductDetailPageProps = {
   params: Promise<{ productId: string }>;
+  searchParams: Promise<{ variantId?: string | string[] }>;
 };
 
 // Trang chi tiết sản phẩm; dữ liệu thật được gắn ở component client, các phần chưa có API giữ mock.
-export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
-  const { productId } = await params;
+export default async function ProductDetailPage({ params, searchParams }: ProductDetailPageProps) {
+  const [{ productId }, { variantId }] = await Promise.all([params, searchParams]);
+  const initialVariantId = typeof variantId === "string" ? variantId : undefined;
   const parsedProductId = Number(productId);
   // Chỉ gọi API với mã nguyên dương hợp lệ từ đường dẫn trang.
   if (!/^\d+$/.test(productId) || !Number.isSafeInteger(parsedProductId) || parsedProductId <= 0) {
@@ -31,7 +33,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   }
 
   return (
-    <ProductDetailLoadingView key={parsedProductId} productId={parsedProductId}>
+    <ProductDetailLoadingView key={`${parsedProductId}:${initialVariantId ?? "default"}`} productId={parsedProductId} initialVariantId={initialVariantId}>
     <div className="space-y-4 max-sm:pb-[calc(5rem+env(safe-area-inset-bottom))]">
 
       {/* ── BLOCK CHÍNH: gallery trái + thông tin phải gom trong 1 card ── */}
@@ -140,19 +142,12 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
           {/* Nút hành động với shop chỉ hiển thị trên tablet và desktop. */}
           <div className="hidden gap-2 sm:flex sm:flex-col">
             <ProductDetailShopLink
-
               className="flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 px-4 py-2 text-xs font-medium text-slate-600 transition hover:border-primary hover:bg-primary-light hover:text-primary"
             >
               <Store className="h-3.5 w-3.5" />
               Xem Shop
             </ProductDetailShopLink>
-            <Link
-              href="#"
-              className="flex items-center justify-center gap-1.5 rounded-lg border border-primary/30 bg-primary-light px-4 py-2 text-xs font-semibold text-primary transition hover:bg-primary hover:text-white"
-            >
-              <MessageCircle className="h-3.5 w-3.5" />
-              Chat ngay
-            </Link>
+            <ProductDetailChatButton />
           </div>
         </div>
       </div>

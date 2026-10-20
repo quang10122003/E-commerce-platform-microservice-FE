@@ -12,18 +12,76 @@ export function getDefaultProductVariant(product: UserProductDetailResponse | nu
   return product?.variants.find((variant) => variant.id === product.defaultVariantId) ?? null;
 }
 
+// Ưu tiên variant hợp lệ từ link sale trong chính sản phẩm; thiếu hoặc sai thì giữ mặc định.
+export function getInitialProductVariant(product: UserProductDetailResponse | null, variantId?: string) {
+  const parsedVariantId = variantId && /^\d+$/.test(variantId) ? Number(variantId) : NaN;
+  const linkedVariant = Number.isSafeInteger(parsedVariantId) && parsedVariantId > 0
+    ? product?.variants.find((variant) => variant.id === parsedVariantId)
+    : undefined;
+  return linkedVariant ?? getDefaultProductVariant(product);
+}
+
 // Chọn đúng tổ hợp defaultVariantId, không tự thay bằng variant khác khi không tìm thấy.
 export function getDefaultProductSelection(product: UserProductDetailResponse | null): number[] {
   if (!product) return [];
   return getDefaultProductVariant(product)?.attributeValueIds ?? [];
 }
 
-// Thay giá trị trong một thuộc tính và giữ nguyên lựa chọn của các thuộc tính còn lại.
-export function selectProductAttribute(attributes: UserProductAttribute[], selectedIds: number[], attributeId: number, valueId: number): number[] {
+// Chỉ giữ value thuộc variant thực tế, kể cả hết hàng; ẩn thuộc tính không còn value.
+export function getProductVariantAttributes(product: UserProductDetailResponse | null): UserProductAttribute[] {
+  if (!product) return [];
+  const variantValueIds = new Set(product.variants.flatMap((variant) => variant.attributeValueIds));
+  return product.attributes.flatMap((attribute) => {
+    const values = attribute.values.filter((value) => variantValueIds.has(value.id));
+    return values.length ? [{ ...attribute, values }] : [];
+  });
+}
+
+// Chỉ dùng variant còn hàng có đúng một value cho mỗi thuộc tính đang hiển thị.
+export function getAvailableProductVariants(product: UserProductDetailResponse | null, attributes: UserProductAttribute[]) {
+  return product?.variants.filter((variant) => variant.status === "AVAILABLE" && variant.stockQuantity > 0
+    && variant.attributeValueIds.length === attributes.length
+    && attributes.every((attribute) => attribute.values.filter((value) => variant.attributeValueIds.includes(value.id)).length === 1)) ?? [];
+}
+
+// Giữ lựa chọn phía trên, để các thuộc tính phía dưới có thể đổi theo tổ hợp hoàn chỉnh.
+function getProductAttributeCandidates(attributes: UserProductAttribute[], variants: UserProductVariant[], selectedIds: number[], attributeId: number) {
+  const index = attributes.findIndex((attribute) => attribute.id === attributeId);
+  if (index < 0) return [];
+  const precedingIds = attributes.slice(0, index).flatMap((attribute) => attribute.values
+    .filter((value) => selectedIds.includes(value.id)).map((value) => value.id));
+  return variants.filter((variant) => precedingIds.every((id) => variant.attributeValueIds.includes(id)));
+}
+
+// Value chỉ chọn được khi tạo tổ hợp còn hàng với các thuộc tính đã chọn phía trên.
+export function getSelectableProductValueIds(attributes: UserProductAttribute[], variants: UserProductVariant[], selectedIds: number[]) {
+  const selectableIds = new Set<number>();
+  for (const attribute of attributes) {
+    const candidates = getProductAttributeCandidates(attributes, variants, selectedIds, attribute.id);
+    for (const value of attribute.values) {
+      if (candidates.some((variant) => variant.attributeValueIds.includes(value.id))) selectableIds.add(value.id);
+    }
+  }
+  return selectableIds;
+}
+
+// Giữ value vừa chọn và tự sửa các value phía dưới; ưu tiên giữ nhiều lựa chọn cũ nhất.
+export function selectProductAttribute(attributes: UserProductAttribute[], selectedIds: number[], attributeId: number, valueId: number, variants: UserProductVariant[]): number[] {
   const attribute = attributes.find((item) => item.id === attributeId);
   if (!attribute?.values.some((value) => value.id === valueId)) return selectedIds;
-  const currentAttributeIds = new Set(attribute.values.map((value) => value.id));
-  return [...selectedIds.filter((id) => !currentAttributeIds.has(id)), valueId];
+  const candidates = getProductAttributeCandidates(attributes, variants, selectedIds, attributeId)
+    .filter((variant) => variant.attributeValueIds.includes(valueId));
+  let bestVariant: UserProductVariant | null = null;
+  let bestScore = -1;
+  for (const variant of candidates) {
+    const score = variant.attributeValueIds.filter((id) => selectedIds.includes(id)).length;
+    // Chỉ thay khi tốt hơn để giữ thứ tự response trong trường hợp đồng điểm.
+    if (score > bestScore) {
+      bestVariant = variant;
+      bestScore = score;
+    }
+  }
+  return bestVariant ? [...bestVariant.attributeValueIds] : selectedIds;
 }
 
 // Đối chiếu toàn bộ tổ hợp ID, không chọn nhầm variant khi mới chọn một phần thuộc tính.
@@ -92,4 +150,18 @@ export function getProductCartValidationMessage(variant: UserProductVariant | nu
   if (variant.status === "OUT_OF_STOCK" || variant.stockQuantity <= 0) return "Phân loại này đã hết hàng.";
   if (quantity > variant.stockQuantity) return "Số lượng vượt quá tồn kho của phân loại đang chọn.";
   return null;
+}
+
+// Giới hạn số lượng theo tồn kho và khóa điều chỉnh khi variant thiếu hoặc hết hàng.
+export function getProductQuantityControls(variant: UserProductVariant | null, requestedQuantity: number) {
+  const stock = variant?.status === "AVAILABLE" && Number.isSafeInteger(variant.stockQuantity) && variant.stockQuantity > 0
+    ? variant.stockQuantity : 0;
+  const quantity = Math.min(Math.max(1, Number.isSafeInteger(requestedQuantity) ? requestedQuantity : 1), Math.max(1, stock));
+  return { quantity, isQuantityDisabled: stock === 0, canDecrease: stock > 0 && quantity > 1, canIncrease: stock > 0 && quantity < stock };
+}
+
+// API chưa có stock cấp product; chỉ tính tổng variant sau khi chi tiết đã tải thành công.
+export function getProductTotalStock(product: UserProductDetailResponse | null): number | null {
+  if (!product || product.variants.some((variant) => !Number.isSafeInteger(variant.stockQuantity))) return null;
+  return product.variants.reduce((total, variant) => total + Math.max(0, variant.stockQuantity), 0);
 }

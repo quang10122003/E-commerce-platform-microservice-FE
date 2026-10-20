@@ -48,6 +48,13 @@ export interface UserProductDetailParams {
   productId: number;
 }
 
+// Khoảng giá từ GET /api/products/{productId}/price-range, không phải giá khuyến mãi.
+export interface ProductPriceRangeResponse {
+  productId: number;
+  minPrice: number;
+  maxPrice: number;
+}
+
 // Giá trị thuộc tính để đối chiếu tổ hợp variant bằng ID.
 export interface UserProductAttributeValue {
   id: number;

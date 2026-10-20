@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { MessageCircle } from "lucide-react";
 import { useProductDetailContext } from "@/hooks/user/product-detail/useProductDetailContext";
 import { formatCompactNumber } from "@/lib/utils";
 
@@ -22,6 +23,7 @@ export function ProductDetailLocation() {
   const { product } = useProductDetailContext();
   return <span>{product?.location?.trim() || "Đang cập nhật"}</span>;
 }
+
 // Mở đúng shop của product; tên và thông tin shop chưa có API vẫn giữ mock.
 export function ProductDetailShopLink({ children, className, "aria-label": ariaLabel }: {
   children?: ReactNode;
@@ -30,4 +32,18 @@ export function ProductDetailShopLink({ children, className, "aria-label": ariaL
 }) {
   const { product } = useProductDetailContext();
   return <Link href={`/shops/${product?.shopId ?? 1}`} prefetch={false} className={className} aria-label={ariaLabel}>{children}</Link>;
+}
+
+// Nút mở cửa sổ chat với shop trên desktop và tablet.
+export function ProductDetailChatButton() {
+  return (
+    <button
+      type="button"
+      onClick={() => window.dispatchEvent(new CustomEvent("open-shop-chat"))}
+      className="flex items-center justify-center gap-1.5 rounded-lg border border-primary/30 bg-primary-light px-4 py-2 text-xs font-semibold text-primary transition hover:bg-primary hover:text-white cursor-pointer active:scale-95"
+    >
+      <MessageCircle className="h-3.5 w-3.5" />
+      Chat ngay
+    </button>
+  );
 }

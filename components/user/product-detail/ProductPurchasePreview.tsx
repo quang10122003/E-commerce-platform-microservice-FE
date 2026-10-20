@@ -22,7 +22,7 @@ export function ProductPurchasePreview() {
           aria-label="Xem ảnh sản phẩm phóng to"
           aria-haspopup="dialog"
           aria-controls="product-purchase-image-preview"
-          className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-surface-border bg-surface-subtle transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-default"
+          className="relative h-24 w-24 shrink-0 cursor-pointer overflow-hidden rounded-lg border border-surface-border bg-surface-subtle transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-default"
         >
           {image ? (
             <Image

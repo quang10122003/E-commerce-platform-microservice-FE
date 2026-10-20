@@ -37,7 +37,7 @@ export function ProductImagePreviewDialog({ dialogId, images, productName, previ
             type="button"
             onClick={closeImage}
             aria-label="Đóng ảnh phóng to"
-            className="flex h-11 w-11 items-center justify-center rounded-lg bg-white/10 text-white transition-colors hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg bg-white/10 text-white transition-colors hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
@@ -71,7 +71,7 @@ export function ProductImagePreviewDialog({ dialogId, images, productName, previ
               onClick={() => changeImage(-1)}
               disabled={activeImageIndex === 0}
               aria-label="Ảnh trước"
-              className="absolute left-3 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-lg bg-black/60 text-white transition-colors hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-white disabled:opacity-30 disabled:cursor-default"
+              className="absolute left-3 top-1/2 flex h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-lg bg-black/60 text-white transition-colors hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-white disabled:opacity-30 disabled:cursor-default"
             >
               <ChevronLeft className="h-6 w-6" aria-hidden="true" />
             </button>
@@ -80,7 +80,7 @@ export function ProductImagePreviewDialog({ dialogId, images, productName, previ
               onClick={() => changeImage(1)}
               disabled={activeImageIndex === images.length - 1}
               aria-label="Ảnh tiếp theo"
-              className="absolute right-3 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-lg bg-black/60 text-white transition-colors hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-white disabled:opacity-30 disabled:cursor-default"
+              className="absolute right-3 top-1/2 flex h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-lg bg-black/60 text-white transition-colors hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-white disabled:opacity-30 disabled:cursor-default"
             >
               <ChevronRight className="h-6 w-6" aria-hidden="true" />
             </button>

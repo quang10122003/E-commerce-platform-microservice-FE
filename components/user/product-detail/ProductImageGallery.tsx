@@ -41,7 +41,7 @@ export function ProductImageGallery() {
 // Giữ thao tác chọn thumbnail và điều hướng trong gallery của variant hiện tại.
 function ProductImageGalleryContent() {
   const {
-    images, activeIndex, handlePrev, handleNext, productName, preview, thumbnailTrackRef,
+    images, activeIndex, handlePrev, handleNext, productName, preview, thumbnailTrackRef, canDragThumbnails,
     handleThumbnailPointerDown, handleThumbnailPointerMove, handleThumbnailPointerEnd, selectThumbnail,
   } = useProductImageGallery();
 
@@ -64,7 +64,7 @@ function ProductImageGalleryContent() {
         aria-label="Mở thư viện ảnh sản phẩm"
         aria-haspopup="dialog"
         aria-controls="product-gallery-image-preview"
-        className="relative aspect-square w-full overflow-hidden rounded-xl bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        className="relative aspect-square w-full cursor-pointer overflow-hidden rounded-xl bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
       >
         <Image
           src={images[activeIndex].src}
@@ -89,7 +89,7 @@ function ProductImageGalleryContent() {
       <div className="flex min-w-0 items-center gap-2">
         <button
           onClick={handlePrev}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700 transition hover:border-primary hover:text-primary active:scale-95"
+          className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700 transition hover:border-primary hover:text-primary active:scale-95"
           aria-label="Ảnh trước"
         >
           <ChevronLeft className="h-4 w-4" />
@@ -100,13 +100,13 @@ function ProductImageGalleryContent() {
           onPointerMove={handleThumbnailPointerMove}
           onPointerUp={handleThumbnailPointerEnd}
           onPointerCancel={handleThumbnailPointerEnd}
-          className="relative flex min-w-0 flex-1 cursor-grab select-none gap-2 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden active:cursor-grabbing"
+          className={`relative flex min-w-0 flex-initial select-none gap-2 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${canDragThumbnails ? "cursor-grab active:cursor-grabbing" : "cursor-default"}`}
         >
           {images.map((image, idx) => (
             <button
               key={idx}
               onClick={(event) => selectThumbnail(idx, event)}
-              className={`relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-md border-2 transition-colors duration-200 ${
+              className={`relative h-20 w-20 flex-shrink-0 cursor-pointer overflow-hidden rounded-md border-2 transition-colors duration-200 ${canDragThumbnails ? "active:cursor-grabbing" : ""} ${
                 activeIndex === idx
                   ? "border-primary"
                   : "border-transparent hover:border-slate-300"
@@ -130,7 +130,7 @@ function ProductImageGalleryContent() {
         </div>
         <button
           onClick={handleNext}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700 transition hover:border-primary hover:text-primary active:scale-95"
+          className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700 transition hover:border-primary hover:text-primary active:scale-95"
           aria-label="Ảnh tiếp theo"
         >
           <ChevronRight className="h-4 w-4" />

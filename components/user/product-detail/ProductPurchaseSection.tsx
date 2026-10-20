@@ -61,13 +61,14 @@ export function ProductPurchaseSection({ children }: { children: ReactNode }) {
         className="fixed inset-x-0 bottom-0 z-40 border-t border-surface-border bg-white/95 px-3 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] backdrop-blur-md sm:hidden"
       >
         <div className="grid grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)_minmax(0,1.15fr)] gap-2">
-          <Link
-            href="#product-shop-chat"
-            className="flex min-h-12 flex-col items-center justify-center gap-1 rounded-lg text-xs font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-primary active:bg-primary-light"
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent("open-shop-chat"))}
+            className="flex min-h-12 flex-col items-center justify-center gap-1 rounded-lg text-xs font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-primary active:bg-primary-light cursor-pointer"
           >
             <MessageCircle className="h-5 w-5" aria-hidden="true" />
             Nhắn tin
-          </Link>
+          </button>
           <Button
             type="button"
             variant="cta-outline"

@@ -4,6 +4,7 @@ import type {
   ProductCatalogQuery,
   UserProductDetailParams,
   UserProductDetailResponse,
+  ProductPriceRangeResponse,
   VariantSaleParams,
   VariantSaleResponse,
 } from "@/types/user/product";
@@ -35,6 +36,12 @@ export const productApi = baseApi.injectEndpoints({
     // Đọc chi tiết công khai qua BFF, giữ wrapper ApiResponse từ gateway.
     getUserProductDetail: builder.query<ApiResponse<UserProductDetailResponse>, UserProductDetailParams>({
       query: ({ productId }) => ({ url: `/api/products/${productId}`, method: "GET" }),
+      providesTags: ["Product"],
+    }),
+
+    // Lấy khoảng giá thật qua BFF, dùng chung cache theo sản phẩm.
+    getProductPriceRange: builder.query<ApiResponse<ProductPriceRangeResponse>, UserProductDetailParams>({
+      query: ({ productId }) => ({ url: `/api/products/${productId}/price-range`, method: "GET" }),
       providesTags: ["Product"],
     }),
 
@@ -74,8 +81,8 @@ export const productApi = baseApi.injectEndpoints({
       invalidatesTags: ["Product"],
     }),
 
-    // Xóa sản phẩm của người bán; backend tiếp tục dọn ảnh qua outbox.
-    deleteProduct: builder.mutation<ApiResponse<null>, number>({
+    // Xóa sản phẩm; chấp nhận body rỗng khi backend trả 204 và dọn ảnh qua outbox.
+    deleteProduct: builder.mutation<ApiResponse<null> | null, number>({
       query: (productId) => ({
         url: `/api/products/${productId}`,
         method: "DELETE",
@@ -83,8 +90,8 @@ export const productApi = baseApi.injectEndpoints({
       invalidatesTags: ["Product"],
     }),
 
-    // Xóa một phân loại thuộc sản phẩm của người bán qua BFF.
-    deleteProductVariant: builder.mutation<ApiResponse<null>, { productId: number; variantId: number }>({
+    // Xóa phân loại qua BFF; backend có thể xác nhận thành công bằng 204 không có body.
+    deleteProductVariant: builder.mutation<ApiResponse<null> | null, { productId: number; variantId: number }>({
       query: ({ productId, variantId }) => ({
         url: `/api/products/${productId}/variants/${variantId}`,
         method: "DELETE",
@@ -124,6 +131,7 @@ export const productApi = baseApi.injectEndpoints({
 
 export const {
   useGetUserProductDetailQuery,
+  useGetProductPriceRangeQuery,
   useGetVariantSaleQuery,
   useLazyGetVariantSaleQuery,
   useCreateProductMutation,

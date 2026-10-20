@@ -1,54 +1,53 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useProductVariantSale } from "./useProductVariantSale";
 import { useProductAddToCart } from "./useProductAddToCart";
+import { useProductQuantity } from "./useProductQuantity";
 import { useGetUserProductDetailQuery } from "@/lib/redux/services/product-api";
 import {
   findSelectedProductVariant,
-  getDefaultProductSelection,
-  getDefaultProductVariant,
+  getAvailableProductVariants,
+  getInitialProductVariant,
   getProductDetailFailureKind,
+  getProductTotalStock,
+  getProductVariantAttributes,
+  getSelectableProductValueIds,
   selectProductAttribute,
 } from "@/lib/utils/product-detail.utils";
 
-// Gọi chi tiết qua Redux và chia sẻ tổ hợp mặc định giữa gallery, desktop và bảng mobile.
-export function useProductDetailLoading(productId: number) {
+// Gọi chi tiết qua Redux và chia sẻ tổ hợp khởi tạo giữa gallery, desktop và bảng mobile.
+export function useProductDetailLoading(productId: number, initialVariantId?: string) {
   const { currentData, isFetching, isError, error, refetch } = useGetUserProductDetailQuery(
     { productId },
     { refetchOnMountOrArgChange: true },
   );
   const product = !isError && currentData?.success ? currentData.data : null;
-  const attributes = product?.attributes ?? [];
-  // Lưu lựa chọn của người dùng; null dùng trực tiếp tổ hợp defaultVariantId từ response.
+  const attributes = useMemo(() => getProductVariantAttributes(product), [product]);
+  const availableVariants = useMemo(() => getAvailableProductVariants(product, attributes), [product, attributes]);
+  const initialVariant = getInitialProductVariant(product, initialVariantId);
+  const initialSelection = initialVariant?.attributeValueIds ?? [];
+  // Lưu lựa chọn của người dùng; null dùng variant từ link sale hoặc defaultVariantId trong response.
   const [selection, setSelection] = useState<number[] | null>(null);
-  const selectedAttributeValueIds = selection ?? getDefaultProductSelection(product);
+  const selectedAttributeValueIds = selection ?? initialSelection;
   const selectedVariant = selection === null
-    ? getDefaultProductVariant(product)
+    ? initialVariant
     : findSelectedProductVariant(product, selectedAttributeValueIds);
+  const selectableAttributeValueIds = useMemo(() => getSelectableProductValueIds(attributes, availableVariants,
+    selectedAttributeValueIds), [attributes, availableVariants, selectedAttributeValueIds]);
   const pricing = useProductVariantSale(productId, selectedVariant);
-  // Số lượng muốn mua, dùng chung cho desktop và bảng mobile.
-  const [quantity, setQuantity] = useState(1);
+  const { quantity, isQuantityDisabled, canDecrease, canIncrease, handleDecrement, handleIncrement } = useProductQuantity(selectedVariant);
   const cart = useProductAddToCart(selectedVariant, quantity);
-  // Chọn một giá trị thuộc tính, giữ nguyên các thuộc tính khác trong tổ hợp.
+  // Chọn value và tự chuyển các thuộc tính phía dưới sang variant còn hàng phù hợp.
   function selectAttribute(attributeId: number, valueId: number) {
     setSelection((previous) => selectProductAttribute(attributes,
-      previous ?? getDefaultProductSelection(product), attributeId, valueId));
-  }
-
-  // Giảm số lượng, không cho xuống dưới 1.
-  function handleDecrement() {
-    setQuantity((previous) => Math.max(1, previous - 1));
-  }
-
-  // Tăng số lượng, giới hạn tối đa 99 theo hành vi hiện có.
-  function handleIncrement() {
-    setQuantity((previous) => Math.min(99, previous + 1));
+      previous ?? initialSelection, attributeId, valueId, availableVariants));
   }
 
   return {
-    ...cart, pricing, product, attributes, selectedAttributeValueIds, selectedVariant, selectAttribute,
-    quantity, handleDecrement, handleIncrement,
+    ...cart, pricing, product, attributes, selectedAttributeValueIds, selectableAttributeValueIds, selectedVariant, selectAttribute,
+    totalStock: getProductTotalStock(product),
+    quantity, isQuantityDisabled, canDecrease, canIncrease, handleDecrement, handleIncrement,
     isLoading: isFetching,
     failureKind: getProductDetailFailureKind(error),
     retry: refetch,

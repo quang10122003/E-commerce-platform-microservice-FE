@@ -16,6 +16,8 @@ export function useProductImageGallery() {
 
   // Tham chiếu dải thumbnail để kéo bằng chuột và cuộn ảnh đang chọn vào khung.
   const thumbnailTrackRef = useRef<HTMLDivElement>(null);
+  // Chỉ hiển thị trạng thái kéo khi thumbnail thực sự tràn khỏi khung hiện tại.
+  const [canDragThumbnails, setCanDragThumbnails] = useState(false);
   // Lưu điểm kéo chuột, không cập nhật React state trên mỗi lần di chuyển.
   const drag = useRef<{ pointerId: number; startX: number; scrollLeft: number; moved: boolean } | null>(null);
   // Bỏ qua click phát sinh sau thao tác kéo để không chọn nhầm thumbnail.
@@ -25,6 +27,7 @@ export function useProductImageGallery() {
   function handleThumbnailPointerDown(event: PointerEvent<HTMLDivElement>) {
     suppressClick.current = false;
     if (event.pointerType !== "mouse" || event.button !== 0) return;
+    if (event.currentTarget.scrollWidth <= event.currentTarget.clientWidth) return;
     drag.current = { pointerId: event.pointerId, startX: event.clientX, scrollLeft: event.currentTarget.scrollLeft, moved: false };
   }
 
@@ -65,6 +68,17 @@ export function useProductImageGallery() {
     setActiveIndex(nextIndex);
   }
 
+  // Kiểm tra lại khả năng kéo khi thay đổi số ảnh hoặc kích thước khung responsive.
+  useEffect(() => {
+    const track = thumbnailTrackRef.current;
+    if (!track) return;
+    const observer = new ResizeObserver(() => {
+      setCanDragThumbnails(track.scrollWidth > track.clientWidth);
+    });
+    observer.observe(track);
+    return () => observer.disconnect();
+  }, [images.length]);
+
   // Chỉ cuộn dải thumbnail, không làm trang nhảy khi ảnh đang chọn ra ngoài khung.
   useEffect(() => {
     const track = thumbnailTrackRef.current;
@@ -92,5 +106,5 @@ export function useProductImageGallery() {
 
   const preview = useProductImagePreview(images.length, activeIndex);
 
-  return { thumbnailTrackRef, handleThumbnailPointerDown, handleThumbnailPointerMove, handleThumbnailPointerEnd, selectThumbnail, preview, images, activeIndex, handlePrev, handleNext, productName: product?.name };
+  return { thumbnailTrackRef, canDragThumbnails, handleThumbnailPointerDown, handleThumbnailPointerMove, handleThumbnailPointerEnd, selectThumbnail, preview, images, activeIndex, handlePrev, handleNext, productName: product?.name };
 }
