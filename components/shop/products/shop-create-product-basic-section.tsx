@@ -5,7 +5,7 @@ import type { ProductCategoryOption } from "@/types/shop/product";
 import { Card, Input } from "@/components/ui";
 import type { CreateProductFormState } from "@/types/shop/create-product-form";
 
-export function CreateProductBasicSection({ productForm, categories, brands }: { productForm: CreateProductFormState; categories: ProductCategoryOption[]; brands: ProductBrandOption[] }) {
+export function ShopCreateProductBasicSection({ productForm, categories, brands }: { productForm: CreateProductFormState; categories: ProductCategoryOption[]; brands: ProductBrandOption[] }) {
   const { register, formState: { errors } } = productForm.form;
   return (
     <>

@@ -20,24 +20,24 @@ import {
 
 import { Button, Card, Input } from "@/components/ui";
 import { EditProductSkeleton } from "@/components/shop/products/edit-product-skeleton";
-import { useUpdateProduct } from "@/hooks/shop/products/useUpdateProduct";
+import { useShopUpdateProduct } from "@/hooks/shop/products/useShopUpdateProduct";
 import { useGetShopProductDetailQuery } from "@/lib/redux/services/product-api";
 import { formatNumberInput, getApiErrorMessage, parseNumberInput } from "@/lib/utils";
 import type { ProductBrandOption } from "@/types/shared/product";
 import type { ProductCategoryOption, ShopProductDetail } from "@/types/shop/product";
 import type { ResolvedFetchField } from "@/types/shared/api";
 
-type EditProductViewProps = {
+type ShopEditProductViewProps = {
   productId: number;
   categories: ResolvedFetchField<ProductCategoryOption[]>;
   brands: ResolvedFetchField<ProductBrandOption[]>;
   isModal?: boolean;
 };
 
-type FormState = ReturnType<typeof useUpdateProduct>;
+type FormState = ReturnType<typeof useShopUpdateProduct>;
 
 // Đọc chi tiết từ API trước khi dựng trang chỉnh sửa để giữ đúng ID phân loại và ảnh.
-export function EditProductView({ productId, categories, brands, isModal = false }: EditProductViewProps) {
+export function ShopEditProductView({ productId, categories, brands, isModal = false }: ShopEditProductViewProps) {
   const { data, error, isLoading, refetch } = useGetShopProductDetailQuery(productId);
   const product = data?.success ? data.data : null;
 
@@ -100,7 +100,7 @@ function EditProductForm({
   categories: ProductCategoryOption[];
   brands: ProductBrandOption[];
 }) {
-  const form = useUpdateProduct(product);
+  const form = useShopUpdateProduct(product);
 
   return (
     <form onSubmit={form.submit} className="space-y-6 pb-12">

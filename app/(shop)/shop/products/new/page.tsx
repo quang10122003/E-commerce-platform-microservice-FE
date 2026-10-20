@@ -1,4 +1,4 @@
-import { CreateProductView } from "@/components/shop/products/create-product-view";
+import { ShopCreateProductView } from "@/components/shop/products/shop-create-product-view";
 import { GetDataForCareteProduct } from "@/lib/service/productService";
 
 // Tải dữ liệu danh mục trước khi render form tạo sản phẩm.
@@ -7,7 +7,7 @@ export default async function CreateProductPage() {
   const result = await GetDataForCareteProduct();
 
   return (
-    <CreateProductView
+    <ShopCreateProductView
       category={result.category}
       brand={result.brand}
     />

@@ -4,7 +4,7 @@ import { Button, Input } from "@/components/ui";
 import { formatNumberInput, parseNumberInput } from "@/lib/utils";
 import type { CreateProductFormState } from "@/types/shop/create-product-form";
 
-export function ProductVariantMatrix({ productForm }: { productForm: CreateProductFormState }) {
+export function ShopProductVariantMatrix({ productForm }: { productForm: CreateProductFormState }) {
   const { variantRows, selectedVariantCount, selectAllVariants, deselectAllVariants, toggleVariantSelection, updateVariantValue, updateVariantImages, setPrimaryProductImage, removeProductImage } = productForm;
   return (
     <>

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import { EditProductView } from "@/components/shop/products/edit-product-view";
+import { ShopEditProductView } from "@/components/shop/products/shop-edit-product-view";
 import { GetDataForCareteProduct } from "@/lib/service/productService";
 
 type EditProductPageProps = {
@@ -14,5 +14,5 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
   if (!/^\d+$/.test(productIdParam) || !Number.isSafeInteger(productId) || productId <= 0) notFound();
 
   const catalog = await GetDataForCareteProduct();
-  return <EditProductView productId={productId} categories={catalog.category} brands={catalog.brand} />;
+  return <ShopEditProductView productId={productId} categories={catalog.category} brands={catalog.brand} />;
 }

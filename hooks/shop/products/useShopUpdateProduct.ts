@@ -32,7 +32,7 @@ function toEditableData(product: ShopProductDetail) {
 }
 
 // Quản lý form cập nhật, kiểm tra tổ hợp và đóng gói multipart theo vị trí ảnh của backend.
-export function useUpdateProduct(product: ShopProductDetail) {
+export function useShopUpdateProduct(product: ShopProductDetail) {
   const router = useRouter();
   const { notifyError, notifySuccess } = useNotification();
   const [updateProduct, { isLoading: isSubmitting }] = useUpdateProductMutation();
@@ -227,13 +227,12 @@ export function useUpdateProduct(product: ShopProductDetail) {
 
     setFormError("");
     try {
-      const response = await updateProduct({ productId: product.id, formData }).unwrap();
-      if (!response.success || !response.data) {
-        notifyError(response.message || "Không thể cập nhật sản phẩm.");
-        return;
-      }
+      // HTTP 2xx xác nhận cập nhật; không yêu cầu backend trả body hoặc data.
+      await updateProduct({ productId: product.id, formData }).unwrap();
       notifySuccess("Đã cập nhật sản phẩm và phân loại.");
       router.push("/shop/products");
+      // Danh sách do server tải nên cần refresh, không chỉ invalidate cache RTK Query.
+      router.refresh();
     } catch (error: unknown) {
       notifyError(getApiErrorMessage(error, "Cập nhật sản phẩm thất bại. Vui lòng thử lại."));
     }

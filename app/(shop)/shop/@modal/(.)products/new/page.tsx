@@ -1,4 +1,4 @@
-import { CreateProductView } from "@/components/shop/products/create-product-view";
+import { ShopCreateProductView } from "@/components/shop/products/shop-create-product-view";
 import { ProductFormModal } from "@/components/shop/products/product-form-modal";
 import { GetDataForCareteProduct } from "@/lib/service/productService";
 
@@ -7,7 +7,7 @@ export default async function CreateProductModalPage() {
 
   return (
     <ProductFormModal title="Thêm sản phẩm" description="Tạo sản phẩm mới cho cửa hàng của bạn.">
-      <CreateProductView category={result.category} brand={result.brand} isModal />
+      <ShopCreateProductView category={result.category} brand={result.brand} isModal />
     </ProductFormModal>
   );
 }

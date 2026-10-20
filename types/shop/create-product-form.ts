@@ -1,5 +1,5 @@
 import type { ProductAttributeRequest } from "@/types/shop/product";
-import type { useCreateProduct } from "@/hooks/shop/products/useCreateProduct";
+import type { useShopCreateProduct } from "@/hooks/shop/products/useShopCreateProduct";
 
 // Dữ liệu form thông tin cơ bản
 export interface ProductBasicFormData {
@@ -37,4 +37,4 @@ export interface UseCreateProductOptions {
 }
 
 // Kiểu dữ liệu hook truyền cho các khu vực của form tạo sản phẩm.
-export type CreateProductFormState = ReturnType<typeof useCreateProduct>;
+export type CreateProductFormState = ReturnType<typeof useShopCreateProduct>;

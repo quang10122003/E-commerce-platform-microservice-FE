@@ -25,11 +25,8 @@ export function useDeleteSellerProduct() {
 
     setDeletingProductId(productId);
     try {
-      const response = await deleteProduct(productId).unwrap();
-      if (!response.success) {
-        notifyError(response.message || "Không thể xóa sản phẩm.");
-        return;
-      }
+      // unwrap chỉ thành công với HTTP 2xx, kể cả 204 không có body.
+      await deleteProduct(productId).unwrap();
 
       notifySuccess("Đã xóa sản phẩm. Hình ảnh sẽ được dọn sau.");
       router.refresh();
@@ -47,11 +44,8 @@ export function useDeleteSellerProduct() {
 
     setDeletingVariantId(variantId);
     try {
-      const response = await deleteProductVariant({ productId, variantId }).unwrap();
-      if (!response.success) {
-        notifyError(response.message || "Không thể xóa phân loại.");
-        return;
-      }
+      // Không phụ thuộc envelope success vì response xóa có thể không có nội dung.
+      await deleteProductVariant({ productId, variantId }).unwrap();
 
       notifySuccess("Đã xóa phân loại. Hình ảnh sẽ được dọn sau.");
       router.refresh();

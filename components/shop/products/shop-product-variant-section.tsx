@@ -2,11 +2,11 @@ import { useState } from "react";
 import { Lock } from "lucide-react";
 import { Card } from "@/components/ui";
 import type { CreateProductFormState } from "@/types/shop/create-product-form";
-import { ProductAttributesFields } from "./product-attributes-fields";
-import { ProductVariantMatrix } from "./product-variant-matrix";
-import { SimpleProductFields } from "./simple-product-fields";
+import { ShopProductAttributesFields } from "./shop-product-attributes-fields";
+import { ShopProductVariantMatrix } from "./shop-product-variant-matrix";
+import { ShopSimpleProductFields } from "./shop-simple-product-fields";
 
-export function ProductVariantSection({ productForm }: { productForm: CreateProductFormState }) {
+export function ShopProductVariantSection({ productForm }: { productForm: CreateProductFormState }) {
   const [tempAttrValues, setTempAttrValues] = useState<Record<number, string>>({});
   const handleAddTag = (attributeIndex: number) => {
     const value = tempAttrValues[attributeIndex] || "";
@@ -31,10 +31,10 @@ export function ProductVariantSection({ productForm }: { productForm: CreateProd
       <p className="flex items-center gap-1.5 rounded-lg border border-indigo-100 bg-indigo-50/70 px-3 py-2 text-[11px] text-indigo-800">
         <Lock className="h-3.5 w-3.5 shrink-0" /> SKU được hệ thống tạo khi đăng sản phẩm và giữ nguyên đến khi phân loại bị xóa.
       </p>
-      {!productForm.hasVariants ? <SimpleProductFields productForm={productForm} /> : (
+      {!productForm.hasVariants ? <ShopSimpleProductFields productForm={productForm} /> : (
         <div className="space-y-6">
-          <ProductAttributesFields productForm={productForm} tempAttrValues={tempAttrValues} setTempAttrValues={setTempAttrValues} handleAddTag={handleAddTag} />
-          <ProductVariantMatrix productForm={productForm} />
+          <ShopProductAttributesFields productForm={productForm} tempAttrValues={tempAttrValues} setTempAttrValues={setTempAttrValues} handleAddTag={handleAddTag} />
+          <ShopProductVariantMatrix productForm={productForm} />
         </div>
       )}
     </Card>

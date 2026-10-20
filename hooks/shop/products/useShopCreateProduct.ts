@@ -9,7 +9,7 @@ import type { CreateProductRequest, ProductAttributeRequest, VariantImageMeta } 
 import type { ProductBasicFormData, ProductImageSelection, UIProductVariantRow, UseCreateProductOptions } from "@/types/shop/create-product-form";
 
 // Hook quản lý form tạo sản phẩm, sinh biến thể và đóng gói multipart gửi lên backend.
-export function useCreateProduct({ defaultCategoryId }: UseCreateProductOptions) {
+export function useShopCreateProduct({ defaultCategoryId }: UseCreateProductOptions) {
   const router = useRouter();
   const [createProduct, { isLoading: isSubmitting }] = useCreateProductMutation();
   const { notifyError, notifySuccess, notifyWarning } = useNotification();
@@ -552,14 +552,12 @@ export function useCreateProduct({ defaultCategoryId }: UseCreateProductOptions)
 
     // 5. Gọi API tạo sản phẩm
     try {
-      const response = await createProduct(formData).unwrap();
-
-      if (response.success && response.data) {
-        notifySuccess("Tạo và đăng bán sản phẩm thành công!");
-        router.push("/shop/products");
-      } else {
-        notifyError(response.message || "Không thể tạo sản phẩm.");
-      }
+      // HTTP 2xx xác nhận tạo mới, kể cả khi backend không trả nội dung.
+      await createProduct(formData).unwrap();
+      notifySuccess("Tạo và đăng bán sản phẩm thành công!");
+      router.push("/shop/products");
+      // Tải lại danh sách server thay vì giữ payload đã có trước khi tạo sản phẩm.
+      router.refresh();
     } catch (err: unknown) {
       const errMsg = getApiErrorMessage(
         err,

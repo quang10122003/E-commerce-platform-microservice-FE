@@ -3,7 +3,7 @@ import { Layers, Plus, Trash2, X } from "lucide-react";
 import { Button, Input } from "@/components/ui";
 import type { CreateProductFormState } from "@/types/shop/create-product-form";
 
-export function ProductAttributesFields({ productForm, tempAttrValues, setTempAttrValues, handleAddTag }: { productForm: CreateProductFormState; tempAttrValues: Record<number, string>; setTempAttrValues: Dispatch<SetStateAction<Record<number, string>>>; handleAddTag: (index: number) => void }) {
+export function ShopProductAttributesFields({ productForm, tempAttrValues, setTempAttrValues, handleAddTag }: { productForm: CreateProductFormState; tempAttrValues: Record<number, string>; setTempAttrValues: Dispatch<SetStateAction<Record<number, string>>>; handleAddTag: (index: number) => void }) {
   const { attributes, addAttributeGroup, removeAttributeGroup, removeAttributeValue, updateAttributeName } = productForm;
   const { errors } = productForm.form.formState;
   return (

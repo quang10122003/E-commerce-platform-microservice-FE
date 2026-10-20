@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 // Chuyển thao tác lên navbar khi vị trí gốc đã cuộn khỏi vùng hiển thị.
-export function useStickyProductAction() {
+export function useShopStickyProductAction() {
   const anchorRef = useRef<HTMLDivElement>(null);
   // Lưu vùng navbar nhận nút khi nút gốc nằm phía trên navbar.
   const [navbarTarget, setNavbarTarget] = useState<HTMLElement | null>(null);

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui";
 import { formatNumberInput, parseNumberInput } from "@/lib/utils";
 import type { CreateProductFormState } from "@/types/shop/create-product-form";
 
-export function SimpleProductFields({ productForm }: { productForm: CreateProductFormState }) {
+export function ShopSimpleProductFields({ productForm }: { productForm: CreateProductFormState }) {
   const { form, simpleImages, simplePrimaryImageIndex, updateSimpleImages, setPrimaryProductImage, removeProductImage } = productForm;
   const { errors } = form.formState;
   const hasVariants = false;

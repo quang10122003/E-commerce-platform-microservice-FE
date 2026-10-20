@@ -4,23 +4,23 @@ import React, { useEffect, useRef } from "react";
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui";
-import { useCreateProduct } from "@/hooks/shop/products/useCreateProduct";
+import { useShopCreateProduct } from "@/hooks/shop/products/useShopCreateProduct";
 import { useNotification } from "@/hooks/shared/useNotification";
 import type { ResolvedFetchField } from "@/types/shared/api";
 import type { ProductBrandOption } from "@/types/shared/product";
 import type { ProductCategoryOption } from "@/types/shop/product";
-import { CreateProductBasicSection } from "./create-product-basic-section";
+import { ShopCreateProductBasicSection } from "./shop-create-product-basic-section";
 import { CreateProductImageSection } from "./create-product-image-section";
-import { ProductVariantSection } from "./product-variant-section";
+import { ShopProductVariantSection } from "./shop-product-variant-section";
 
-type CreateProductViewProps = {
+type ShopCreateProductViewProps = {
   category: ResolvedFetchField<ProductCategoryOption[]>;
   brand: ResolvedFetchField<ProductBrandOption[]>;
   isModal?: boolean;
 };
 
 // Hiển thị form tạo sản phẩm với category và brand do Server Component truyền xuống.
-export function CreateProductView({ category, brand, isModal = false }: CreateProductViewProps) {
+export function ShopCreateProductView({ category, brand, isModal = false }: ShopCreateProductViewProps) {
   const categories = category.data ?? [];
   const brands = brand.data ?? [];
   // Cờ khóa form khi gọi API khởi tạo bị lỗi.
@@ -45,16 +45,16 @@ export function CreateProductView({ category, brand, isModal = false }: CreatePr
     };
   }, [brand.error, category.error, notifyError]);
 
-  const productForm = useCreateProduct({ defaultCategoryId: 0 });
+  const productForm = useShopCreateProduct({ defaultCategoryId: 0 });
 
   return (
     <form
       onSubmit={hasCatalogError ? (event) => event.preventDefault() : productForm.onSubmit}
       className={`space-y-6 ${isModal ? "pb-2" : "pb-24"}`}
     >
-      <CreateProductBasicSection productForm={productForm} categories={categories} brands={brands} />
+      <ShopCreateProductBasicSection productForm={productForm} categories={categories} brands={brands} />
       <CreateProductImageSection preview={productForm.coverImagePreview} onChange={productForm.handleCoverImageChange} />
-      <ProductVariantSection productForm={productForm} />
+      <ShopProductVariantSection productForm={productForm} />
 
       {/* 5. STICKY FOOTER ACTION BAR */}
       <div className={`${isModal ? "sticky bottom-0 -mx-3 mt-6 border-t border-slate-200 px-3 sm:-mx-5 sm:px-5" : "fixed bottom-0 left-0 right-0 border-t border-slate-200/80 px-6 lg:left-64"} z-30 flex items-center justify-between gap-3 bg-white/95 py-3.5 backdrop-blur-md`}>
