@@ -1,12 +1,15 @@
 import { baseApi } from "./base-api";
-import type { ApiResponse } from "@/types/shared/api";
+import type { ApiResponse, ScrollResponse } from "@/types/shared/api";
 import type { ChatConversation, ChatWsTicket, ChatMessage, ChatConversationMessagesQuery, ChatReadReceipt } from "@/types/user/chat";
 
 // HTTP chat đi qua BFF để serverFetch quản lý cookie và refresh token.
 export const chatApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getChatConversationMessages: builder.query<ApiResponse<ChatMessage[]>, ChatConversationMessagesQuery>({
-      query: ({ conversationId }) => ({ url: `/api/chat/chat_conversations/${conversationId}/messages` }),
+    getChatConversationMessages: builder.query<ApiResponse<ScrollResponse<ChatMessage>>, ChatConversationMessagesQuery>({
+      query: ({ conversationId, cursor }) => ({
+        url: `/api/chat/chat_conversations/${conversationId}/messages`,
+        params: cursor === undefined ? undefined : { cursor },
+      }),
       keepUnusedDataFor: 0,
     }),
     getProductConversation: builder.mutation<ApiResponse<ChatConversation>, number>({

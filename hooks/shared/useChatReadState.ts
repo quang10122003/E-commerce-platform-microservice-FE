@@ -20,6 +20,7 @@ export function useChatReadState(conversationId: number | null, viewerId: number
   const [tabVisible, setTabVisible] = useState(false);
   const alive = useRef(false);
   const requests = useRef(new Set<{ abort: () => void }>());
+  const requiresOpenRead = useRef(true);
 
   useEffect(() => {
     alive.current = true;
@@ -56,9 +57,12 @@ export function useChatReadState(conversationId: number | null, viewerId: number
   const newestUnreadId = unreadMessages.reduce((latest, message) => Math.max(latest, message.id), 0);
 
   useEffect(() => {
-    if (!conversationId || !viewerId || !ready || !visible || !tabVisible || !newestUnreadId) return;
+    // Tin chưa đọc có thể nằm ngoài 20 tin mới nhất, nên mở room vẫn phải đánh dấu toàn bộ.
+    if (!visible || !tabVisible) { requiresOpenRead.current = true; return; }
+    if (!conversationId || !viewerId || !ready || (!newestUnreadId && !requiresOpenRead.current)) return;
     // Gộp cụm tin đến liên tiếp; chỉ xóa unread sau xác nhận thành công của BE.
     const timer = setTimeout(async () => {
+      requiresOpenRead.current = false;
       const request = dispatch(requestReadChatConversation(conversationId));
       requests.current.add(request);
       try {
@@ -70,6 +74,7 @@ export function useChatReadState(conversationId: number | null, viewerId: number
         acceptResponse(response.data);
       } catch {
         // Chấp nhận lệch trạng thái tạm thời; lần tương tác tiếp theo sẽ thử lại.
+        requiresOpenRead.current = true;
       } finally {
         requests.current.delete(request);
       }

@@ -13,6 +13,13 @@ export interface ApiResponse<T> {
   timestamp: string;
 }
 
+// Phân trang cursor dùng chung; cursor chỉ được truyền nguyên trạng về backend.
+export interface ScrollResponse<T> {
+  items: T[];
+  nextCursor: string | null;
+  hasNext: boolean;
+}
+
 // Dữ liệu hoặc lỗi của từng trường được server service tải độc lập.
 export type ResolvedFetchField<T> = {
   data: T | null;

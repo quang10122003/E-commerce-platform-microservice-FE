@@ -10,6 +10,7 @@ import { ShopChatMessageComposer } from "./shop-chat-message-composer";
 import { ChatScrollToLatestView } from "@/components/shared/chat/ChatScrollToLatestView";
 import { ChatMessageDeliveryView } from "@/components/shared/chat/ChatMessageDeliveryView";
 import { ChatMessageSkeletonView } from "@/components/shared/chat/ChatMessageSkeletonView";
+import { ChatHistoryLoadMoreView } from "@/components/shared/chat/ChatHistoryLoadMoreView";
 
 interface ShopChatMessageRoomProps {
   conversation: ShopChatConversation | null;
@@ -64,9 +65,10 @@ export function ShopChatMessageRoom({
           role="log"
           aria-label="Lịch sử trò chuyện"
           aria-busy={showMessageSkeleton}
-          className="flex h-full min-h-0 flex-col-reverse overflow-y-auto overscroll-contain px-3 py-4 sm:px-5 md:px-6"
+          className="flex h-full min-h-0 flex-col-reverse overflow-y-auto overscroll-contain [overflow-anchor:none] [scroll-behavior:auto] px-3 py-4 sm:px-5 md:px-6"
         >
           <div ref={historyContentRef} className="mx-auto w-full max-w-3xl space-y-4">
+            <ChatHistoryLoadMoreView hasOlder={history.hasOlder} loading={history.olderLoading} error={history.olderError} onLoad={history.loadEarlier} />
             {showMessageSkeleton ? (
               <ChatMessageSkeletonView />
             ) : !history.historyError && !history.count ? (
@@ -93,6 +95,7 @@ export function ShopChatMessageRoom({
                     return (
                       <div
                         key={message.renderKey ?? message.id}
+                        data-chat-message-id={message.renderKey ?? message.id}
                         className={cn("flex flex-col gap-1", isShopSender ? "items-end" : "items-start")}
                       >
                         {/* Bong bóng tin nhắn với màu sắc tương phản nổi bật */}

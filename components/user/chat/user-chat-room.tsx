@@ -9,6 +9,7 @@ import type { UserChatViewModel } from "@/utils/user-chat.utils";
 import { CHAT_MAX_CONTENT_LENGTH } from "@/types/user/chat";
 import { UserChatRoomSkeleton } from "./user-chat-room-skeleton";
 import { ChatProductPriceView } from "@/components/shared/chat/ChatProductPriceView";
+import { ChatHistoryLoadMoreView } from "@/components/shared/chat/ChatHistoryLoadMoreView";
 
 interface UserChatRoomProps {
   conversation: UserChatViewModel;
@@ -61,8 +62,9 @@ export function UserChatRoom({ conversation, userId, visible, onBack, onClose }:
         </div>
       )}
       {/* Luồng tin nhắn */}
-      <div ref={historyRef} role="log" aria-label="Lịch sử trò chuyện" aria-live="polite" aria-relevant="additions" aria-busy={room.loading} className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 space-y-3.5">
+      <div ref={historyRef} role="log" aria-label="Lịch sử trò chuyện" aria-live="polite" aria-relevant="additions" aria-busy={room.loading} className="flex-1 min-h-0 overflow-y-auto overscroll-contain [overflow-anchor:none] [scroll-behavior:auto] p-4 space-y-3.5">
         <div ref={historyContentRef} className="space-y-3.5">
+          <ChatHistoryLoadMoreView hasOlder={room.hasOlder} loading={room.olderLoading} error={room.olderError} onLoad={room.loadEarlier} />
           {room.loading && !room.messages.length && <UserChatRoomSkeleton />}
           {room.error && <p role="alert" className="text-xs text-danger">{room.error}<button type="button" onClick={room.reload} className="ml-2 cursor-pointer underline">Thử lại</button></p>}
           {!room.loading && !room.error && !room.messages.length && <p className="text-center text-xs text-slate-500">Chưa có tin nhắn.</p>}
@@ -75,7 +77,7 @@ export function UserChatRoom({ conversation, userId, visible, onBack, onClose }:
               {group.messages.map((message) => {
                 const isUser = message.senderId === userId;
                 return (
-                  <div key={message.renderKey ?? message.id} className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}>
+                  <div key={message.renderKey ?? message.id} data-chat-message-id={message.renderKey ?? message.id} className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}>
                     <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-xs leading-relaxed shadow-2xs ${isUser ? "bg-gradient-to-r from-primary to-indigo-600 text-white rounded-br-xs" : "bg-white text-slate-800 border border-slate-200/80 rounded-bl-xs"}`}>
                       <p className="whitespace-pre-wrap break-words [overflow-wrap:anywhere]">{message.content}</p>
                     </div>

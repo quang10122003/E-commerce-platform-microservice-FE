@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { formatChatTime, isChatProductReference } from "@/utils/chat.utils";
 import { CHAT_MAX_CONTENT_LENGTH } from "@/types/user/chat";
 import { ProductChatProductView, type ChatProductPreview } from "./ProductChatProductView";
+import { ChatHistoryLoadMoreView } from "@/components/shared/chat/ChatHistoryLoadMoreView";
 
 interface ProductChatRoomViewProps {
   product: ChatProductPreview;
@@ -19,8 +20,8 @@ interface ProductChatRoomViewProps {
 
 // Render lịch sử thật và composer; các thao tác mạng được hook quản lý.
 export function ProductChatRoomView({ product, userId, visible, onUnreadCountChange }: ProductChatRoomViewProps) {
-  const room = useProductChatRoom(product.productId, userId, visible, onUnreadCountChange);
-  const { form, field, onSubmit, sendText, sendProduct, historyRef, historyContentRef, hasNewMessages, scrollToLatest } = useProductChatMessageForm(room.send, room.messages.length, visible, product);
+  const { historyRef, historyContentRef, ...room } = useProductChatRoom(product.productId, userId, visible, onUnreadCountChange);
+  const { form, field, onSubmit, sendText, sendProduct } = useProductChatMessageForm(room.send, product);
   const sending = form.formState.isSubmitting;
   const inputError = form.formState.errors.content?.message;
   const disabled = !room.canSend || sending;
@@ -35,8 +36,9 @@ export function ProductChatRoomView({ product, userId, visible, onUnreadCountCha
       </div>}
       {/* Cuộn nội bộ tránh kéo theo toàn bộ trang chi tiết sản phẩm. */}
       <div className="relative min-h-0 flex-1">
-        <div ref={historyRef} role="log" aria-label="Lịch sử trò chuyện" aria-live="polite" aria-relevant="additions" aria-busy={room.loading} className="h-full min-h-0 overflow-y-auto overscroll-contain p-3.5 bg-slate-50">
+        <div ref={historyRef} role="log" aria-label="Lịch sử trò chuyện" aria-live="polite" aria-relevant="additions" aria-busy={room.loading} className="h-full min-h-0 overflow-y-auto overscroll-contain [overflow-anchor:none] [scroll-behavior:auto] p-3.5 bg-slate-50">
           <div ref={historyContentRef} className="space-y-2.5">
+            <ChatHistoryLoadMoreView hasOlder={room.hasOlder} loading={room.olderLoading} error={room.olderError} onLoad={room.loadEarlier} />
             {room.loading && <p role="status" className="py-6 text-center text-xs text-slate-500">Đang tải hội thoại…</p>}
             {!room.loading && room.status !== "connected" && <p role="status" className="text-center text-xs text-slate-500">{room.status === "reconnecting" ? "Đang kết nối lại…" : "Đang kết nối chat…"}</p>}
             {!room.loading && !room.messages.length && <p className="py-6 text-center text-xs text-slate-500">Chưa có tin nhắn. Hãy gửi câu hỏi đầu tiên cho shop.</p>}
@@ -49,7 +51,7 @@ export function ProductChatRoomView({ product, userId, visible, onUnreadCountCha
                   <span className="h-px flex-1 bg-slate-200" />
                 </div>
                 {group.messages.map((message) => (
-                  <div key={message.renderKey ?? message.id} className={cn("flex flex-col", message.senderId === userId ? "items-end" : "items-start")}>
+                  <div key={message.renderKey ?? message.id} data-chat-message-id={message.renderKey ?? message.id} className={cn("flex flex-col", message.senderId === userId ? "items-end" : "items-start")}>
                     {isChatProductReference(message.content, product.productId) ? (
                       <ProductChatProductView product={product} shared sharedLabel={message.deliveryStatus ? "Thông tin sản phẩm — chưa xác nhận gửi" : undefined} />
                     ) : (
@@ -63,7 +65,7 @@ export function ProductChatRoomView({ product, userId, visible, onUnreadCountCha
             ))}
           </div>
         </div>
-        <ChatScrollToLatestView visible={hasNewMessages} onClick={scrollToLatest} />
+        <ChatScrollToLatestView visible={room.hasNewMessages} onClick={room.scrollToLatest} />
       </div>
       {/* Gợi ý câu hỏi nhanh của UI mock, gửi qua cùng luồng API/socket thật. */}
       <div className="flex shrink-0 gap-1.5 overflow-x-auto px-3 py-2 bg-white border-t border-slate-100">

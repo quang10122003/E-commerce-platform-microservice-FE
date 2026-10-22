@@ -1,73 +1,37 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { useChatReadState } from "@/hooks/shared/useChatReadState";
 import { syncChatMessagePreview } from "@/lib/redux/services/chat-cache";
-import { useGetChatConversationMessagesQuery } from "@/lib/redux/services/chat-api";
 import { useChatHistoryScroll } from "@/hooks/shared/useChatHistoryScroll";
+import { useChatMessageHistory } from "@/hooks/shared/useChatMessageHistory";
 import { useChatRoomSocket } from "@/hooks/shared/useChatRoomSocket";
 import { useChatMessageQueue } from "@/hooks/shared/useChatMessageQueue";
-import { getApiErrorMessage } from "@/lib/utils";
-import { getChatDisplayMessages, mergeChatMessages } from "@/utils/chat.utils";
-import { getShopChatUiState, groupShopChatMessages, prepareShopChatMessages } from "@/utils/shop-chat.utils";
-import type { ChatMessage } from "@/types/user/chat";
+import { getChatDisplayMessages } from "@/utils/chat.utils";
+import { getShopChatUiState, groupShopChatMessages } from "@/utils/shop-chat.utils";
 
 // Tải lịch sử và nhận realtime đúng room; component được key theo tài khoản và room.
 export function useChatMessages(conversationId?: number, viewerId?: number, visible = true, reverse = true) {
   const dispatch = useAppDispatch();
   const enabled = !!conversationId && !!viewerId;
   const { pending, identities, enqueue, observe, interrupt, pause, resume, retry } = useChatMessageQueue(viewerId ?? 0);
-  // Giữ tin socket riêng để response REST đến muộn không ghi đè hoặc làm mất tin mới.
-  const [liveMessages, setLiveMessages] = useState<ChatMessage[]>([]);
-  // Lưu lỗi tải bù để hàng đợi không chạy khi chưa đồng bộ xong lịch sử.
-  const [syncError, setSyncError] = useState("");
-  const mounted = useRef(false);
-  const query = useGetChatConversationMessagesQuery({
-    conversationId: conversationId ?? 0,
-    viewerId: viewerId ?? 0,
-  }, { skip: !enabled, refetchOnMountOrArgChange: true });
-  const { refetch } = query;
-  // currentData gắn với arg hiện tại, nên response room cũ không lọt sang room mới.
-  const data = enabled && query.currentData?.success ? query.currentData.data : null;
-  const hasHistory = Array.isArray(data);
-  const restMessages = hasHistory ? prepareShopChatMessages(data, conversationId ?? 0) : [];
-  const messages = mergeChatMessages(restMessages, liveMessages, conversationId ?? 0);
-  const error = !enabled ? "" : query.isError
-    ? getApiErrorMessage(query.error, "Không tải được tin nhắn. Vui lòng thử lại.")
-    : query.currentData && !query.currentData.success ? query.currentData.message
-    : query.currentData?.success && !hasHistory ? "Dữ liệu tin nhắn không hợp lệ." : "";
+  const history = useChatMessageHistory(conversationId, viewerId, observe);
+  const read = useChatReadState(conversationId ?? null, viewerId ?? 0, history.messages, visible, enabled && history.ready && !history.error && !history.refreshing);
 
-  const read = useChatReadState(conversationId ?? null, viewerId ?? 0, messages, visible, enabled && hasHistory && !error && !syncError);
-
-  useEffect(() => {
-    mounted.current = true;
-    return () => { mounted.current = false; };
-  }, []);
-
-  // Tải bù và đối chiếu tin đã lưu trước khi cho phép hàng đợi tiếp tục publish.
+  // Tải bù đủ các batch bị lỡ và đối chiếu tin đã lưu trước khi tiếp tục publish.
+  const { refresh } = history;
   const syncHistory = useCallback(async (publish: (content: string) => void) => {
-    if (!enabled || !conversationId) return;
     pause();
-    try {
-      const response = await refetch().unwrap();
-      if (!mounted.current) return;
-      if (!response.success || !Array.isArray(response.data)) throw new Error(response.message || "Dữ liệu tin nhắn không hợp lệ.");
-      observe(prepareShopChatMessages(response.data, conversationId));
-      setSyncError("");
-      resume(publish);
-    } catch (failure) {
-      if (mounted.current) setSyncError(getApiErrorMessage(failure, "Chưa tải bù được lịch sử. Tin đang chờ chưa được gửi."));
-    }
-  }, [enabled, conversationId, refetch, pause, observe, resume]);
+    if (await refresh()) resume(publish);
+  }, [refresh, pause, resume]);
 
   const { publish, status, error: socketError } = useChatRoomSocket({
     // Chỉ mở socket sau khi đã tải được lịch sử bằng quyền của tài khoản hiện tại.
-    conversationId: enabled && hasHistory ? conversationId ?? null : null,
+    conversationId: enabled && history.ready ? conversationId ?? null : null,
     onMessage: (message) => {
-      observe([message]);
+      history.receive(message);
       if (viewerId) dispatch(syncChatMessagePreview(message, viewerId));
-      setLiveMessages((current) => mergeChatMessages(current, [message], conversationId ?? 0));
     },
     onRead: read.receiveRead,
     // Tải bù sau subscribe hoặc reconnect; hook socket luôn xin ticket mới.
@@ -78,34 +42,30 @@ export function useChatMessages(conversationId?: number, viewerId?: number, visi
   // Ghi nhận vào hàng đợi của room hiện tại, không khóa thao tác khi mất socket.
   const { retryRead } = read;
   const send = useCallback((content: string) => {
-    if (!enabled || !hasHistory) return Promise.reject(new Error("Chưa tải được hội thoại. Vui lòng thử lại sau."));
+    if (!enabled || !history.ready) return Promise.reject(new Error("Chưa tải được hội thoại. Vui lòng thử lại sau."));
     retryRead();
     return enqueue(content, conversationId ?? null);
-  }, [enabled, hasHistory, enqueue, conversationId, retryRead]);
+  }, [enabled, history.ready, enqueue, conversationId, retryRead]);
 
   const displayMessages = getChatDisplayMessages(read.messages, pending, identities);
-  const scroll = useChatHistoryScroll(displayMessages.length, { reverse, visible });
-  const loading = enabled && (query.isLoading || (query.isFetching && !query.currentData));
-  const historyError = error || syncError;
+  const scroll = useChatHistoryScroll(displayMessages.length, {
+    reverse, visible, latestMessageKey: displayMessages.at(-1)?.renderKey,
+    hasOlder: history.hasOlder, loadingOlder: history.olderLoading,
+    olderError: history.olderError, onLoadOlder: history.loadOlder,
+  });
   const uiState = getShopChatUiState({
-    enabled, loading, connectionStatus: status, refreshing: query.isFetching,
-    historyError, socketError, hasFailedMessage: pending[0]?.deliveryStatus === "failed",
+    enabled, loading: history.loading, connectionStatus: status, refreshing: history.refreshing,
+    historyError: history.error, socketError, hasFailedMessage: pending[0]?.deliveryStatus === "failed",
   });
   return {
-    ...scroll, send, canSend: enabled && hasHistory,
-    groups: groupShopChatMessages(displayMessages),
-    messages: displayMessages,
-    count: displayMessages.length,
+    ...scroll, send, canSend: enabled && history.ready,
+    groups: groupShopChatMessages(displayMessages), messages: displayMessages, count: displayMessages.length,
+    hasOlder: history.hasOlder, olderLoading: history.olderLoading, olderError: history.olderError,
     pendingCount: pending.length, pendingHeadId: pending[0]?.id, retryQueuedMessage: retry,
-    showQueueNotice: pending.length > 0 && (status !== "connected" || pending[0]?.deliveryStatus === "failed" || !!historyError),
-    loading, uiState, historyError,
-    refreshing: enabled && query.isFetching,
-    connectionStatus: status,
-    error: error || syncError || (enabled ? socketError : ""),
+    showQueueNotice: pending.length > 0 && (status !== "connected" || pending[0]?.deliveryStatus === "failed" || !!history.error),
+    loading: history.loading, uiState, historyError: history.error, refreshing: history.refreshing,
+    connectionStatus: status, unreadCount: read.unreadCount,
+    error: history.error || (enabled ? socketError : ""),
     reload: () => { retryRead(); void syncHistory(publish); },
   };
 }
-
-
-
-

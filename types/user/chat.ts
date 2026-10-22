@@ -76,6 +76,7 @@ export const CHAT_MAX_CONTENT_LENGTH = 4000;
 export interface ChatConversationMessagesQuery {
   conversationId: number;
   viewerId: number;
+  cursor?: string;
 }
 
 // Tin chờ của hội thoại chỉ có ID âm trong bộ nhớ, không gửi ID này tới BE.
