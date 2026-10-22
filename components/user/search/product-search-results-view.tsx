@@ -123,7 +123,6 @@ export function ProductSearchResultsView({
             key={JSON.stringify(query)}
             initialPage={initialPage}
             query={query}
-            sort={sort}
             isPendingFilter={isPending}
           />
         </div>

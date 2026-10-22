@@ -4,6 +4,7 @@ import { useFieldArray, useForm, useWatch } from "react-hook-form";
 
 import { useCreateProductMutation } from "@/lib/redux/services/product-api";
 import { getApiErrorMessage } from "@/lib/utils";
+import { isValidProductPrice, PRODUCT_PRICE_ERROR } from "@/lib/utils/shop-product.utils";
 import { useNotification } from "@/hooks/shared/useNotification";
 import type { CreateProductRequest, ProductAttributeRequest, VariantImageMeta } from "@/types/shop/product";
 import type { ProductBasicFormData, ProductImageSelection, UIProductVariantRow, UseCreateProductOptions } from "@/types/shop/create-product-form";
@@ -137,6 +138,13 @@ export function useShopCreateProduct({ defaultCategoryId }: UseCreateProductOpti
     () => variantRows.filter((row) => row.selected),
     [variantRows]
   );
+
+  // Hiển thị lỗi tại giá đã nhập hoặc khi người bán gửi form.
+  const variantPriceErrors = Object.fromEntries(variantRows.map((row) => [
+    row.key,
+    row.selected && (form.formState.isSubmitted || row.price !== 0) && !isValidProductPrice(row.price)
+      ? PRODUCT_PRICE_ERROR : undefined,
+  ]));
 
   // Chuyển trạng thái tạo hoặc bỏ qua của một tổ hợp.
   const toggleVariantSelection = useCallback((key: string) => {
@@ -372,6 +380,10 @@ export function useShopCreateProduct({ defaultCategoryId }: UseCreateProductOpti
   // Áp dụng giá và tồn kho hàng loạt cho các biến thể được chọn.
   const batchApply = useCallback(
     (price?: number, stock?: number) => {
+      if (price !== undefined && !isValidProductPrice(price)) {
+        notifyWarning(PRODUCT_PRICE_ERROR);
+        return;
+      }
       setVariantOverrides((prev) => {
         const next = { ...prev };
         selectedVariantRows.forEach((row) => {
@@ -393,7 +405,7 @@ export function useShopCreateProduct({ defaultCategoryId }: UseCreateProductOpti
       });
       notifySuccess("Đã áp dụng giá và tồn kho cho các biến thể được chọn!");
     },
-    [notifySuccess, selectedVariantRows]
+    [notifySuccess, notifyWarning, selectedVariantRows]
   );
 
   // Xử lý gửi form và đóng gói Multipart/form-data
@@ -445,10 +457,10 @@ export function useShopCreateProduct({ defaultCategoryId }: UseCreateProductOpti
 
       // Kiểm tra giá bán của các biến thể được chọn.
       const hasInvalidPrice = selectedVariantRows.some(
-        (variant) => !Number.isFinite(variant.price) || variant.price <= 0
+        (variant) => !isValidProductPrice(variant.price)
       );
       if (hasInvalidPrice) {
-        notifyError("Vui lòng nhập giá bán lớn hơn 0 cho mỗi biến thể được chọn.");
+        notifyError("Giá bán của mỗi biến thể được chọn phải từ 1.000đ trở lên.");
         return;
       }
 
@@ -486,8 +498,8 @@ export function useShopCreateProduct({ defaultCategoryId }: UseCreateProductOpti
       });
     } else {
       // Sản phẩm đơn giản không có phân loại
-      if (!Number.isFinite(data.simplePrice) || data.simplePrice <= 0) {
-        notifyError("Vui lòng nhập giá bán hợp lệ cho sản phẩm.");
+      if (!isValidProductPrice(data.simplePrice)) {
+        setError("simplePrice", { type: "min", message: PRODUCT_PRICE_ERROR });
         return;
       }
 
@@ -593,6 +605,7 @@ export function useShopCreateProduct({ defaultCategoryId }: UseCreateProductOpti
     setPrimaryProductImage,
     updateVariantValue,
     validateAttributeValue,
+    variantPriceErrors,
     variantRows,
     simpleImages,
     simplePrimaryImageIndex,

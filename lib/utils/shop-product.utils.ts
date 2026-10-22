@@ -1,6 +1,13 @@
 import { ISO_DATE_LENGTH, FIRST_PAGE, PAGINATION_VISIBLE_PAGES } from "@/lib/constants";
 import type { SellerProductItem } from "@/types/shop/product";
 
+export const PRODUCT_PRICE_ERROR = "Giá bán phải từ 1.000đ trở lên.";
+
+// Dùng chung giới hạn giá cho form tạo mới và cập nhật sản phẩm.
+export function isValidProductPrice(price: number) {
+  return Number.isFinite(price) && price >= 1_000;
+}
+
 // Tính giá và tồn kho từ các phân loại để hiển thị một dòng sản phẩm.
 export function summarizeSellerProduct(product: SellerProductItem) {
   const prices = product.variants.map((variant) => variant.price);

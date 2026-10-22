@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ISO_DATE_LENGTH, FLASH_SALE_CLOSING_SOON_MS } from "@/lib/constants";
 
 import { useMounted } from "@/lib/hooks";
@@ -9,7 +10,7 @@ import { formatRegistrationRemaining } from "@/lib/utils/flash-sale.utils";
 import type { ShopFlashSaleCampaign } from "@/types/shop/flash-sale";
 import { useRegistrationCountdown } from "@/hooks/shop/flash-sale/useRegistrationCountdown";
 import { Package, Timer } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ShopFlashSaleRegistrationAction } from "./shop-flash-sale-registration-action";
 
@@ -55,13 +56,21 @@ export function ShopFlashSaleRow({ campaign, now }: { campaign: ShopFlashSaleCam
           {!registrationActive ? "Đã hết hạn" : closingSoon ? "Sắp đóng đăng ký" : "Còn đăng ký"}
         </span>
       </td>
-      {/* Nút xem giữ nguyên ở cả chương trình còn hạn và đã đóng đăng ký. */}
+      {/* Nút hành động đăng ký và xem danh sách phân loại đã đăng ký */}
       <td className="px-5 py-4">
         <div className="flex flex-col items-stretch gap-2">
           <ShopFlashSaleRegistrationAction campaign={campaign} disabled={!registrationActive} />
-          <Button type="button" variant="outline" size="sm" aria-disabled="true" title="Giao diện mẫu, chưa kết nối danh sách sản phẩm" className="rounded-lg text-primary shadow-none">
-            <Package className="size-3.5" aria-hidden="true" />Sản phẩm đã đăng ký
-          </Button>
+          <Link
+            href={`/shop/flash-sales/${id}/items`}
+            scroll={false}
+            className={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "rounded-lg text-primary shadow-none hover:bg-primary-light/50"
+            )}
+          >
+            <Package className="size-3.5" aria-hidden="true" />
+            Sản phẩm đã đăng ký
+          </Link>
         </div>
       </td>
     </tr>

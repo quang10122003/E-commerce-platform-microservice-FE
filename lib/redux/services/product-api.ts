@@ -1,4 +1,5 @@
 import type { ApiResponse } from "@/types/shared/api";
+import type { ShopOverviewResponse } from "@/types/user/shop";
 import type {
   ProductCatalogPage,
   ProductCatalogQuery,
@@ -33,6 +34,12 @@ function buildProductCatalogQuery(query: ProductCatalogQuery): string {
 // Quản lý các endpoint API sản phẩm cho Kênh Người Bán và Người Mua.
 export const productApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    // Lấy thông tin và số sản phẩm ACTIVE của shop qua BFF công khai.
+    getShopOverview: builder.query<ApiResponse<ShopOverviewResponse>, number>({
+      query: (shopId) => ({ url: `/api/products/shops/${shopId}/overview`, method: "GET" }),
+      providesTags: ["Product"],
+    }),
+
     // Đọc chi tiết công khai qua BFF, giữ wrapper ApiResponse từ gateway.
     getUserProductDetail: builder.query<ApiResponse<UserProductDetailResponse>, UserProductDetailParams>({
       query: ({ productId }) => ({ url: `/api/products/${productId}`, method: "GET" }),
@@ -130,6 +137,7 @@ export const productApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useGetShopOverviewQuery,
   useGetUserProductDetailQuery,
   useGetProductPriceRangeQuery,
   useGetVariantSaleQuery,

@@ -69,6 +69,8 @@ export function ShopProductVariantMatrix({ productForm }: { productForm: CreateP
                               type="text"
                               inputMode="numeric"
                               disabled={!row.selected}
+                              error={productForm.variantPriceErrors[row.key]}
+                              aria-invalid={!!productForm.variantPriceErrors[row.key]}
                               value={row.price ? formatNumberInput(row.price) : ""}
                               onChange={(e) =>
                                 updateVariantValue(

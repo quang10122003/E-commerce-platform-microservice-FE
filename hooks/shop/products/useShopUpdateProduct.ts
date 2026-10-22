@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 
 import { useNotification } from "@/hooks/shared/useNotification";
 import { useUpdateProductMutation } from "@/lib/redux/services/product-api";
-import { hasDuplicateVariantCombinations } from "@/lib/utils/shop-product.utils";
+import { hasDuplicateVariantCombinations, isValidProductPrice, PRODUCT_PRICE_ERROR } from "@/lib/utils/shop-product.utils";
 import { getApiErrorMessage } from "@/lib/utils";
 import type { ShopProductDetail, UpdateProductRequest, VariantImageMeta } from "@/types/shop/product";
 import type { EditableAttribute, EditableVariant, UpdateProductFields } from "@/types/shop/update-product-form";
@@ -44,7 +44,7 @@ export function useShopUpdateProduct(product: ShopProductDetail) {
   const [draftValues, setDraftValues] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState("");
   const previewUrls = useRef<string[]>([]);
-  const { control, register, handleSubmit, formState: { errors } } = useForm<UpdateProductFields>({
+  const { control, register, handleSubmit, formState: { errors, isSubmitted } } = useForm<UpdateProductFields>({
     defaultValues: {
       name: product.name,
       categoryId: String(product.categoryId),
@@ -52,6 +52,13 @@ export function useShopUpdateProduct(product: ShopProductDetail) {
       description: product.description || "",
     },
   });
+
+  // Hiển thị lỗi giá riêng cho từng phân loại, kể cả giá cũ dưới giới hạn.
+  const variantPriceErrors = Object.fromEntries(variants.map((variant) => [
+    variant.key,
+    (isSubmitted || variant.price !== "") && !isValidProductPrice(Number(variant.price))
+      ? PRODUCT_PRICE_ERROR : undefined,
+  ]));
 
   useEffect(() => () => previewUrls.current.forEach((url) => URL.revokeObjectURL(url)), []);
 
@@ -164,6 +171,10 @@ export function useShopUpdateProduct(product: ShopProductDetail) {
 
   // Chặn dữ liệu sai trước khi ánh xạ chỉ số thuộc tính và ảnh mới vào multipart.
   const submit = handleSubmit(async (fields) => {
+    if (variants.some((variant) => !isValidProductPrice(Number(variant.price)))) {
+      setFormError("Giá bán của mỗi phân loại phải từ 1.000đ trở lên.");
+      return;
+    }
     const names = attributes.map((attribute) => attribute.name.trim().toLowerCase());
     if (names.some((name) => !name) || new Set(names).size !== names.length
       || attributes.some((attribute) => attribute.values.length === 0
@@ -174,9 +185,8 @@ export function useShopUpdateProduct(product: ShopProductDetail) {
     }
 
     if (variants.length === 0 || variants.some((variant) => attributes.some((attribute) => !variant.selections[attribute.key])
-      || !variant.price || !Number.isFinite(Number(variant.price)) || Number(variant.price) < 0
       || variant.stock === "" || !Number.isSafeInteger(Number(variant.stock)) || Number(variant.stock) < 0)) {
-      setFormError("Mỗi phân loại cần đủ thuộc tính, giá không âm và tồn kho nguyên không âm.");
+      setFormError("Mỗi phân loại cần đủ thuộc tính và tồn kho nguyên không âm.");
       return;
     }
     if (hasDuplicateVariantCombinations(attributes, variants)) {
@@ -239,7 +249,7 @@ export function useShopUpdateProduct(product: ShopProductDetail) {
   });
 
   return {
-    attributes, variants, coverPreview, coverFile, draftValues, formError, errors, control, register, submit, isSubmitting,
+    attributes, variants, variantPriceErrors, coverPreview, coverFile, draftValues, formError, errors, control, register, submit, isSubmitting,
     setDraftValues, selectCover, addAttribute, updateAttribute, removeAttribute, isAttributeRemovalBlocked,
     addValue, updateValue, removeValue, isValueInUse,
     addVariant, updateVariant, addImages, removeImage, setPrimaryImage,

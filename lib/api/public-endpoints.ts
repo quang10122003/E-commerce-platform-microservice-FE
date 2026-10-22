@@ -10,6 +10,8 @@ export const PUBLIC_ENDPOINTS = [
   "api/auth/refresh_token",
   "api/auth/logout",
   "api/products",
+  // GET api/products/shops/{shopId}/overview: thông tin shop công khai.
+  /^api\/products\/shops\/\d+\/overview$/,
   // GET api/products/{productId}: chi tiết sản phẩm công khai
   /^api\/products\/-?\d+$/,
   // GET api/products/{productId}/variants/{variantId}/sale: thông tin sale
@@ -32,7 +34,7 @@ export function isPublicEndpoint(endpointPath: string, method = "GET"): boolean 
     return method.toUpperCase() === "GET";
   }
 
-  // Chỉ GET chi tiết và sale khớp whitelist được công khai; API quản lý vẫn private.
+  // Chỉ GET chi tiết, sale và tổng quan shop khớp whitelist được công khai; API quản lý vẫn private.
   if (endpointPath.startsWith("api/products/")) {
     return method.toUpperCase() === "GET" && PUBLIC_ENDPOINTS.some(
       (publicEndpoint) => publicEndpoint instanceof RegExp && publicEndpoint.test(endpointPath),

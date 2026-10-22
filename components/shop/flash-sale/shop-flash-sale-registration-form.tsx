@@ -1,6 +1,7 @@
 "use client";
 
-import { CheckCircle2, Info } from "lucide-react";
+import Link from "next/link";
+import { CheckCircle2, Info, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { isValidDiscountPercent } from "@/lib/utils/flash-sale.utils";
@@ -22,9 +23,18 @@ export function ShopFlashSaleRegistrationForm({ campaignId, products, error, cam
         <form onSubmit={submit} onChange={clearRegistrationFeedback} aria-busy={isSubmitting} noValidate>
           {/* Tên và hạn đăng ký lấy độc lập với danh sách sản phẩm. */}
           {campaign && <div className="border-b border-surface-border px-6 py-4 sm:px-8">
-            <p className="font-heading text-lg font-semibold text-main">{campaign.name}</p>
-            <p className="mt-1 text-sm text-muted-foreground">Hạn đăng ký: {localDeadline ? `${formatSellerProductDate(localDeadline)} · ${localDeadline.slice(11)}` : "—"} (giờ thiết bị)</p>
-            {!registrationOpen && <p role="status" className="mt-2 text-sm font-medium text-danger">Chương trình đã hết hạn đăng ký.</p>}
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="font-heading text-lg font-semibold text-main">{campaign.name}</p>
+                <p className="mt-1 text-sm text-muted-foreground">Hạn đăng ký: {localDeadline ? `${formatSellerProductDate(localDeadline)} · ${localDeadline.slice(11)}` : "—"} (giờ thiết bị)</p>
+                {!registrationOpen && <p role="status" className="mt-2 text-sm font-medium text-danger">Chương trình đã hết hạn đăng ký.</p>}
+              </div>
+              {/* Thay popup hiện tại trong lịch sử để đóng luôn về danh sách chương trình. */}
+              <Link href={`/shop/flash-sales/${campaignId}/items`} replace={isModal} scroll={false} className="inline-flex shrink-0 items-center gap-1.5 text-xs font-semibold text-primary hover:underline">
+                <Package className="size-3.5" aria-hidden="true" />
+                Xem phân loại đã đăng ký
+              </Link>
+            </div>
           </div>}
           {campaignError && <p role="alert" className="mx-6 mt-5 rounded-lg bg-danger-light p-3 text-sm text-danger">{campaignError} <button type="button" onClick={retry} className="ml-2 font-semibold underline underline-offset-2">Thử lại</button></p>}
           {error && <p role="alert" className="mx-6 mt-5 rounded-lg bg-danger-light p-3 text-sm text-danger">{error} <button type="button" onClick={retry} className="ml-2 font-semibold underline underline-offset-2">Thử lại</button></p>}
@@ -63,7 +73,7 @@ export function ShopFlashSaleRegistrationForm({ campaignId, products, error, cam
                 <label htmlFor="sale-discount" className="mb-2 block text-sm font-semibold">Mức giảm giá (%)</label>
                 <Input id="sale-discount" type="number" inputMode="decimal" step="0.01" min="1" max="99" aria-invalid={!!errors.discountPercent}
                   {...register("discountPercent", { valueAsNumber: true, onChange: changeDiscount, required: "Nhập mức giảm giá.", validate: value => isValidDiscountPercent(value) || "Nhập mức giảm từ 1 đến 99%; tối đa 2 số thập phân." })}
-                  error={errors.discountPercent?.message} />
+                  error={errors.discountPercent?.message} helperText="Từ 1 đến 99%, tối đa 2 chữ số thập phân." />
               </div>
               <div>
                 <label htmlFor="sale-quantity" className="mb-2 block text-sm font-semibold">Số lượng đăng ký</label>
@@ -95,11 +105,20 @@ export function ShopFlashSaleRegistrationForm({ campaignId, products, error, cam
           </fieldset>
           {/* Phản hồi đăng ký dựa trên kết quả thực tế từ backend. */}
           {errors.root?.registration && <p role="alert" className="mx-6 mb-5 text-sm text-danger">{errors.root.registration.message}</p>}
-          {registrationSuccessful && !errors.root?.registration && <p role="status" className="mx-6 mb-5 flex items-start gap-2 rounded-lg bg-primary-light p-3 text-sm text-primary sm:mx-8"><CheckCircle2 className="mt-0.5 size-4 shrink-0" />Đăng ký sản phẩm vào Flash Sale thành công. Bạn có thể đăng ký thêm sản phẩm khác.</p>}
+          {registrationSuccessful && !errors.root?.registration && (
+            <p role="status" className="mx-6 mb-5 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-primary-light p-3 text-sm text-primary sm:mx-8">
+              <span className="flex items-center gap-2">
+                <CheckCircle2 className="size-4 shrink-0" />
+                Đăng ký sản phẩm vào Flash Sale thành công.
+              </span>
+              <Link href={`/shop/flash-sales/${campaignId}/items`} replace={isModal} scroll={false} className="font-semibold underline underline-offset-2 hover:opacity-80">
+                Xem phân loại đã đăng ký &rarr;
+              </Link>
+            </p>
+          )}
           <footer className="flex flex-wrap items-center justify-end gap-4 border-t border-surface-border px-6 py-5 sm:px-8">
             <div className="flex gap-2"><Button type="button" variant="outline" disabled={isSubmitting} onClick={close}>Đóng</Button><Button type="submit" variant="primary" disabled={isSubmitting || !!error || !!campaignError || !registrationOpen || !selectedVariant || quantityLimit < 1}>{isSubmitting ? "Đang đăng ký..." : "Đăng ký sản phẩm"}</Button></div>
           </footer>
         </form>
   );
 }
-

@@ -373,7 +373,7 @@ function VariantSection({ form }: { form: FormState }) {
                   ))}
                   {form.attributes.length === 0 && <span className="text-[10px] text-slate-400">Không có thuộc tính</span>}
                 </td>
-                <td className="px-3 py-2"><Input type="text" inputMode="numeric" value={formatNumberInput(variant.price)} onChange={(event) => form.updateVariant(variant.key, { price: event.target.value ? String(parseNumberInput(event.target.value)) : "" })} aria-label={`Giá của ${variant.sku || "phân loại mới"}`} className="h-8 bg-white text-xs font-bold text-cta" /></td>
+                <td className="px-3 py-2"><Input type="text" inputMode="numeric" value={formatNumberInput(variant.price)} onChange={(event) => form.updateVariant(variant.key, { price: event.target.value ? String(parseNumberInput(event.target.value)) : "" })} error={form.variantPriceErrors[variant.key]} aria-invalid={!!form.variantPriceErrors[variant.key]} aria-label={`Giá của ${variant.sku || "phân loại mới"}`} className="h-8 bg-white text-xs font-bold text-cta" /></td>
                 <td className="px-3 py-2"><Input type="number" min="0" value={variant.stock} onChange={(event) => form.updateVariant(variant.key, { stock: event.target.value })} aria-label={`Tồn kho của ${variant.sku || "phân loại mới"}`} className="h-8 bg-white text-xs font-bold" /></td>
                 <td className="px-3 py-2">
                   <div className="flex min-w-64 flex-wrap items-center gap-2">

@@ -2,17 +2,15 @@
 
 import { useRef, useState, type ChangeEvent, type FocusEvent, type FormEvent } from "react";
 import { useRegistrationCountdown } from "./useRegistrationCountdown";
-import { useDebouncedValue } from "@/hooks/useDebouncedValue";
-import { PRICE_PREVIEW_DEBOUNCE_MS } from "@/lib/constants";
-import { skipToken } from "@reduxjs/toolkit/query";
-import { usePreviewFlashSalePriceQuery, useRegisterFlashSaleItemMutation } from "@/lib/redux/services/flash-sale-api";
+import { useFlashSalePricePreview } from "./useFlashSalePricePreview";
+import { useRegisterFlashSaleItemMutation } from "@/lib/redux/services/flash-sale-api";
 import { getApiErrorMessage } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useNotification } from "@/hooks/shared/useNotification";
 import { useForm, useWatch } from "react-hook-form";
 
 import type { FlashSaleRegistrationFields, ShopFlashSaleProduct, ShopFlashSaleCampaignDetail } from "@/types/shop/flash-sale";
-import { formatProductOptionLabel, getRegistrationQuantityLimit, normalizeSearchText, isValidDiscountPercent, isRegistrationDeadlineOpen } from "@/lib/utils/flash-sale.utils";
+import { formatProductOptionLabel, getRegistrationQuantityLimit, normalizeSearchText, normalizeDiscountPercent, isRegistrationDeadlineOpen } from "@/lib/utils/flash-sale.utils";
 
 // Quản lý validation, preview giá và gửi đăng ký qua service RTK Query.
 export function useFlashSaleRegistration(campaignId: string, products: ShopFlashSaleProduct[], isModal = false, campaign?: ShopFlashSaleCampaignDetail, initialNow = 0) {
@@ -47,23 +45,8 @@ export function useFlashSaleRegistration(campaignId: string, products: ShopFlash
 
   // Chỉ gửi request khi đủ sản phẩm, phân loại thuộc sản phẩm và mức giảm hợp lệ.
   const discountPercent = useWatch({ control: form.control, name: "discountPercent" });
-  const canPreview = productSelected && !!selectedVariant && isValidDiscountPercent(discountPercent);
-  // Debounce toàn bộ khóa request để không gọi API khi input còn thay đổi.
-  const previewKey = canPreview ? `${selectedVariant.id}:${discountPercent}` : null;
-  const stablePreviewKey = useDebouncedValue(previewKey, PRICE_PREVIEW_DEBOUNCE_MS);
-  const previewReady = canPreview && previewKey === stablePreviewKey;
-  const preview = usePreviewFlashSalePriceQuery(previewReady
-    ? { variantId: selectedVariant.id, discountPercent } : skipToken,
-    { refetchOnMountOrArgChange: true });
-  // currentData chỉ thuộc bộ input hiện tại, không dùng giá của request trước.
-  const salePrice = previewReady && !preview.isFetching && preview.currentData?.success
-    ? preview.currentData.data?.salePrice : undefined;
-  const priceLoading = canPreview && (!previewReady || preview.isFetching);
-  const priceError = !previewReady ? undefined : preview.error
-    ? getApiErrorMessage(preview.error, "Không thể tính giá sale. Vui lòng thử lại.")
-    : preview.currentData && (!preview.currentData.success || !preview.currentData.data)
-      ? preview.currentData.message || "Không thể tính giá sale. Vui lòng thử lại." : undefined;
-  const retryPrice = () => { if (previewReady) void preview.refetch(); };
+  const { salePrice, priceLoading, priceError, retryPrice } =
+    useFlashSalePricePreview(selectedVariant?.id, discountPercent, productSelected);
 
   // Kiểm tra lựa chọn thực tế thay vì chấp nhận tên sản phẩm tự nhập.
   const validateProduct = (value: string) => {
@@ -76,15 +59,16 @@ export function useFlashSaleRegistration(campaignId: string, products: ShopFlash
     (Number.isInteger(value) && value >= 1 && value <= quantityLimit)
       || `Nhập số nguyên từ 1 đến ${quantityLimit}, sau khi chọn phân loại còn đủ tồn kho.`;
 
-  // Giữ mức giảm trong khoảng 1–99 ngay khi nhập, cho phép xóa trống để nhập lại.
+  // Giữ mức giảm trong khoảng 1–99, tối đa 2 số thập phân; cho phép xóa trống.
   const changeDiscount = (event: ChangeEvent<HTMLInputElement>) => {
     const raw = event.target.value;
     if (!raw) return;
     const value = Number(raw);
     if (!Number.isFinite(value)) return;
-    const bounded = Math.min(99, Math.max(1, value));
-    if (bounded !== value) {
-      form.setValue("discountPercent", bounded, { shouldDirty: true, shouldValidate: true });
+    const normalized = normalizeDiscountPercent(value);
+    // Cập nhật cả input và form khi nhập hoặc dán quá 2 số thập phân, kể cả số 0 dư.
+    if (normalized !== value || /\.\d{3}/.test(raw)) {
+      form.setValue("discountPercent", normalized, { shouldDirty: true, shouldValidate: true });
     }
   };
 

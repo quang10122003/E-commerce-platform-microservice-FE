@@ -3,14 +3,16 @@
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type ProductFormModalProps = {
   children: React.ReactNode;
   title: string;
   description: string;
+  className?: string;
 };
 
-export function ProductFormModal({ children, title, description }: ProductFormModalProps) {
+export function ProductFormModal({ children, title, description, className }: ProductFormModalProps) {
   const router = useRouter();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -40,8 +42,9 @@ export function ProductFormModal({ children, title, description }: ProductFormMo
       <section
         role="dialog"
         aria-modal="true"
-        aria-labelledby="product-form-modal-title"
-        className="flex h-dvh w-full flex-col overflow-hidden bg-slate-50 sm:h-auto sm:max-h-[calc(100dvh-2rem)] sm:max-w-6xl sm:rounded-xl sm:border sm:border-slate-200"
+        aria-labelledby={title ? "product-form-modal-title" : undefined}
+        aria-label={title ? undefined : description}
+        className={cn("flex h-dvh w-full flex-col overflow-hidden bg-slate-50 sm:h-auto sm:max-h-[calc(100dvh-2rem)] sm:max-w-6xl sm:rounded-xl sm:border sm:border-slate-200", className)}
         onKeyDown={(event) => {
           if (event.key !== "Tab") return;
           const focusable = Array.from(
@@ -63,7 +66,7 @@ export function ProductFormModal({ children, title, description }: ProductFormMo
       >
         <header className="relative z-10 flex shrink-0 items-center justify-between gap-4 border-b border-slate-200 bg-white px-4 py-3.5 sm:px-6">
           <div className="min-w-0">
-            <h2 id="product-form-modal-title" className="truncate text-base font-bold text-main sm:text-lg">{title}</h2>
+            {title && <h2 id="product-form-modal-title" className="truncate text-base font-bold text-main sm:text-lg">{title}</h2>}
             <p className="mt-0.5 truncate text-xs text-muted-foreground">{description}</p>
           </div>
           <button

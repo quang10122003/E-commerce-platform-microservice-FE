@@ -32,6 +32,6 @@ const baseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> =
 export const baseApi = createApi({
   reducerPath: "baseApi",
   baseQuery,
-  tagTypes: ["Product", "Auth", "User", "Cart"],
+  tagTypes: ["Product", "Auth", "User", "Cart", "ShopFlashSaleItems"],
   endpoints: () => ({}),
 });

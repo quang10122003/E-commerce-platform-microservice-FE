@@ -16,6 +16,8 @@ export interface ProductCatalogItem {
   status: ProductStatus;
   imageUrl: string | null;
   maxPrice: number;
+  // Mức giảm cao nhất trong các variant có sale hợp lệ, không dùng để tính giá card.
+  maxDiscountPercent?: number | null;
   totalSold: number;
 }
 

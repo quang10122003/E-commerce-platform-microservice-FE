@@ -3,6 +3,7 @@ import { Controller } from "react-hook-form";
 import { DollarSign, Package, Plus, X } from "lucide-react";
 import { Input } from "@/components/ui";
 import { formatNumberInput, parseNumberInput } from "@/lib/utils";
+import { isValidProductPrice, PRODUCT_PRICE_ERROR } from "@/lib/utils/shop-product.utils";
 import type { CreateProductFormState } from "@/types/shop/create-product-form";
 
 export function ShopSimpleProductFields({ productForm }: { productForm: CreateProductFormState }) {
@@ -22,8 +23,8 @@ export function ShopSimpleProductFields({ productForm }: { productForm: CreatePr
                   required: !hasVariants ? "Giá bán là bắt buộc." : false,
                   validate: (v) =>
                     hasVariants ||
-                    (Number.isFinite(v) && v > 0) ||
-                    "Giá bán phải lớn hơn 0.",
+                    isValidProductPrice(v) ||
+                    PRODUCT_PRICE_ERROR,
                 }}
                 render={({ field }) => (
                   <Input

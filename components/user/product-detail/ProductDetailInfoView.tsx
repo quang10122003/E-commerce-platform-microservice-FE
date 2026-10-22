@@ -24,7 +24,7 @@ export function ProductDetailLocation() {
   return <span>{product?.location?.trim() || "Đang cập nhật"}</span>;
 }
 
-// Mở đúng shop của product; tên và thông tin shop chưa có API vẫn giữ mock.
+// Mở đúng shop của sản phẩm đang xem.
 export function ProductDetailShopLink({ children, className, "aria-label": ariaLabel }: {
   children?: ReactNode;
   className: string;

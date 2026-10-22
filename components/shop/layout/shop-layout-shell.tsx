@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { usePathname } from "next/navigation";
 import { SellerSidebar } from "@/components/shop/layout/shop-sidebar";
 import { SellerTopbar } from "@/components/shop/layout/shop-topbar";
 import { useSellerLayout } from "@/hooks/shop/layout/useShopLayout";
@@ -12,9 +11,7 @@ export function SellerLayoutShell({
 }: {
   children: React.ReactNode;
 }) {
-  const { closeSidebar, isSidebarOpen, toggleSidebar } = useSellerLayout();
-  const pathname = usePathname();
-  const isChatPage = pathname === "/shop/chat";
+  const { closeSidebar, isSidebarOpen, toggleSidebar, isChatPage, isWideContentPage } = useSellerLayout();
 
   return (
     <div className={cn("flex bg-slate-50", isChatPage ? "fixed inset-0 overflow-hidden" : "min-h-screen")}>
@@ -32,7 +29,7 @@ export function SellerLayoutShell({
             "flex-1 w-full",
             isChatPage
               ? "min-h-0 p-0 max-w-none overflow-hidden"
-              : "p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6",
+              : cn("p-4 sm:p-6 lg:p-8 space-y-6", isWideContentPage ? "max-w-none" : "max-w-7xl mx-auto"),
           )}
         >
           {children}

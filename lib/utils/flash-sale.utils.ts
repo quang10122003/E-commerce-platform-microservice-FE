@@ -1,5 +1,5 @@
 import { FIRST_PAGE, TIME } from "@/lib/constants";
-import type { ShopFlashSaleQuery } from "@/types/shop/flash-sale";
+import type { ShopFlashSaleQuery, ShopFlashSaleItem, UpdateShopFlashSaleItemRequest } from "@/types/shop/flash-sale";
 
 // Giữ các điều kiện lọc khi chuyển trang và mã hóa offset an toàn.
 export function getShopFlashSalesUrl(query: ShopFlashSaleQuery) {
@@ -40,6 +40,23 @@ export function normalizeSearchText(value: string): string {
 export function isValidDiscountPercent(value: number): boolean {
   return Number.isFinite(value) && value >= 1 && value <= 99
     && Math.abs(value * 100 - Math.round(value * 100)) < 0.000001;
+}
+
+// Giữ mức giảm trong khoảng cho phép và cắt phần dư, tránh làm tròn tăng ưu đãi.
+export function normalizeDiscountPercent(value: number): number {
+  const bounded = Math.min(99, Math.max(1, value));
+  const [integer, fraction = ""] = String(bounded).split(".");
+  return Number(`${integer}.${fraction.slice(0, 2)}`);
+}
+
+// Gửi null khi mức giảm không đổi để backend giữ nguyên giá trị đã đăng ký.
+export function getFlashSaleItemUpdateRequest(item: ShopFlashSaleItem, values: {
+  registeredQuantity: number; discountPercent: number;
+}): UpdateShopFlashSaleItemRequest {
+  return {
+    registeredQuantity: values.registeredQuantity,
+    discountPercent: values.discountPercent === item.discountPercent ? null : values.discountPercent,
+  };
 }
 
 // Không cho đăng ký từ đúng deadline trở đi, kể cả khi deadline thiếu hoặc sai định dạng.
