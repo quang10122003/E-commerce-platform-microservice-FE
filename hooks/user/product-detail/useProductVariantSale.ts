@@ -9,7 +9,7 @@ import type { UserProductVariant } from "@/types/user/product";
 
 // Đọc sale của variant đang chọn, không dùng response cũ khi đổi tổ hợp thuộc tính.
 export function useProductVariantSale(productId: number, variant: UserProductVariant | null) {
-  const { currentData, isFetching, isError } = useGetVariantSaleQuery(
+  const { currentData, isFetching, isError, isUninitialized } = useGetVariantSaleQuery(
     variant ? { productId, variantId: variant.id } : skipToken,
     { refetchOnMountOrArgChange: true },
   );
@@ -26,5 +26,9 @@ export function useProductVariantSale(productId: number, variant: UserProductVar
     return () => { window.clearTimeout(initialTick); window.clearInterval(timer); };
   }, [endsAt]);
 
-  return { ...getProductVariantPricing(variant, response, now), isLoading: isFetching };
+  return {
+    ...getProductVariantPricing(variant, response, now),
+    isLoading: isFetching,
+    hasSettled: !variant || (!isUninitialized && !isFetching),
+  };
 }

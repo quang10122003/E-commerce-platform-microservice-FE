@@ -1,9 +1,16 @@
 import { TIME, LOCAL_DATE_TIME_LENGTH } from "@/lib/constants";
+
+// Đọc đúng thời điểm từ ISO có offset; Date tự quy đổi sang múi giờ của môi trường khi lấy thành phần lịch.
+export function parseOffsetDateTime(value?: string | null): Date | null {
+  if (!value || !/(?:Z|[+-]\d{2}:\d{2})$/i.test(value)) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 // Đổi thời gian có offset thành giá trị datetime-local theo múi giờ trình duyệt; dùng phía client.
 export function toLocalDateTimeInput(value?: string): string {
-  if (!value || !/(?:Z|[+-]\d{2}:\d{2})$/i.test(value)) return "";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
+  const date = parseOffsetDateTime(value);
+  if (!date) return "";
   // Date dùng múi giờ môi trường hiện tại; trong trình duyệt đó là múi giờ thiết bị.
   const local = new Date(date.getTime() - date.getTimezoneOffset() * TIME.MINUTE_MS);
   return local.toISOString().slice(0, LOCAL_DATE_TIME_LENGTH);

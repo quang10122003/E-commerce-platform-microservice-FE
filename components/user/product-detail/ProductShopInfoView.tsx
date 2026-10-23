@@ -19,7 +19,7 @@ export function ProductShopInfoView() {
         aria-label={`Xem shop ${shop.shopName || ""}`.trim()}
       />
       <div className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between">
-        {/* Avatar, tên và mô tả shop từ API. */}
+        {/* Avatar và tên shop từ API. */}
         <div className="flex min-w-0 items-center gap-4">
           <div className="relative flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-primary/20 bg-primary-light">
             {shop.shopLogoUrl ? (
@@ -37,9 +37,6 @@ export function ProductShopInfoView() {
           </div>
           <div className="min-w-0">
             <div className="font-bold text-main wrap-anywhere">{shop.shopName || "Shop"}</div>
-            {shop.shopDescription ? (
-              <p className="mt-1 line-clamp-2 whitespace-pre-line text-xs text-muted-foreground wrap-anywhere">{shop.shopDescription}</p>
-            ) : null}
             {/* Trạng thái online và đánh giá vẫn giữ mock vì API chưa cung cấp. */}
             <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
               <span> Online 5 phút trước</span>

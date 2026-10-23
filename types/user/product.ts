@@ -50,6 +50,11 @@ export interface UserProductDetailParams {
   productId: number;
 }
 
+// Mã sự kiện UUID giúp backend nhận diện lượt xem sản phẩm.
+export interface RecordProductViewParams extends UserProductDetailParams {
+  eventId: string;
+}
+
 // Khoảng giá từ GET /api/products/{productId}/price-range, không phải giá khuyến mãi.
 export interface ProductPriceRangeResponse {
   productId: number;

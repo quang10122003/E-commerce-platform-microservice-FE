@@ -9,6 +9,7 @@ import { formatCountThreshold } from "@/utils/number.utils";
 
 type SearchProductCardProps = {
   product: ProductCatalogItem;
+  showBestSeller?: boolean;
 };
 
 // Dữ liệu bổ sung cố định khi API chưa trả đủ thông tin hiển thị.
@@ -17,7 +18,7 @@ const SEARCH_CARD_DEFAULTS = {
 };
 
 // Thẻ sản phẩm tĩnh trong trang tìm kiếm, render phía server.
-export function SearchProductCard({ product }: SearchProductCardProps) {
+export function SearchProductCard({ product, showBestSeller = true }: SearchProductCardProps) {
   return (
     <Link
       href={`/products/${product.id}`}
@@ -46,7 +47,7 @@ export function SearchProductCard({ product }: SearchProductCardProps) {
         )}
 
         {/* Nhãn bán chạy dành cho sản phẩm có tổng lượng bán từ 100 trở lên. */}
-        {(product.totalSold ?? 0) >= 100 && (
+        {showBestSeller && (product.totalSold ?? 0) >= 100 && (
           <span className="absolute left-2 top-2 rounded bg-cta-light px-1.5 py-0.5 text-[10px] font-semibold text-danger-hover">
             Bán chạy
           </span>

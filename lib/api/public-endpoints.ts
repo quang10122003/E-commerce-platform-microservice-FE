@@ -12,6 +12,8 @@ export const PUBLIC_ENDPOINTS = [
   "api/products",
   // GET api/products/shops/{shopId}/overview: thông tin shop công khai.
   /^api\/products\/shops\/\d+\/overview$/,
+  // GET api/products/shops/{shopId}/products: danh sách sản phẩm công khai của shop.
+  /^api\/products\/shops\/\d+\/products$/,
   // GET api/products/{productId}: chi tiết sản phẩm công khai
   /^api\/products\/-?\d+$/,
   // GET api/products/{productId}/variants/{variantId}/sale: thông tin sale

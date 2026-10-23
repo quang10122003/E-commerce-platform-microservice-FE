@@ -1,8 +1,7 @@
 "use client";
 
-import { createElement } from "react";
 import { cn } from "@/lib/utils";
-import type { RichTextDisplayNode } from "@/lib/utils/rich-text.utils";
+import { RichTextNodes } from "@/components/shared/RichTextNodes";
 
 import { useProductDescription } from "@/hooks/user/product-detail/useProductDescription";
 
@@ -22,7 +21,7 @@ export function ProductDescription() {
       >
         {/* HTML dùng whitespace thường để không biến dòng phân cách tag thành khoảng trống thừa. */}
         <div ref={contentRef} className={cn(description.isRichText ? "whitespace-normal" : "whitespace-pre-line", "flow-root wrap-anywhere text-sm leading-relaxed text-slate-600 [&_h1]:mb-3 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-main [&_h2]:mb-3 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-main [&_h3]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:text-main [&_h4]:font-semibold [&_h5]:font-semibold [&_h6]:font-semibold [&_p]:mb-3 [&_ol]:mb-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-6 [&_li]:my-1 [&_li>p]:mb-0 [&_strong]:font-bold [&_b]:font-bold [&_em]:italic [&_i]:italic [&_u]:underline [&_s]:line-through [&_strike]:line-through [&_blockquote]:pl-4 [&_blockquote]:italic [&_h2]:mt-6 [&_h3]:mt-5 [&>:first-child]:mt-0 [&>:last-child]:mb-0")}>
-          {description.nodes.map((node, index) => <ProductDescriptionNode key={index} node={node} />)}
+          <RichTextNodes nodes={description.nodes} />
         </div>
       </div>
 
@@ -38,12 +37,5 @@ export function ProductDescription() {
         <span className="text-lg leading-none">{isExpanded ? "↑" : "↓"}</span>
       </button>}
     </div>
-  );
-}
-// Render cây tag an toàn bằng React, không dùng dangerouslySetInnerHTML hoặc thuộc tính từ backend.
-function ProductDescriptionNode({ node }: { node: RichTextDisplayNode }) {
-  if (node.type === "text") return node.text;
-  return createElement(node.tag, null,
-    node.tag === "br" ? undefined : node.children.map((child, index) => <ProductDescriptionNode key={index} node={child} />),
   );
 }

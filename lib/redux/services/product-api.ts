@@ -1,3 +1,4 @@
+import { fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { ApiResponse } from "@/types/shared/api";
 import type { ShopOverviewResponse } from "@/types/user/shop";
 import type {
@@ -6,12 +7,16 @@ import type {
   UserProductDetailParams,
   UserProductDetailResponse,
   ProductPriceRangeResponse,
+  RecordProductViewParams,
   VariantSaleParams,
   VariantSaleResponse,
 } from "@/types/user/product";
 import type { ProductResponse, SellerProductListItem, ShopProductDetail } from "@/types/shop/product";
 
 import { baseApi } from "./base-api";
+
+// Chỉ lượt xem dùng request ngầm qua BFF, không cập nhật user Redux khi response lỗi.
+const productViewBaseQuery = fetchBaseQuery({ baseUrl: "/" });
 
 // Chuyển query catalog thành chuỗi URL, giữ nguyên nhiều tham số brandIds.
 function buildProductCatalogQuery(query: ProductCatalogQuery): string {
@@ -34,6 +39,18 @@ function buildProductCatalogQuery(query: ProductCatalogQuery): string {
 // Quản lý các endpoint API sản phẩm cho Kênh Người Bán và Người Mua.
 export const productApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    // Ghi nhận lượt xem ngầm; không thay đổi UI hoặc cache dữ liệu sản phẩm.
+    recordProductView: builder.mutation<null, RecordProductViewParams>({
+      async queryFn({ productId, eventId }, api, extraOptions) {
+        const result = await productViewBaseQuery({
+          url: `/api/products/recommendations/behaviors/views/${productId}`,
+          method: "POST",
+          body: { eventId },
+        }, api, extraOptions);
+        return result.error ? { error: result.error } : { data: null };
+      },
+    }),
+
     // Lấy thông tin và số sản phẩm ACTIVE của shop qua BFF công khai.
     getShopOverview: builder.query<ApiResponse<ShopOverviewResponse>, number>({
       query: (shopId) => ({ url: `/api/products/shops/${shopId}/overview`, method: "GET" }),
@@ -137,6 +154,7 @@ export const productApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useRecordProductViewMutation,
   useGetShopOverviewQuery,
   useGetUserProductDetailQuery,
   useGetProductPriceRangeQuery,
