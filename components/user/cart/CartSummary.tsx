@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { formatCurrency } from "@/lib/utils";
 
 interface CartSummaryProps {
@@ -24,7 +25,12 @@ export function CartSummary({ itemCount, quantity, total, shopCount }: CartSumma
       <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-3.5 sm:px-5 lg:block lg:px-5 lg:py-5">
         <div className="ml-auto flex flex-wrap items-center justify-end gap-x-5 gap-y-2 lg:mt-4 lg:block">
           <div className="text-right lg:flex lg:items-baseline lg:justify-between lg:gap-2"><p className="text-xs text-muted-foreground">Tổng cộng ({quantity} sản phẩm)</p><p className="text-lg font-bold tracking-tight text-cta sm:text-xl lg:text-lg">{formatCurrency(total)}</p></div>
-          <button type="button" disabled className="flex h-10 min-w-35 cursor-not-allowed items-center justify-center rounded-md bg-cta px-5 text-sm font-semibold text-cta-foreground transition-colors disabled:opacity-65 lg:mt-5 lg:w-full">Mua hàng</button>
+          <Link
+            href="/checkout"
+            className="flex h-10 min-w-35 items-center justify-center rounded-md bg-cta px-5 text-sm font-semibold text-cta-foreground transition-all duration-200 hover:bg-cta-hover active:scale-95 lg:mt-5 lg:w-full"
+          >
+            Mua hàng
+          </Link>
         </div>
       </div>
     </aside>
