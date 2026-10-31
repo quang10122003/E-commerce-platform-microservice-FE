@@ -1,26 +1,55 @@
-import { History } from "lucide-react";
+import type { Metadata } from "next";
+import { ShopFlashSaleHistoryView } from "@/components/shop/flash-sale/history/shop-flash-sale-history-view";
+import { FIRST_PAGE, PAGE_SIZE } from "@/lib/constants";
+import { rethrowSessionRefreshRequired } from "@/lib/auth/session-recovery-error";
+import { FlashSaleApiError, getShopCompletedFlashSales } from "@/lib/service/flashSaleService";
+import type { ShopCompletedFlashSalePage, ShopCompletedFlashSaleQuery } from "@/types/shop/flash-sale";
 
-export default function ShopFlashSaleHistoryPage() {
-  return (
-    <div className="space-y-5 sm:space-y-6">
-      <header>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-main sm:text-3xl">Lịch sử Flash Sale</h1>
-          <p className="mt-1 text-sm text-slate-600">Theo dõi các sản phẩm bạn đã đăng ký tham gia chương trình.</p>
-        </div>
-      </header>
+export const metadata: Metadata = {
+  title: "Lịch sử Flash Sale | Kênh Người Bán",
+  description: "Xem lại lịch sử các chiến dịch Flash Sale gian hàng đã tham gia.",
+};
 
-      <section aria-labelledby="flash-sale-history-empty-title" className="flex min-h-72 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-10 sm:px-8">
-        <div className="max-w-md text-center">
-          <div className="mx-auto flex size-12 items-center justify-center rounded-lg bg-indigo-50 text-primary">
-            <History className="size-5" aria-hidden="true" />
-          </div>
-          <h2 id="flash-sale-history-empty-title" className="mt-4 text-lg font-semibold text-main">Lịch sử đăng ký chưa khả dụng</h2>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Các sản phẩm tham gia Flash Sale hiện chưa được lưu để hiển thị tại đây.
-          </p>
-        </div>
-      </section>
-    </div>
-  );
+type PageProps = {
+  searchParams: Promise<{ page?: string; from?: string; to?: string; keyword?: string; range?: string }>;
+};
+
+// Chỉ nhận số nguyên dương từ URL để gọi đúng trang API.
+function parsePositiveInteger(value?: string) {
+  if (!value || !/^\d+$/.test(value)) return undefined;
+  const parsed = Number(value);
+  return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : undefined;
+}
+
+// Tải lịch sử Flash Sale đã hoàn thành qua serverFetch, không chuyển token xuống client.
+export default async function ShopFlashSaleHistoryPage({ searchParams }: PageProps) {
+  const params = await searchParams;
+  const query: ShopCompletedFlashSaleQuery = {
+    page: parsePositiveInteger(params.page) ?? FIRST_PAGE,
+    from: params.from || undefined,
+    to: params.to || undefined,
+    keyword: params.keyword?.trim() || undefined,
+    quickFilter: ["all", "7d", "30d", "this_month", "custom"].includes(params.range ?? "")
+      ? params.range
+      : params.from || params.to ? "custom" : "all",
+  };
+
+  let data: ShopCompletedFlashSalePage = {
+    items: [],
+    page: query.page,
+    pageSize: PAGE_SIZE.SHOP_FLASH_SALE_HISTORY,
+    totalItems: 0,
+    totalPages: 0,
+  };
+  let error: string | undefined;
+  try {
+    data = await getShopCompletedFlashSales(query);
+  } catch (cause) {
+    rethrowSessionRefreshRequired(cause);
+    error = cause instanceof FlashSaleApiError
+      ? cause.message
+      : "Không thể tải lịch sử Flash Sale. Vui lòng thử lại.";
+  }
+
+  return <ShopFlashSaleHistoryView key={JSON.stringify([query.from, query.to, query.quickFilter])} data={data} query={query} error={error} />;
 }

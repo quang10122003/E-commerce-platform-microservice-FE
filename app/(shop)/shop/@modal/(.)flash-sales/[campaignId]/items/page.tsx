@@ -3,6 +3,7 @@ import { ProductFormModal } from "@/components/shop/products/product-form-modal"
 import { ShopFlashSaleItemsView } from "@/components/shop/flash-sale/shop-flash-sale-items-view";
 import { getShopFlashSaleCampaignDetail } from "@/lib/service/flashSaleService";
 import { rethrowSessionRefreshRequired } from "@/lib/auth/session-recovery-error";
+import { isRegistrationDeadlineOpen } from "@/lib/utils/flash-sale.utils";
 
 type PageProps = {
   params: Promise<{ campaignId: string }>;
@@ -20,9 +21,11 @@ export default async function ShopFlashSaleItemsModalPage({ params }: PageProps)
 
   // Tên chương trình được tải phía server; lỗi nghiệp vụ chỉ ẩn tiêu đề, không chặn bảng.
   let campaignName = "";
+  let registrationOpen = false;
   try {
-    const { data } = await getShopFlashSaleCampaignDetail(campaignId);
+    const { data, now } = await getShopFlashSaleCampaignDetail(campaignId);
     campaignName = data.name?.trim() ?? "";
+    registrationOpen = isRegistrationDeadlineOpen(data.registrationDeadline, now);
   } catch (error) {
     rethrowSessionRefreshRequired(error);
   }
@@ -34,7 +37,7 @@ export default async function ShopFlashSaleItemsModalPage({ params }: PageProps)
       description="Xem và kiểm tra các phân loại hàng của shop đã đăng ký tham gia chương trình."
     >
       {/* Dùng vùng cuộn sẵn có của modal để tránh hai thanh cuộn lồng nhau. */}
-      <ShopFlashSaleItemsView campaignId={campaignId} isModal />
+      <ShopFlashSaleItemsView campaignId={campaignId} isModal registrationOpen={registrationOpen} />
     </ProductFormModal>
   );
 }

@@ -5,10 +5,10 @@ import { baseApi } from "./base-api";
 // Preview là thao tác đọc dùng POST; RTK Query quản lý kết quả theo variant và mức giảm.
 export const flashSaleApi = baseApi.injectEndpoints({
   endpoints: builder => ({
-    // Tìm phân loại đã đăng ký của shop qua BFF, không gọi backend trực tiếp.
+    // Lấy các phân loại đã đăng ký của shop qua BFF, không gọi backend trực tiếp.
     getShopFlashSaleItems: builder.query<ApiResponse<ShopFlashSaleItem[]>, ShopFlashSaleItemsQuery>({
       query: ({ campaignId, keyword }) => ({
-        url: `/api/shop/flash-sales/drafts/${campaignId}/items`,
+        url: `/api/shop/flash-sales/${campaignId}/items`,
         params: keyword ? { keyword } : undefined,
       }),
       keepUnusedDataFor: 0,
@@ -17,7 +17,7 @@ export const flashSaleApi = baseApi.injectEndpoints({
     // Backend trả 204; chỉ tải lại danh sách của chương trình khi xóa thành công.
     removeShopFlashSaleItem: builder.mutation<void, RemoveShopFlashSaleItemParams>({
       query: ({ campaignId, itemId }) => ({
-        url: `/api/shop/flash-sales/drafts/${campaignId}/items/${itemId}`,
+        url: `/api/shop/flash-sales/${campaignId}/items/${itemId}`,
         method: "DELETE",
       }),
       transformResponse: () => undefined,
@@ -26,7 +26,7 @@ export const flashSaleApi = baseApi.injectEndpoints({
     // Cập nhật qua BFF; null ở discountPercent được giữ nguyên trong JSON gửi backend.
     updateShopFlashSaleItem: builder.mutation<void, UpdateShopFlashSaleItemParams>({
       query: ({ campaignId, itemId, request }) => ({
-        url: `/api/shop/flash-sales/drafts/${campaignId}/items/${itemId}`,
+        url: `/api/shop/flash-sales/${campaignId}/items/${itemId}`,
         method: "PUT",
         body: request,
       }),

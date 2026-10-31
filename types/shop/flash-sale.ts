@@ -25,6 +25,29 @@ export interface ShopFlashSaleQuery {
   registrationOpen?: boolean;
 }
 
+export interface ShopCompletedFlashSaleCampaign {
+  id: number;
+  name: string;
+  startsAt: string;
+  endsAt: string;
+}
+
+export interface ShopCompletedFlashSalePage {
+  items: ShopCompletedFlashSaleCampaign[];
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+export interface ShopCompletedFlashSaleQuery {
+  page: number;
+  from?: string;
+  to?: string;
+  keyword?: string;
+  quickFilter?: string;
+}
+
 // Hợp đồng API chọn sản phẩm Flash Sale, không chứa ảnh và metadata phân trang.
 export type ShopFlashSaleProduct = Pick<SellerProductItem,
   "id" | "name" | "categoryName" | "status" | "variants">;
@@ -69,6 +92,7 @@ export interface ShopFlashSaleItem {
   productName: string;
   options: { name: string; value: string }[];
   registeredQuantity: number;
+  sold_quality: number;
   stockQuantity: number | null;
   status: "REGISTERED" | "DISABLED";
   discountPercent?: number | null;
@@ -76,7 +100,7 @@ export interface ShopFlashSaleItem {
   variantDeleted: boolean;
 }
 
-// Tham số tải danh sách phân loại của chương trình nháp.
+// Tham số tải danh sách phân loại của chương trình Flash Sale.
 export interface ShopFlashSaleItemsQuery {
   campaignId: string;
   keyword?: string;

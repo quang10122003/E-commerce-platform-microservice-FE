@@ -39,7 +39,7 @@ export function ShopFlashSaleRegistrationForm({ campaignId, products, error, cam
           {campaignError && <p role="alert" className="mx-6 mt-5 rounded-lg bg-danger-light p-3 text-sm text-danger">{campaignError} <button type="button" onClick={retry} className="ml-2 font-semibold underline underline-offset-2">Thử lại</button></p>}
           {error && <p role="alert" className="mx-6 mt-5 rounded-lg bg-danger-light p-3 text-sm text-danger">{error} <button type="button" onClick={retry} className="ml-2 font-semibold underline underline-offset-2">Thử lại</button></p>}
           {!error && !products.length && <p role="status" className="mx-6 mt-5 text-sm text-muted-foreground">Shop chưa có sản phẩm để đăng ký Flash Sale.</p>}
-          <fieldset disabled={isSubmitting} className="grid min-w-0 sm:grid-cols-[1.3fr_1fr]">
+          <fieldset disabled={isSubmitting || !registrationOpen} className="grid min-w-0 sm:grid-cols-[1.3fr_1fr]">
             {/* Sản phẩm từ API và các thông số Shop có thể nhập. */}
             <section className="space-y-6 px-6 py-6 sm:px-8 sm:py-8" aria-label="Thông tin đăng ký">
               {/* Chọn sản phẩm trước khi mở danh sách phân loại tương ứng. */}

@@ -10,6 +10,6 @@ export default async function RegistrationPage({ params }: { params: Promise<{ c
   const id = Number(campaignId);
   if (!/^\d+$/.test(campaignId) || !Number.isSafeInteger(id) || id <= 0) notFound();
   return <ProductFormModal title="Đăng ký sản phẩm" description="Chọn sản phẩm và phân loại để đăng ký.">
-    <Suspense fallback={<Loading label="Đang tải sản phẩm..." />}><ShopFlashSaleRegistrationContent campaignId={campaignId} isModal /></Suspense>
+    <Suspense fallback={<Loading dotsOnly label="Đang tải sản phẩm..." />}><ShopFlashSaleRegistrationContent campaignId={campaignId} isModal /></Suspense>
   </ProductFormModal>;
 }

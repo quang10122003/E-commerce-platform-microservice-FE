@@ -1,9 +1,10 @@
-// Cấu hình phân trang theo từng màn hình, giữ nguyên kích thước hiện tại.
+// Cấu hình kích thước phân trang theo từng màn hình.
 export const FIRST_PAGE = 1;
 export const PAGE_SIZE = {
   SHOP_PRODUCTS: 10,
   PRODUCT_SEARCH: 20,
-  SHOP_FLASH_SALES: 20,
+  SHOP_FLASH_SALES: 10,
+  SHOP_FLASH_SALE_HISTORY: 10,
 } as const;
 export const PAGINATION_VISIBLE_PAGES = 5;
 

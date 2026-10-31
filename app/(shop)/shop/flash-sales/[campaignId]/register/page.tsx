@@ -13,6 +13,6 @@ export default async function RegistrationPage({ params }: { params: Promise<{ c
     <header className="border-b border-surface-border px-6 py-5 sm:px-8">
       <h1 className="font-heading text-2xl font-bold text-main">Đăng ký sản phẩm</h1>
     </header>
-    <Suspense fallback={<Loading label="Đang tải sản phẩm..." />}><ShopFlashSaleRegistrationContent campaignId={campaignId} /></Suspense>
+    <Suspense fallback={<Loading dotsOnly label="Đang tải sản phẩm..." />}><ShopFlashSaleRegistrationContent campaignId={campaignId} /></Suspense>
   </section>;
 }

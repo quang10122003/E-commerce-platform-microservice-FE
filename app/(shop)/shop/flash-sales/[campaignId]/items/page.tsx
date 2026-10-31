@@ -1,5 +1,8 @@
 import { notFound } from "next/navigation";
 import { ShopFlashSaleItemsView } from "@/components/shop/flash-sale/shop-flash-sale-items-view";
+import { getShopFlashSaleCampaignDetail } from "@/lib/service/flashSaleService";
+import { rethrowSessionRefreshRequired } from "@/lib/auth/session-recovery-error";
+import { isRegistrationDeadlineOpen } from "@/lib/utils/flash-sale.utils";
 
 type PageProps = {
   params: Promise<{ campaignId: string }>;
@@ -15,12 +18,18 @@ export default async function ShopFlashSaleItemsPage({ params }: PageProps) {
     notFound();
   }
 
+  // Không cho đăng ký khi chưa xác định được deadline; vẫn giữ danh sách sản phẩm.
+  let registrationOpen = false;
+  try {
+    const { data, now } = await getShopFlashSaleCampaignDetail(campaignId);
+    registrationOpen = isRegistrationDeadlineOpen(data.registrationDeadline, now);
+  } catch (error) {
+    rethrowSessionRefreshRequired(error);
+  }
+
   return (
-    <main className="w-full min-w-0 space-y-4">
-      {/* Vùng chứa nội dung toàn trang khi truy cập trực tiếp bằng URL */}
-      <section className="overflow-hidden rounded-xl border border-surface-border bg-surface-card shadow-xs">
-        <ShopFlashSaleItemsView campaignId={campaignId} />
-      </section>
+    <main className="w-full min-w-0">
+      <ShopFlashSaleItemsView campaignId={campaignId} registrationOpen={registrationOpen} />
     </main>
   );
 }
