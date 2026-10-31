@@ -10,6 +10,10 @@ export const PUBLIC_ENDPOINTS = [
   "api/auth/refresh_token",
   "api/auth/logout",
   "api/products",
+  // Chỉ công khai đúng GET bán chạy, không mở các API gợi ý cá nhân.
+  /^api\/products\/recommendations\/top-selling$/,
+  // GET sản phẩm tương tự được công khai, không mở các API gợi ý cá nhân.
+  /^api\/products\/recommendations\/similar\/\d+$/,
   // GET api/products/shops/{shopId}/overview: thông tin shop công khai.
   /^api\/products\/shops\/\d+\/overview$/,
   // GET api/products/shops/{shopId}/products: danh sách sản phẩm công khai của shop.

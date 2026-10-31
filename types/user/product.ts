@@ -45,6 +45,31 @@ export interface ProductCatalogPage {
   brands: ProductBrandOption[];
 }
 
+export interface ProductRecommendationItem extends ProductCatalogItem {
+  UserId: number;
+}
+
+export interface ProductRecommendationsQuery {
+  // Chỉ dùng để tách cache giữa các tài khoản, không gửi userId lên backend.
+  userId: number;
+  size: number;
+}
+
+export interface ProductRecommendationsPageQuery {
+  page: number;
+  size: number;
+}
+
+export interface ProductRecommendationsPage {
+  items: ProductRecommendationItem[];
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+export type TopSellingProductsResponse = ProductRecommendationItem[];
+
 // Tham số đường dẫn của GET chi tiết sản phẩm, không có request body.
 export interface UserProductDetailParams {
   productId: number;

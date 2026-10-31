@@ -4,6 +4,10 @@ import type { ShopOverviewResponse } from "@/types/user/shop";
 import type {
   ProductCatalogPage,
   ProductCatalogQuery,
+  ProductRecommendationItem,
+  ProductRecommendationsQuery,
+  ProductRecommendationsPage,
+  TopSellingProductsResponse,
   UserProductDetailParams,
   UserProductDetailResponse,
   ProductPriceRangeResponse,
@@ -11,12 +15,12 @@ import type {
   VariantSaleParams,
   VariantSaleResponse,
 } from "@/types/user/product";
-import type { ProductResponse, SellerProductListItem, ShopProductDetail } from "@/types/shop/product";
+import type { ProductResponse, SellerProductListItem, ShopProductDetail, UpdateProductStatusRequest } from "@/types/shop/product";
 
 import { baseApi } from "./base-api";
 
-// Chỉ lượt xem dùng request ngầm qua BFF, không cập nhật user Redux khi response lỗi.
-const productViewBaseQuery = fetchBaseQuery({ baseUrl: "/" });
+// Các request phụ chạy qua BFF, không cập nhật user Redux khi response lỗi.
+const silentProductBaseQuery = fetchBaseQuery({ baseUrl: "/" });
 
 // Chuyển query catalog thành chuỗi URL, giữ nguyên nhiều tham số brandIds.
 function buildProductCatalogQuery(query: ProductCatalogQuery): string {
@@ -39,10 +43,36 @@ function buildProductCatalogQuery(query: ProductCatalogQuery): string {
 // Quản lý các endpoint API sản phẩm cho Kênh Người Bán và Người Mua.
 export const productApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    // Gợi ý tương tự có thể ẩn khi lỗi, không làm gián đoạn phiên hay trang chi tiết.
+    getSimilarProducts: builder.query<ApiResponse<ProductRecommendationItem[]>, UserProductDetailParams>({
+      async queryFn({ productId }, api, extraOptions) {
+        const result = await silentProductBaseQuery({
+          url: `/api/products/recommendations/similar/${productId}`,
+          method: "GET",
+        }, api, extraOptions);
+        return result.error ? { error: result.error } : { data: result.data as ApiResponse<ProductRecommendationItem[]> };
+      },
+      providesTags: ["Product"],
+    }),
+
+    getProductRecommendations: builder.query<ApiResponse<ProductRecommendationsPage>, ProductRecommendationsQuery>({
+      query: ({ size }) => ({
+        url: `/api/products/recommendations?page=1&size=${size}`,
+        method: "GET",
+      }),
+      keepUnusedDataFor: 0,
+      providesTags: ["Product"],
+    }),
+
+    getTopSellingProducts: builder.query<ApiResponse<TopSellingProductsResponse>, void>({
+      query: () => ({ url: "/api/products/recommendations/top-selling", method: "GET" }),
+      providesTags: ["Product"],
+    }),
+
     // Ghi nhận lượt xem ngầm; không thay đổi UI hoặc cache dữ liệu sản phẩm.
     recordProductView: builder.mutation<null, RecordProductViewParams>({
       async queryFn({ productId, eventId }, api, extraOptions) {
-        const result = await productViewBaseQuery({
+        const result = await silentProductBaseQuery({
           url: `/api/products/recommendations/behaviors/views/${productId}`,
           method: "POST",
           body: { eventId },
@@ -105,6 +135,17 @@ export const productApi = baseApi.injectEndpoints({
       invalidatesTags: ["Product"],
     }),
 
+    // API cập nhật trạng thái trả 204, không có nội dung phản hồi.
+    updateProductStatus: builder.mutation<null, { productId: number; request: UpdateProductStatusRequest }>({
+      query: ({ productId, request }) => ({
+        url: `/api/products/${productId}/status`,
+        method: "POST",
+        body: request,
+      }),
+      transformResponse: () => null,
+      invalidatesTags: (_result, error) => error ? [] : ["Product"],
+    }),
+
     // Xóa sản phẩm; chấp nhận body rỗng khi backend trả 204 và dọn ảnh qua outbox.
     deleteProduct: builder.mutation<ApiResponse<null> | null, number>({
       query: (productId) => ({
@@ -154,6 +195,9 @@ export const productApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useGetSimilarProductsQuery,
+  useGetProductRecommendationsQuery,
+  useGetTopSellingProductsQuery,
   useRecordProductViewMutation,
   useGetShopOverviewQuery,
   useGetUserProductDetailQuery,
@@ -163,6 +207,7 @@ export const {
   useCreateProductMutation,
   useGetShopProductDetailQuery,
   useUpdateProductMutation,
+  useUpdateProductStatusMutation,
   useDeleteProductMutation,
   useDeleteProductVariantMutation,
   useGetSellerProductsQuery,

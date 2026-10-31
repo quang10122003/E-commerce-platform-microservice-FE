@@ -7,6 +7,7 @@ import { cn, formatCurrency } from "@/lib/utils";
 import { formatSellerProductDate, getNearbySellerPages, getSellerProductsUrl, getSellerVariantLabel, summarizeSellerProduct } from "@/lib/utils/shop-product.utils";
 import type { SellerProductPage, SellerProductStatus } from "@/types/shop/product";
 import type { MouseEvent } from "react";
+import { ShopProductStatusToggle } from "./shop-product-status-toggle";
 
 type ShopProductsTableProps = { retry: () => void; products: SellerProductPage; productError: boolean; isPending: boolean; categoryId?: number; status?: SellerProductStatus; keyword?: string; handleLinkClick: (event: MouseEvent<HTMLAnchorElement>, href: string) => void; deletingProductId: number | null; deletingVariantId: number | null; handleDeleteProduct: (productId: number, productName: string) => Promise<void>; handleDeleteVariant: (productId: number, variantId: number, variantLabel: string) => Promise<void>; };
 
@@ -17,8 +18,8 @@ export function ShopProductsTable({ retry, products, productError, isPending, ca
   return (
     <>
       {/* Bảng hiển thị sản phẩm và chi tiết phân loại từ API. */}
-      <Card variant="3d" className="overflow-hidden">
-        <div aria-live="polite" aria-busy={isPending}>
+      <Card variant="3d" className="flex flex-1 flex-col overflow-hidden">
+        <div aria-live="polite" aria-busy={isPending} className="flex flex-1 flex-col">
         {isPending ? (
           <div className="max-w-full overflow-x-auto overscroll-x-contain" aria-label="Đang tải sản phẩm">
             <table className="min-w-[620px] w-full text-left text-xs sm:min-w-[700px]">
@@ -51,7 +52,9 @@ export function ShopProductsTable({ retry, products, productError, isPending, ca
         ) : productError ? (
           <p role="alert" className="p-6 text-center text-sm text-danger">Không thể tải danh sách sản phẩm. <button type="button" onClick={retry} className="ml-2 font-semibold underline underline-offset-2">Thử lại</button></p>
         ) : products.items.length === 0 ? (
-          <p className="p-6 text-center text-sm text-slate-500">Không có sản phẩm phù hợp bộ lọc.</p>
+          <p className="flex flex-1 items-center justify-center p-6 text-center text-sm text-slate-500">
+            Không có sản phẩm phù hợp bộ lọc.
+          </p>
         ) : (
           <div className="max-w-full overflow-x-auto overscroll-x-contain">
             <table className="min-w-[620px] w-full text-left text-xs sm:min-w-[700px]">
@@ -111,7 +114,7 @@ export function ShopProductsTable({ retry, products, productError, isPending, ca
                           {summary.hasVariants ? <div className="space-y-1"><span className="inline-flex items-center justify-center gap-1.5 text-slate-600"><Layers className="h-3.5 w-3.5 text-primary" /><span className="font-mono font-black">{product.variants.length} phân loại</span></span><p className="text-[9px] font-medium text-slate-400">{summary.attributeNames || "Theo SKU"}</p></div> : <span className="inline-flex items-center gap-1.5 text-slate-500"><Package className="h-3.5 w-3.5" /><span className="text-[10px] font-semibold">Không phân loại</span></span>}
                         </td>
                         <td className="px-3 py-3.5 text-center sm:px-4">
-                          {product.status === "ACTIVE" ? <Badge variant="perk-soft" size="xs">Đang bán</Badge> : product.status === "OUT_OF_STOCK" ? <Badge variant="danger-soft" size="xs">Hết hàng</Badge> : <Badge variant="secondary" size="xs">Tạm ẩn</Badge>}
+                          <ShopProductStatusToggle product={product} disabled={deletingProductId !== null || deletingVariantId !== null} />
                         </td>
                         <td className="px-3 py-3.5 text-right sm:px-4">
                           <div className="flex items-center justify-end gap-0.5 sm:gap-1">

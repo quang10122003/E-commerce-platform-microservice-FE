@@ -5,13 +5,26 @@ import { serverFetch } from "@/lib/api/server-client";
 import { resolveProductCatalogField } from "@/lib/utils";
 import type { ResolvedFetchField } from "@/types/shared/api";
 import type { ProductBrandOption } from "@/types/shared/product";
-import type { ProductCatalogPage, ProductCatalogQuery } from "@/types/user/product";
-import type { ProductCategoryOption, SellerProductPage, SellerProductQuery } from "@/types/shop/product";
+import type { ProductCatalogPage, ProductCatalogQuery, ProductRecommendationsPage, ProductRecommendationsPageQuery } from "@/types/user/product";
+import type { ProductCategoryOption, SellerProductOverview, SellerProductPage, SellerProductQuery } from "@/types/shop/product";
 
 type GetDataForCreateProductResult = {
   category: ResolvedFetchField<ProductCategoryOption[]>;
   brand: ResolvedFetchField<ProductBrandOption[]>;
 };
+
+export async function getProductRecommendations(query: ProductRecommendationsPageQuery): Promise<ProductRecommendationsPage> {
+  const params = new URLSearchParams({ page: String(query.page), size: String(query.size) });
+  const result = await serverFetch<ProductRecommendationsPage>(`api/products/recommendations?${params}`, {
+    method: "GET",
+    cache: "no-store",
+  });
+  if (result.status < HTTP_STATUS.SUCCESS_MIN || result.status >= HTTP_STATUS.SUCCESS_LIMIT
+    || !result.payload.success || !result.payload.data) {
+    throw new Error("Không thể tải sản phẩm gợi ý.");
+  }
+  return result.payload.data;
+}
 
 // Lấy dữ liệu category và brand song song cho form tạo sản phẩm trên Server Component.
 export async function GetDataForCareteProduct(): Promise<GetDataForCreateProductResult> {
@@ -60,6 +73,21 @@ export async function getSellerProducts(query: SellerProductQuery): Promise<Sell
 
   if (result.status < HTTP_STATUS.SUCCESS_MIN || result.status >= HTTP_STATUS.SUCCESS_LIMIT || !result.payload.success || !result.payload.data) {
     throw new Error("Không thể tải danh sách sản phẩm.");
+  }
+
+  return result.payload.data;
+}
+
+// Lấy số lượng sản phẩm của người bán theo từng trạng thái.
+export async function getSellerProductOverview(): Promise<SellerProductOverview> {
+  const result = await serverFetch<SellerProductOverview>("api/products/shop/overview", {
+    method: "GET",
+    cache: "no-store",
+  });
+
+  if (result.status < HTTP_STATUS.SUCCESS_MIN || result.status >= HTTP_STATUS.SUCCESS_LIMIT
+    || !result.payload.success || !result.payload.data) {
+    throw new Error("Không thể tải tổng quan sản phẩm.");
   }
 
   return result.payload.data;

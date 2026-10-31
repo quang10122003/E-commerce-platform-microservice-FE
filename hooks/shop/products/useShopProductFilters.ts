@@ -20,10 +20,23 @@ export function useSellerProductFilters({ categoryId, status, keyword }: SellerF
   const [isPending, startTransition] = useTransition();
   // Lưu nội dung tìm kiếm đang nhập trước khi URL được cập nhật.
   const [keywordInput, setKeywordInput] = useState(keyword ?? "");
+  // Theo dõi từ khóa từ URL mà không ghi đè nội dung đang nhập khi request cũ hoàn tất.
+  const [previousKeyword, setPreviousKeyword] = useState(keyword);
+  if (previousKeyword !== keyword) {
+    setPreviousKeyword(keyword);
+    if (keywordInput.trim() === (previousKeyword ?? "")) setKeywordInput(keyword ?? "");
+  }
   // Lưu bộ lọc mới nhất để các thao tác liên tiếp dùng đúng điều kiện.
   const latestFilters = useRef<SellerFilters>({ categoryId, status, keyword });
   // Lưu lịch tìm kiếm để chỉ điều hướng sau khi người dùng ngừng nhập.
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Đồng bộ điều kiện sau Back/Forward khi ô nhập đã khớp từ khóa trên URL.
+  useEffect(() => {
+    if (keywordInput.trim() === (keyword ?? "")) {
+      latestFilters.current = { ...latestFilters.current, keyword };
+    }
+  }, [keyword, keywordInput]);
 
   // Hủy lịch tìm kiếm khi rời trang.
   useEffect(() => () => {

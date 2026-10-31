@@ -136,6 +136,19 @@ export interface UpdateProductVariant {
 // Trạng thái hiển thị và lọc sản phẩm của người bán.
 export type SellerProductStatus = "ACTIVE" | "OUT_OF_STOCK" | "INACTIVE";
 
+// Nút gạt chỉ đổi trạng thái hiển thị, không tự đặt trạng thái hết hàng.
+export interface UpdateProductStatusRequest {
+  status: "ACTIVE" | "INACTIVE";
+}
+
+// Tổng số sản phẩm người bán theo trạng thái từ API overview.
+export interface SellerProductOverview {
+  totalProducts: number;
+  activeProducts: number;
+  outOfStockProducts: number;
+  inactiveProducts: number;
+}
+
 // Thuộc tính đã chọn của một phân loại.
 export interface SellerVariantAttribute {
   attributeId: number;

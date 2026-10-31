@@ -9,7 +9,7 @@ import { useSellerProductFilters } from "@/hooks/shop/products/useShopProductFil
 import { useDeleteSellerProduct } from "@/hooks/shop/products/useDeleteShopProduct";
 import { getSellerProductsUrl } from "@/lib/utils/shop-product.utils";
 import type { ProductCategoryOption } from "@/types/shop/product";
-import type { SellerProductPage, SellerProductStatus } from "@/types/shop/product";
+import type { SellerProductOverview, SellerProductPage, SellerProductStatus } from "@/types/shop/product";
 import { ShopProductsTable } from "./shop-products-table";
 import { ShopCreateProductAction } from "./shop-create-product-action";
 
@@ -18,6 +18,8 @@ type SellerProductsViewProps = {
   categoryError: boolean;
   products: SellerProductPage;
   productError: boolean;
+  overview: SellerProductOverview;
+  overviewError: boolean;
   categoryId?: number;
   status?: SellerProductStatus;
   keyword?: string;
@@ -33,7 +35,7 @@ const statusColors = [
 
 // Hiển thị sản phẩm thật, bộ lọc URL và phân trang của người bán.
 export function SellerProductsView({
-  categories, categoryError, products, productError, categoryId, status, keyword,
+  categories, categoryError, products, productError, overview, overviewError, categoryId, status, keyword,
 }: SellerProductsViewProps) {
   const { keywordInput, handleKeywordChange, handleCategoryChange, handleStatusChange, handleLinkClick, isPending, retry } = useSellerProductFilters({ categoryId, status, keyword });
   const { deletingProductId, deletingVariantId, handleDeleteProduct, handleDeleteVariant } = useDeleteSellerProduct();
@@ -70,7 +72,7 @@ export function SellerProductsView({
   );
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-1 flex-col gap-6">
       {/* Chặn thao tác khác khi yêu cầu xóa sản phẩm hoặc phân loại chưa hoàn tất. */}
       {(deletingProductId !== null || deletingVariantId !== null) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/30 p-4 backdrop-blur-sm">
@@ -88,6 +90,10 @@ export function SellerProductsView({
         {sellerProductStatuses.map((item, index) => {
           const Icon = statusIcons[index];
           const isSelected = (status ?? "") === item.value;
+          const count = item.value === "" ? overview.totalProducts
+            : item.value === "ACTIVE" ? overview.activeProducts
+              : item.value === "OUT_OF_STOCK" ? overview.outOfStockProducts
+                : overview.inactiveProducts;
           return (
             <Link key={item.value || "all"} href={getSellerProductsUrl(categoryId, item.value, 1, keywordInput)} scroll={false} onClick={(event) => handleLinkClick(event, getSellerProductsUrl(categoryId, item.value, 1, keywordInput))}>
               <Card variant="3d" className={`h-full bg-gradient-to-br ${statusColors[index]} to-white p-4.5 transition hover:-translate-y-1 hover:shadow-3d-hover ${isSelected ? "ring-2 ring-primary/30" : ""}`}>
@@ -96,7 +102,7 @@ export function SellerProductsView({
                   <Icon className="h-4.5 w-4.5" aria-hidden="true" />
                 </div>
                 <div className="mt-2.5 text-2xl font-black font-heading tracking-tight">
-                  {isSelected && !productError ? products.totalItems : "—"}
+                  {!overviewError ? count : "—"}
                 </div>
                 <p className="mt-1 text-[10px] font-medium text-slate-500">
                   {isSelected ? "Sản phẩm theo bộ lọc" : "Xem danh sách"}
