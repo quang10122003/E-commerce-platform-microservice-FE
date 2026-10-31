@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { setSessionRefreshAttempt } from "@/lib/auth/cookies";
 import { normalizeSessionReturnPath } from "@/lib/auth/session-refresh-redirect";
+import { getRouteAccess } from "@/lib/auth/route-access";
 import { serverFetch } from "@/lib/api/server-client";
 import type { ApiResponse } from "@/types/shared/api";
 import type { AccessTokenValidationResponse } from "@/types/shared/auth";
@@ -43,7 +44,16 @@ export async function GET(request: Request) {
     // Lỗi hạ tầng vẫn giữ token; page hiển thị fallback lỗi thay vì tiếp tục redirect.
     await setSessionRefreshAttempt("failed");
   }
-  const response = NextResponse.redirect(new URL(nextPath, request.url), 303);
+  const destination = new URL(nextPath, request.url);
+  if (getRouteAccess(destination.pathname) !== "public" && !(result.ok && payload.success && payload.data)) {
+    // Không trả lại route được bảo vệ khi recovery thất bại, tránh vòng lặp Proxy.
+    if (result.status !== 401) return errorResponse(503, "SESSION_RECOVERY_FAILED", "Chưa thể kiểm tra phiên. Vui lòng thử lại.");
+    destination.pathname = "/";
+    destination.search = "";
+    destination.searchParams.set("login", "required");
+    destination.searchParams.set("next", nextPath);
+  }
+  const response = NextResponse.redirect(destination, 303);
   response.headers.set("Cache-Control", "no-store");
   return response;
 }

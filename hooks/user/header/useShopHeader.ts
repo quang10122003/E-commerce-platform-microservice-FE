@@ -63,6 +63,7 @@ export function useShopHeader() {
       dispatch(clearUser());
       setIsAccountMenuOpen(false);
       setIsMobileMenuOpen(false);
+      router.refresh();
     } catch(e) {
       throw Error("lỗi khi khi server logout "+e)
     }

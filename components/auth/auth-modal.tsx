@@ -12,10 +12,11 @@ interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialTab?: AuthTab;
+  onAuthenticated?: () => void;
 }
 
-export function AuthModal({ isOpen, onClose, initialTab = "login" }: AuthModalProps) {
-  const auth = useAuthModal({ initialTab, isOpen, onClose });
+export function AuthModal({ isOpen, onClose, initialTab = "login", onAuthenticated }: AuthModalProps) {
+  const auth = useAuthModal({ initialTab, isOpen, onClose, onAuthenticated });
   if (!auth.mounted) return null;
 
   return createPortal(

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import {
   Plus_Jakarta_Sans,
   Lexend,
@@ -10,6 +11,7 @@ import {
 import { getAccessToken, getRefreshToken } from "@/lib/auth/cookies";
 import { ReduxProvider } from "@/lib/redux/provider";
 import { NotificationViewport } from "@/components/ui/notification-viewport";
+import { RouteLoginPrompt } from "@/components/auth/route-login-prompt";
 
 import "./globals.css";
 
@@ -79,6 +81,9 @@ export default async function RootLayout({
         {/* Provider dùng chung cho các client component và RTK Query. */}
         <ReduxProvider hasAuthTokens={Boolean(accessToken || refreshToken)}>
           {children}
+          <Suspense fallback={null}>
+            <RouteLoginPrompt />
+          </Suspense>
           {/* Khu vực thông báo nổi dùng chung cho toàn bộ ứng dụng. */}
           <NotificationViewport />
         </ReduxProvider>

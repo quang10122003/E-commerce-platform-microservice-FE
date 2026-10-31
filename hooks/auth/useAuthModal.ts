@@ -17,10 +17,11 @@ type AuthModalOptions = {
   initialTab: AuthTab;
   isOpen: boolean;
   onClose: () => void;
+  onAuthenticated?: () => void;
 };
 
 // Quản lý form, xác thực đăng nhập và side-effect của modal tài khoản.
-export function useAuthModal({ initialTab, isOpen, onClose }: AuthModalOptions) {
+export function useAuthModal({ initialTab, isOpen, onClose, onAuthenticated }: AuthModalOptions) {
   const [activeTab, setActiveTab] = useState<AuthTab>(initialTab);
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
@@ -72,7 +73,8 @@ export function useAuthModal({ initialTab, isOpen, onClose }: AuthModalOptions) 
         }
 
         dispatch(setUser(response.data));
-        onClose();
+        if (onAuthenticated) onAuthenticated();
+        else onClose();
       } catch (err: unknown) {
         setLoginError(
           getApiErrorMessage(
@@ -82,7 +84,7 @@ export function useAuthModal({ initialTab, isOpen, onClose }: AuthModalOptions) 
         );
       }
     },
-    [dispatch, login, onClose]
+    [dispatch, login, onClose, onAuthenticated]
   );
 
   // Gửi dữ liệu đăng ký hợp lệ và đồng bộ user sau khi backend phản hồi thành công.
@@ -98,7 +100,8 @@ export function useAuthModal({ initialTab, isOpen, onClose }: AuthModalOptions) 
         }
 
         dispatch(setUser(response.data));
-        onClose();
+        if (onAuthenticated) onAuthenticated();
+        else onClose();
       } catch (err: unknown) {
         setRegisterError(
           getApiErrorMessage(
@@ -108,7 +111,7 @@ export function useAuthModal({ initialTab, isOpen, onClose }: AuthModalOptions) 
         );
       }
     },
-    [dispatch, onClose, register]
+    [dispatch, onClose, onAuthenticated, register]
   );
 
   // Chuyển tab và xóa trạng thái lỗi của form đăng nhập.

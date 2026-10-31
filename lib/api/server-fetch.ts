@@ -15,6 +15,7 @@ import {
   getSessionRefreshAttempt,
   getRefreshToken,
   setAuthTokens,
+  setAuthRole,
 } from "@/lib/auth/cookies";
 import type { ApiResponse } from "@/types/shared/api";
 import type {
@@ -22,6 +23,7 @@ import type {
   LogoutRequest,
   RefreshTokenRequest,
   RefreshTokenResponse,
+  AccessTokenValidationResponse,
 } from "@/types/shared/auth";
 
 const BACKEND_API_URL = process.env.BACKEND_API_URL;
@@ -236,7 +238,7 @@ async function handleAuthResponse<T>(
     endpointPath === "api/auth/login" ||
     endpointPath === "api/auth/register";
 
-  if (!isAuthEndpoint || !response.ok || !payload.data) {
+  if (!isAuthEndpoint || !response.ok || !payload.success || !payload.data) {
     return payload;
   }
 
@@ -248,7 +250,7 @@ async function handleAuthResponse<T>(
     throw new Error("Backend trả về dữ liệu xác thực không hợp lệ.");
   }
 
-  await setAuthTokens({ accessToken, refreshToken });
+  await setAuthTokens({ accessToken, refreshToken }, authData);
 
   const authenticatedUser = Object.fromEntries(
     Object.entries(authData).filter(
@@ -398,6 +400,11 @@ export async function serverFetch<T>(
     response,
     payload,
   );
+
+  if (endpointPath === "api/auth/check_token" && cookieMode === "read-write"
+    && response.ok && payload.success && payload.data) {
+    await setAuthRole(payload.data as unknown as AccessTokenValidationResponse);
+  }
 
   if (isLogoutRequest) {
     await clearAuthTokens();

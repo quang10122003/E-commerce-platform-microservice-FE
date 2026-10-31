@@ -4,6 +4,8 @@ import "server-only";
 
 import { createHash } from "node:crypto";
 import { cookies } from "next/headers";
+import { createRoleCookie, readRoleCookie, ROLE_COOKIE_NAME } from "@/lib/auth/role-cookie";
+import type { AccessTokenValidationResponse } from "@/types/shared/auth";
 
 const accessTokenCookieName = process.env.ACCESS_TOKEN_COOKIE_NAME ?? AUTH_COOKIE_NAMES.ACCESS_TOKEN;
 const refreshTokenCookieName = process.env.REFRESH_TOKEN_COOKIE_NAME ?? AUTH_COOKIE_NAMES.REFRESH_TOKEN;
@@ -27,9 +29,12 @@ export async function getRefreshToken() {
   return cookieStore.get(refreshTokenCookieName)?.value;
 }
 
-// Lưu cặp access token và refresh token vào cookie httpOnly.
-export async function setAuthTokens({ accessToken, refreshToken }: AuthTokens) {
+// Lưu cặp token và đồng bộ quyền đã xác thực khi đăng nhập hoặc refresh.
+export async function setAuthTokens({ accessToken, refreshToken }: AuthTokens, user?: AccessTokenValidationResponse) {
   const cookieStore = await cookies();
+  const previousRole = readRoleCookie(cookieStore.get(ROLE_COOKIE_NAME)?.value, cookieStore.get(accessTokenCookieName)?.value, true);
+  const roleData = user ?? previousRole;
+  const roleValue = roleData ? createRoleCookie(roleData, accessToken) : undefined;
   const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -39,14 +44,26 @@ export async function setAuthTokens({ accessToken, refreshToken }: AuthTokens) {
 
   cookieStore.set(accessTokenCookieName, accessToken, cookieOptions);
   cookieStore.set(refreshTokenCookieName, refreshToken, cookieOptions);
+  if (roleValue) cookieStore.set(ROLE_COOKIE_NAME, roleValue, cookieOptions);
+  else cookieStore.delete(ROLE_COOKIE_NAME);
 }
 
-// Xóa cả hai token khi đăng xuất hoặc phiên đăng nhập không còn hợp lệ.
+// Cập nhật quyền từ check_token để phiên cũ và thay đổi quyền được đồng bộ lại.
+export async function setAuthRole(user: AccessTokenValidationResponse) {
+  const accessToken = await getAccessToken();
+  if (!accessToken) return;
+  (await cookies()).set(ROLE_COOKIE_NAME, createRoleCookie(user, accessToken), {
+    httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/",
+  });
+}
+
+// Xóa token và quyền khi đăng xuất hoặc phiên đăng nhập không còn hợp lệ.
 export async function clearAuthTokens() {
   const cookieStore = await cookies();
 
   cookieStore.delete(accessTokenCookieName);
   cookieStore.delete(refreshTokenCookieName);
+  cookieStore.delete(ROLE_COOKIE_NAME);
 }
 
 const sessionRefreshAttemptCookieName = "session-refresh-attempt";
