@@ -1,12 +1,11 @@
 "use client";
 
-import { Check, Store } from "lucide-react";
+import { Store } from "lucide-react";
 import { EmptyCartView } from "@/components/user/cart/EmptyCartView";
 import { CartErrorView } from "@/components/user/cart/CartErrorView";
 import { CartItemView } from "@/components/user/cart/CartItemView";
 import { CartSummary } from "@/components/user/cart/CartSummary";
 import { useCart } from "@/hooks/user/cart/useCart";
-import { cn } from "@/lib/utils";
 import { Loading } from "@/components/ui";
 import { isCartItemAvailable } from "@/utils/cart.utils";
 import type { CartResponse } from "@/types/user/cart";
@@ -18,7 +17,7 @@ interface CartViewProps {
 
 // Hiển thị dữ liệu ban đầu từ server cùng các thao tác cập nhật ở client.
 export function CartView({ initialCart, loadError }: CartViewProps) {
-  const { items, groups, summary, pending, updatingVariantIds, loadingLabel, refreshCart, changeQuantity, deleteItem } = useCart(initialCart);
+  const { items, groups, summary, pending, updatingVariantIds, loadingLabel, refreshCart, changeQuantity, deleteItem, selectedItemIds, allSelected, canSelect, toggleSelection } = useCart(initialCart);
 
   if (loadError) {
     return <CartErrorView pending={pending} onRetry={refreshCart} />;
@@ -40,24 +39,30 @@ export function CartView({ initialCart, loadError }: CartViewProps) {
       {/* Danh sách sản phẩm chiếm cột chính trên màn hình PC. */}
       <div className="min-w-0 space-y-3">
         {/* Hàng tiêu đề giữ cùng nhịp cột với các dòng sản phẩm. */}
-        <div className="hidden grid-cols-[minmax(0,1fr)_110px_120px_110px_60px] items-center gap-3 rounded-lg border border-surface-border bg-surface-card px-5 py-3 text-center text-xs text-muted-foreground xl:sticky xl:top-[86px] xl:z-30 xl:grid">
-          <span className="inline-flex items-center gap-3 text-left text-main"><span className="flex h-4 w-4 items-center justify-center rounded-sm bg-primary text-primary-foreground"><Check className="h-3 w-3" /></span> Sản phẩm</span>
-          <span>Đơn giá</span><span>Số lượng</span><span>Số tiền</span><span>Thao tác</span>
+        <div className="grid grid-cols-1 items-center gap-3 rounded-lg border border-surface-border bg-surface-card px-5 py-3 text-center text-xs text-muted-foreground xl:sticky xl:top-[86px] xl:z-30 xl:grid-cols-[minmax(0,1fr)_110px_120px_110px_60px]">
+          <label className="inline-flex cursor-pointer items-center gap-3 text-left text-main">
+            <input type="checkbox" checked={allSelected} disabled={!canSelect || pending} onChange={() => toggleSelection(items)} aria-label="Chọn tất cả sản phẩm"
+              className="h-4 w-4 shrink-0 cursor-pointer rounded-sm accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" />
+            <span>Chọn tất cả sản phẩm</span>
+          </label>
+          <span className="hidden xl:block">Đơn giá</span><span className="hidden xl:block">Số lượng</span><span className="hidden xl:block">Số tiền</span><span className="hidden xl:block">Thao tác</span>
         </div>
         {/* Các dòng sản phẩm được nhóm theo shopId từ response BE. */}
         {groups.map((group) => {
-          const selected = group.items.every(isCartItemAvailable);
+          const availableItems = group.items.filter(isCartItemAvailable);
+          const selected = availableItems.length > 0 && availableItems.every((item) => selectedItemIds.has(item.cartItemId));
           return (
             <section key={group.shopId} className="overflow-hidden rounded-lg border border-surface-border bg-surface-card" aria-label={`Sản phẩm từ ${group.name}`}>
               <div className="flex items-center gap-3 border-b border-surface-border bg-slate-50/80 px-4 py-3.5 sm:px-5">
-                <span className={cn("flex h-4 w-4 shrink-0 items-center justify-center rounded-sm", selected ? "bg-primary text-primary-foreground" : "border border-surface-border bg-surface-card")}>{selected && <Check className="h-3 w-3" />}</span>
+                <input type="checkbox" checked={selected} disabled={availableItems.length === 0 || pending} onChange={() => toggleSelection(group.items)} aria-label={`Chọn sản phẩm từ ${group.name}`}
+                  className="h-4 w-4 shrink-0 cursor-pointer rounded-sm accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" />
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-indigo-50 text-primary"><Store className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" /></span>
                 <div className="min-w-0 flex-1">
                   <h2 className="truncate text-sm font-semibold text-main">{group.name}</h2>
                   <p className="mt-0.5 text-[11px] text-muted-foreground">{group.items.length} sản phẩm</p>
                 </div>
               </div>
-              {group.items.map((item) => <CartItemView key={item.cartItemId} item={item} pending={pending} quantityPending={updatingVariantIds.has(item.productVariantId)} onChangeQuantity={changeQuantity} onDelete={deleteItem} />)}
+              {group.items.map((item) => <CartItemView key={item.cartItemId} item={item} pending={pending} quantityPending={updatingVariantIds.has(item.productVariantId)} selected={selectedItemIds.has(item.cartItemId)} onToggleSelection={toggleSelection} onChangeQuantity={changeQuantity} onDelete={deleteItem} />)}
             </section>
           );
         })}

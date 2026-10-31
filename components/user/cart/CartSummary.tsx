@@ -1,15 +1,20 @@
 import Link from "next/link";
 import { formatCurrency } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface CartSummaryProps {
   itemCount: number;
   quantity: number;
-  total: number;
+  total: number | null;
   shopCount: number;
+  quoteLoading: boolean;
+  quoteError: string | null;
+  onRetryQuote: () => void;
 }
 
 // Hiển thị tổng tiền của các sản phẩm còn có thể thanh toán.
-export function CartSummary({ itemCount, quantity, total, shopCount }: CartSummaryProps) {
+export function CartSummary({ itemCount, quantity, total, shopCount, quoteLoading, quoteError, onRetryQuote }: CartSummaryProps) {
+  const canCheckout = itemCount > 0 && total !== null && !quoteLoading && !quoteError;
   return (
     <aside className="sticky bottom-0 z-20 overflow-hidden rounded-lg border border-surface-border bg-surface-card/95 backdrop-blur-md lg:bottom-auto lg:top-[86px] lg:bg-surface-card lg:backdrop-blur-none" aria-label="Tóm tắt giỏ hàng">
       {/* Khối thanh toán nằm bên phải trên PC và dưới danh sách ở màn hình nhỏ. */}
@@ -24,13 +29,21 @@ export function CartSummary({ itemCount, quantity, total, shopCount }: CartSumma
       </div>
       <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-3.5 sm:px-5 lg:block lg:px-5 lg:py-5">
         <div className="ml-auto flex flex-wrap items-center justify-end gap-x-5 gap-y-2 lg:mt-4 lg:block">
-          <div className="text-right lg:flex lg:items-baseline lg:justify-between lg:gap-2"><p className="text-xs text-muted-foreground">Tổng cộng ({quantity} sản phẩm)</p><p className="text-lg font-bold tracking-tight text-cta sm:text-xl lg:text-lg">{formatCurrency(total)}</p></div>
-          <Link
+          <div className="text-right lg:flex lg:items-baseline lg:justify-between lg:gap-2" aria-live="polite" aria-busy={quoteLoading}>
+            <p className="text-xs text-muted-foreground">Tổng cộng ({quantity} sản phẩm)</p>
+            <p className="text-lg font-bold tracking-tight text-cta sm:text-xl lg:text-lg">{quoteLoading ? "Đang tính..." : total === null ? "—" : formatCurrency(total)}</p>
+          </div>
+          {/* Không cho tiếp tục với tổng tiền cũ khi báo giá đang tải hoặc thất bại. */}
+          {quoteError && <div role="alert" className="mt-2 text-sm text-danger">
+            <p>{quoteError}</p>
+            <Button type="button" variant="link" size="sm" onClick={onRetryQuote}>Thử lại</Button>
+          </div>}
+          {canCheckout ? <Link
             href="/checkout"
             className="flex h-10 min-w-35 items-center justify-center rounded-md bg-cta px-5 text-sm font-semibold text-cta-foreground transition-all duration-200 hover:bg-cta-hover active:scale-95 lg:mt-5 lg:w-full"
           >
             Mua hàng
-          </Link>
+          </Link> : <Button type="button" disabled variant="cta" className="h-10 min-w-35 rounded-md lg:mt-5 lg:w-full">Mua hàng</Button>}
         </div>
       </div>
     </aside>

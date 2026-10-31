@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { TIME } from "@/lib/constants";
 import type { CartItem } from "@/types/user/cart";
 import { applyCartItemPricing, getNextCartSaleExpiry } from "@/utils/cart.utils";
@@ -11,6 +11,9 @@ const EMPTY_ITEMS: CartItem[] = [];
 export function useCartSalePricing(items: CartItem[] = EMPTY_ITEMS) {
   // Lưu thời điểm trình duyệt dùng chung cho giá từng dòng và tổng tiền.
   const [now, setNow] = useState(() => Date.now());
+  // Đổi khóa báo giá khi một ưu đãi đang hiệu lực vừa hết hạn.
+  const [saleExpiryVersion, setSaleExpiryVersion] = useState(0);
+  const lastCheckedAtRef = useRef(now);
 
   useEffect(() => {
     let timer: number;
@@ -18,6 +21,11 @@ export function useCartSalePricing(items: CartItem[] = EMPTY_ITEMS) {
     const syncPricing = () => {
       window.clearTimeout(timer);
       const current = Date.now();
+      const previousDeadline = getNextCartSaleExpiry(items, lastCheckedAtRef.current);
+      if (previousDeadline !== null && previousDeadline <= current) {
+        setSaleExpiryVersion((version) => version + 1);
+      }
+      lastCheckedAtRef.current = current;
       setNow(current);
       const deadline = getNextCartSaleExpiry(items, current);
       if (deadline !== null) timer = window.setTimeout(syncPricing, Math.min(deadline - current, TIME.HOUR_MS));
@@ -36,5 +44,5 @@ export function useCartSalePricing(items: CartItem[] = EMPTY_ITEMS) {
     };
   }, [items]);
 
-  return applyCartItemPricing(items, now);
+  return { items: applyCartItemPricing(items, now), saleExpiryVersion };
 }

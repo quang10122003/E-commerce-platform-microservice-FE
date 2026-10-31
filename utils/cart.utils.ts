@@ -20,13 +20,12 @@ export function groupCartItemsByShop<T extends CartItem>(items: T[]) {
   return Array.from(groups.values());
 }
 
-// Tổng kết các sản phẩm hiện có thể thanh toán, không tính dòng ngừng bán.
+// Tổng kết số lượng sản phẩm có thể thanh toán; tổng tiền do API quote quyết định.
 export function getCartSummary(items: CartPricedItem[]) {
   const availableItems = items.filter(isCartItemAvailable);
   return {
     itemCount: availableItems.length,
     quantity: availableItems.reduce((total, item) => total + item.quantity, 0),
-    total: availableItems.reduce((total, item) => total + item.effectivePrice * item.quantity, 0),
     shopCount: new Set(availableItems.map((item) => item.shopId)).size,
   };
 }

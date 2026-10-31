@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Check, Minus, Plus, Package, Trash2 } from "lucide-react";
+import { Minus, Plus, Package, Trash2 } from "lucide-react";
 import { cn, formatCurrency } from "@/lib/utils";
 import type { CartItem, CartPricedItem } from "@/types/user/cart";
 import { CartItemPriceView } from "./CartItemPriceView";
@@ -9,12 +9,14 @@ interface CartItemViewProps {
   item: CartPricedItem;
   pending: boolean;
   quantityPending: boolean;
+  selected: boolean;
+  onToggleSelection: (items: CartItem[]) => void;
   onChangeQuantity: (item: CartItem, delta: -1 | 1) => void;
   onDelete: (item: CartItem) => void;
 }
 
 // Hiển thị một sản phẩm và các thao tác số lượng, xóa trong giỏ hàng.
-export function CartItemView({ item, pending, quantityPending, onChangeQuantity, onDelete }: CartItemViewProps) {
+export function CartItemView({ item, pending, quantityPending, selected, onToggleSelection, onChangeQuantity, onDelete }: CartItemViewProps) {
   const isAvailable = isCartItemAvailable(item);
   const availabilityLabel = item.status === "INACTIVE" ? "Ngừng bán" : isAvailable ? "Còn hàng" : "Hết hàng";
   const canDecrease = isAvailable && !pending && !quantityPending && item.quantity > 1;
@@ -25,9 +27,9 @@ export function CartItemView({ item, pending, quantityPending, onChangeQuantity,
       {/* Thông tin sản phẩm giữ cùng nhịp cột với tiêu đề trên PC. */}
       <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-3 px-3 py-4 sm:px-5 xl:grid-cols-[minmax(0,1fr)_110px_120px_110px_60px] xl:text-center">
         <div className="col-span-2 flex min-w-0 items-center gap-2 text-left sm:gap-3 xl:col-span-1">
-          <span className={cn("flex h-4 w-4 shrink-0 items-center justify-center rounded-sm", isAvailable ? "bg-primary text-primary-foreground" : "border border-surface-border-strong bg-surface-muted")}>
-            {isAvailable && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
-          </span>
+          <input type="checkbox" checked={selected} disabled={!isAvailable || pending}
+            onChange={() => onToggleSelection([item])} aria-label={`Chọn ${item.productName}, mã ${item.cartItemId}`}
+            className="h-4 w-4 shrink-0 cursor-pointer rounded-sm accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" />
           <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md border border-surface-border bg-surface-subtle xl:h-24 xl:w-24">
             {item.imageUrl ? (
               <Image src={item.imageUrl} alt={item.productName} fill unoptimized sizes="(min-width: 1280px) 96px, 80px" className={cn("object-cover transition-transform duration-300", isAvailable ? "group-hover:scale-105" : "grayscale opacity-45")} />

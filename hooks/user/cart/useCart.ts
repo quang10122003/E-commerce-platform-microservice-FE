@@ -2,6 +2,7 @@
 
 import { CART_QUANTITY_DEBOUNCE_MS } from "@/lib/constants";
 import { useCartSalePricing } from "./useCartSalePricing";
+import { useCartQuote } from "./useCartQuote";
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -9,7 +10,7 @@ import { useNotification } from "@/hooks/shared/useNotification";
 import { useRemoveCartItemMutation, useUpdateCartQuantityMutation } from "@/lib/redux/services/cart-api";
 import { getApiErrorMessage } from "@/lib/utils";
 import type { CartItem, CartResponse } from "@/types/user/cart";
-import { applyCartQuantityDrafts, getCartQuantityChanges, getCartSummary, groupCartItemsByShop } from "@/utils/cart.utils";
+import { applyCartQuantityDrafts, getCartQuantityChanges, getCartSummary, groupCartItemsByShop, isCartItemAvailable } from "@/utils/cart.utils";
 
 // Quản lý thao tác giỏ hàng trên client và làm mới dữ liệu server sau khi cập nhật.
 export function useCart(initialCart: CartResponse | null) {
@@ -31,8 +32,30 @@ export function useCart(initialCart: CartResponse | null) {
   const [pendingAction, setPendingAction] = useState<"delete" | null>(null);
   // Giữ trạng thái chờ trong lúc Server Component tải lại giỏ hàng.
   const [isRefreshing, startTransition] = useTransition();
-  const pricedItems = useCartSalePricing(initialCart?.item);
+  // Mặc định chọn sản phẩm còn hàng; ghi nhớ các dòng người dùng đã bỏ chọn.
+  const [unselectedItemIds, setUnselectedItemIds] = useState(new Set<number>());
+  const { items: pricedItems, saleExpiryVersion } = useCartSalePricing(initialCart?.item);
   const items = applyCartQuantityDrafts(pricedItems, draftQuantities);
+  const availableItems = items.filter(isCartItemAvailable);
+  const selectedItems = availableItems.filter((item) => !unselectedItemIds.has(item.cartItemId));
+  const selectedItemIds = new Set(selectedItems.map((item) => item.cartItemId));
+  const quote = useCartQuote(selectedItems, saleExpiryVersion);
+
+  // Chọn hoặc bỏ chọn theo dòng, shop hoặc toàn bộ giỏ, không tác động dữ liệu BE.
+  const toggleSelection = (targetItems: CartItem[]) => {
+    if (pendingAction !== null || isRefreshing) return;
+    const available = targetItems.filter(isCartItemAvailable);
+    if (available.length === 0) return;
+    setUnselectedItemIds((previous) => {
+      const next = new Set(previous);
+      const allSelected = available.every((item) => !previous.has(item.cartItemId));
+      for (const item of available) {
+        if (allSelected) next.add(item.cartItemId);
+        else next.delete(item.cartItemId);
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
     const timers = quantityTimerRef.current;
@@ -69,7 +92,7 @@ export function useCart(initialCart: CartResponse | null) {
   const changeQuantity = (item: CartItem, delta: -1 | 1) => {
     if (pendingAction !== null || isRefreshing || updatingVariantIdsRef.current.has(item.productVariantId)) return;
     const quantity = (draftRef.current[item.productVariantId] ?? item.quantity) + delta;
-    if (quantity < 1 || quantity > item.stockQuantity) return;
+    if (quantity < 1 || (delta === 1 && quantity > item.stockQuantity)) return;
 
     draftRef.current = { ...draftRef.current, [item.productVariantId]: quantity };
     setDraftQuantities(draftRef.current);
@@ -101,7 +124,11 @@ export function useCart(initialCart: CartResponse | null) {
   return {
     items,
     groups: groupCartItemsByShop(items),
-    summary: getCartSummary(items),
+    summary: { ...getCartSummary(selectedItems), total: quote.total, quoteLoading: quote.loading, quoteError: quote.error, onRetryQuote: quote.retry },
+    selectedItemIds,
+    allSelected: availableItems.length > 0 && selectedItems.length === availableItems.length,
+    canSelect: availableItems.length > 0,
+    toggleSelection,
     pending: pendingAction !== null || isRefreshing,
     updatingVariantIds,
     loadingLabel: pendingAction === "delete" ? "Đang xóa sản phẩm..." : "Đang cập nhật giỏ hàng...",

@@ -49,6 +49,15 @@ export interface UpdateCartQuantityRequest {
   quantity: number;
 }
 
+// Hợp đồng POST /api/cart/quote chỉ nhận biến thể và số lượng đã chọn.
+export interface CartQuoteRequest {
+  items: { variantId: number; quantity: number }[];
+}
+
+export interface CartQuoteResponse {
+  totalAmount: number;
+}
+
 // Query param của API thêm variant vào giỏ hàng.
 export interface AddCartItemParams {
   productVariantId: number;

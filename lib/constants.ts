@@ -22,6 +22,7 @@ export const LOCAL_DATE_TIME_LENGTH = 16;
 
 // Thời lượng tương tác và ngưỡng hiển thị không phụ thuộc component.
 export const CART_QUANTITY_DEBOUNCE_MS = 500;
+export const CART_QUOTE_MAX_ITEMS = 50;
 export const SEARCH_DEBOUNCE_MS = 400;
 export const PRICE_PREVIEW_DEBOUNCE_MS = 500;
 export const HERO_CAROUSEL_INTERVAL_MS = 4_500;

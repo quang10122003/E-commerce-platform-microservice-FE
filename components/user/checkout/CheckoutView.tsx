@@ -5,7 +5,6 @@ import { CheckoutBreadcrumb } from "./CheckoutBreadcrumb";
 import { CheckoutAddressCard } from "./CheckoutAddressCard";
 import { CheckoutAddressModal } from "./CheckoutAddressModal";
 import { CheckoutItemsGroup } from "./CheckoutItemsGroup";
-import { CheckoutVoucherCard } from "./CheckoutVoucherCard";
 import { CheckoutPaymentCard } from "./CheckoutPaymentCard";
 import { CheckoutOrderSummary } from "./CheckoutOrderSummary";
 import { CheckoutSuccessModal } from "./CheckoutSuccessModal";
@@ -32,11 +31,10 @@ export function CheckoutView() {
 
       {/* 2. Khung bố cục 2 cột: Cột trái nội dung chính, cột phải tóm tắt chi phí */}
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,1fr)_420px] items-start gap-5">
-        {/* Cột trái: Địa chỉ, Danh sách kiện hàng, Voucher, Phương thức thanh toán */}
+        {/* Cột trái: Địa chỉ, Danh sách kiện hàng và Phương thức thanh toán */}
         <div className="space-y-4 min-w-0">
           <CheckoutAddressCard onChangeAddress={() => setIsAddressModalOpen(true)} />
           <CheckoutItemsGroup />
-          <CheckoutVoucherCard />
           <CheckoutPaymentCard />
         </div>
 
