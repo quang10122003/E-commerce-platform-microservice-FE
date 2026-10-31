@@ -1,33 +1,40 @@
-import { SUGGESTIONS_INITIAL_COUNT, SUGGESTIONS_LOAD_MORE_COUNT, SUGGESTIONS_LOAD_MORE_DELAY_MS } from "@/lib/constants";
-import { useMemo, useState } from "react";
-import { filterSuggestedProducts, type SuggestionTab } from "@/utils/suggestions.utils";
-import type { ProductCatalogItem } from "@/types/user/product";
+"use client";
 
-// Quản lý tab, phân trang và trạng thái tải thêm của danh sách gợi ý.
-export function usePersonalizedSuggestions(products: ProductCatalogItem[]) {
-  const [activeTab, setActiveTab] = useState<SuggestionTab>("all");
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [visibleCount, setVisibleCount] = useState(SUGGESTIONS_INITIAL_COUNT);
+import { skipToken } from "@reduxjs/toolkit/query";
+import { useRouter } from "next/navigation";
+import { SUGGESTIONS_INITIAL_COUNT } from "@/lib/constants";
+import { useAppSelector } from "@/lib/redux/hooks";
+import {
+  useGetProductRecommendationsQuery,
+  useGetTopSellingProductsQuery,
+} from "@/lib/redux/services/product-api";
 
-  const filteredProducts = useMemo(() => {
-    return filterSuggestedProducts(products, activeTab);
-  }, [activeTab, products]);
+// Chờ xác định phiên trước khi chọn nguồn dữ liệu, tách cache gợi ý theo tài khoản.
+export function usePersonalizedSuggestions() {
+  const router = useRouter();
+  const { user, isCheckingAuth } = useAppSelector((state) => state.auth);
+  const recommendations = useGetProductRecommendationsQuery(
+    !isCheckingAuth && user
+      ? { userId: user.userId, size: SUGGESTIONS_INITIAL_COUNT }
+      : skipToken,
+  );
+  const topSelling = useGetTopSellingProductsQuery(undefined, {
+    skip: isCheckingAuth || Boolean(user),
+  });
+  const query = user ? recommendations : topSelling;
+  const products = isCheckingAuth ? [] : user
+    ? recommendations.currentData?.data?.items ?? []
+    : topSelling.currentData?.data?.slice(0, SUGGESTIONS_INITIAL_COUNT) ?? [];
 
-  // Tăng số sản phẩm hiển thị sau khi hoàn tất trạng thái tải giả lập.
-  const handleLoadMore = () => {
-    setIsLoadingMore(true);
-    setTimeout(() => {
-      setVisibleCount((previous) => previous + SUGGESTIONS_LOAD_MORE_COUNT);
-      setIsLoadingMore(false);
-    }, SUGGESTIONS_LOAD_MORE_DELAY_MS);
+  // Dùng flow đăng nhập theo route hiện có để quay về trang gợi ý sau xác thực.
+  const handleViewMore = () => {
+    router.push(user ? "/recommendations" : "/?login=required&next=%2Frecommendations", { scroll: Boolean(user) });
   };
 
   return {
-    activeTab,
-    filteredProducts,
-    handleLoadMore,
-    isLoadingMore,
-    setActiveTab,
-    visibleCount,
+    products,
+    isLoading: isCheckingAuth || query.isLoading || (query.isFetching && products.length === 0),
+    isError: !isCheckingAuth && query.isError,
+    handleViewMore,
   };
 }

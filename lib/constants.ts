@@ -34,10 +34,9 @@ export const EXIT_ANIMATION_DURATION = 380;
 export const NOTIFICATION_DURATION_MS = 3_000;
 
 // Cấu hình tải thêm cho danh sách gợi ý hiện tại.
-export const SUGGESTIONS_INITIAL_COUNT = 10;
+export const SUGGESTIONS_INITIAL_COUNT = 20;
 export const SUGGESTIONS_LOAD_MORE_COUNT = 5;
 export const SUGGESTIONS_LOAD_MORE_DELAY_MS = 600;
-export const BEST_SELLER_MIN_SOLD = 2_000;
 
 export const DEFAULT_TIMEOUT_MS = 15_000;
 

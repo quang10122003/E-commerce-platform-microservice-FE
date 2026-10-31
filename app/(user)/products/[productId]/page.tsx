@@ -11,7 +11,7 @@ import { ProductPurchaseSection } from "@/components/user/product-detail/Product
 import { ProductReviews } from "@/components/user/product-detail/ProductReviews";
 import { ProductShopInfoView } from "@/components/user/product-detail/ProductShopInfoView";
 import { ProductDescription } from "@/components/user/product-detail/ProductDescription";
-import { PersonalizedSuggestions } from "@/components/user/home/personalized-suggestions";
+import { ProductSimilarProductsView } from "@/components/user/product-detail/ProductSimilarProductsView";
 
 type ProductDetailPageProps = {
   params: Promise<{ productId: string }>;
@@ -95,10 +95,7 @@ export default async function ProductDetailPage({ params, searchParams }: Produc
       <ProductDetailTabs />
 
       {/* Gợi ý sản phẩm hiển thị sau phần đánh giá. */}
-      <section className="space-y-4">
-        <h2 className="text-lg font-medium text-slate-600 sm:text-xl">Có thể bạn cũng thích</h2>
-        <PersonalizedSuggestions showTabs={false} />
-      </section>
+      <ProductSimilarProductsView productId={parsedProductId} />
     </div>
     </ProductDetailLoadingView>
   );

@@ -5,7 +5,6 @@ import { FlashSaleSection } from "@/components/user/home/flash-sale-section";
 import { HeroCarousel } from "@/components/user/home/hero-carousel";
 import { PersonalizedSuggestions } from "@/components/user/home/personalized-suggestions";
 import { SuggestedCategories } from "@/components/user/home/suggested-categories";
-import { TrustPerks, VoucherStrip } from "@/components/user/home/home-promotions";
 
 // Tải danh mục và top sale song song; lỗi từng nguồn chỉ ẩn khu vực tương ứng.
 export default async function ShopHomePage() {
@@ -23,8 +22,6 @@ export default async function ShopHomePage() {
       <HeroCarousel />
       <SuggestedCategories categories={categories.status === "fulfilled" ? categories.value : []} />
       {topSelling.status === "fulfilled" && <FlashSaleSection data={topSelling.value.data} serverNow={topSelling.value.now} />}
-      <VoucherStrip />
-      <TrustPerks />
       <PersonalizedSuggestions />
     </div>
   );
