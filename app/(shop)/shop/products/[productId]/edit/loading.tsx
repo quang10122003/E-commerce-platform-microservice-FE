@@ -1,5 +1,5 @@
-import { EditProductSkeleton } from "@/components/shop/products/edit-product-skeleton";
+import { Loading } from "@/components/ui";
 
 export default function EditProductLoading() {
-  return <EditProductSkeleton />;
+  return <Loading dotsOnly label="Đang tải dữ liệu sản phẩm..." className="min-h-[calc(100vh-10rem)]" />;
 }

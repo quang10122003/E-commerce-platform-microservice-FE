@@ -146,6 +146,10 @@ body {
 
 /* Custom 3D visual utilities for strong depth and tactile separation */
 @layer utilities {
+  .date-time-picker-cursor::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+  }
+
   .skeleton-shimmer {
     position: relative;
     overflow: hidden;

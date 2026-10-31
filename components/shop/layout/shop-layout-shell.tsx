@@ -14,7 +14,12 @@ export function SellerLayoutShell({
   const { closeSidebar, isSidebarOpen, toggleSidebar, isChatPage, isWideContentPage } = useSellerLayout();
 
   return (
-    <div className={cn("flex bg-slate-50", isChatPage ? "fixed inset-0 overflow-hidden" : "min-h-screen")}>
+    <div className={cn(
+      "flex bg-slate-50",
+      isChatPage
+        ? "fixed inset-0 overflow-hidden"
+        : "min-h-[calc(100dvh/var(--page-zoom))]",
+    )}>
       {/* 1. Responsive Sidebar */}
       <SellerSidebar
         isOpen={isSidebarOpen}
@@ -22,14 +27,20 @@ export function SellerLayoutShell({
       />
 
       {/* 2. Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 lg:ml-64 h-full">
+      <div className={cn(
+        "flex-1 flex flex-col min-w-0 lg:ml-64",
+        !isChatPage && "min-h-[calc((100dvh/var(--page-zoom))-4rem)]",
+      )}>
         <SellerTopbar onToggleSidebar={toggleSidebar} />
         <main
           className={cn(
-            "flex-1 w-full",
+            "flex-1 w-full flex flex-col",
             isChatPage
               ? "min-h-0 p-0 max-w-none overflow-hidden"
-              : cn("p-4 sm:p-6 lg:p-8 space-y-6", isWideContentPage ? "max-w-none" : "max-w-7xl mx-auto"),
+              : cn(
+                "px-4 pt-4 pb-4 sm:px-6 sm:pt-6 sm:pb-4 lg:px-8 lg:pt-8 lg:pb-4 space-y-6",
+                isWideContentPage ? "max-w-none" : "max-w-7xl mx-auto",
+              ),
           )}
         >
           {children}

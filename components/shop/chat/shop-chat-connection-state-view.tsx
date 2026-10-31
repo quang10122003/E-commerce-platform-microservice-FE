@@ -62,7 +62,7 @@ export function ShopChatConnectionNoticeView({ state, error, refreshing, onReloa
     >
       {/* Icon trạng thái trong badge bo góc */}
       <div className={cn("mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md shadow-2xs", toneIconClasses[content.tone])}>
-        <Icon aria-hidden="true" className={cn("size-3.5", (state === "loading" || state === "syncing") && "animate-spin motion-reduce:animate-none")} />
+        <Icon aria-hidden="true" className="size-3.5" />
       </div>
 
       {/* Nội dung chi tiết lỗi hoặc trạng thái */}
