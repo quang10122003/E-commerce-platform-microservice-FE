@@ -39,7 +39,7 @@ export function CartView({ initialCart, loadError }: CartViewProps) {
       {/* Danh sách sản phẩm chiếm cột chính trên màn hình PC. */}
       <div className="min-w-0 space-y-3">
         {/* Hàng tiêu đề giữ cùng nhịp cột với các dòng sản phẩm. */}
-        <div className="grid grid-cols-1 items-center gap-3 rounded-lg border border-surface-border bg-surface-card px-5 py-3 text-center text-xs text-muted-foreground xl:sticky xl:top-[86px] xl:z-30 xl:grid-cols-[minmax(0,1fr)_110px_120px_110px_60px]">
+        <div className="grid grid-cols-1 items-center gap-3 rounded-lg border border-surface-border bg-surface-card px-5 py-3 text-center text-xs text-muted-foreground xl:sticky xl:top-[86px] xl:z-30 xl:grid-cols-[minmax(0,1fr)_130px_120px_110px_60px]">
           <label className="inline-flex cursor-pointer items-center gap-3 text-left text-main">
             <input type="checkbox" checked={allSelected} disabled={!canSelect || pending} onChange={() => toggleSelection(items)} aria-label="Chọn tất cả sản phẩm"
               className="h-4 w-4 shrink-0 cursor-pointer rounded-sm accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" />

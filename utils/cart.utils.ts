@@ -30,11 +30,11 @@ export function getCartSummary(items: CartPricedItem[]) {
   };
 }
 
-// Áp dụng số lượng tạm để giá từng dòng và tổng tiền cập nhật ngay khi bấm.
-export function applyCartQuantityDrafts<T extends CartItem>(items: T[], drafts: Record<number, number>): T[] {
+// Chờ BE phân bổ lại ưu đãi khi số lượng tạm khác số lượng đã được báo giá.
+export function applyCartQuantityDrafts(items: CartPricedItem[], drafts: Record<number, number>): CartPricedItem[] {
   return items.map((item) => {
     const quantity = drafts[item.productVariantId];
-    return quantity === undefined ? item : { ...item, quantity };
+    return quantity === undefined ? item : { ...item, quantity, pricingPending: quantity !== item.quantity };
   });
 }
 // Chỉ gửi các số lượng khác dữ liệu BE, bỏ qua dòng sắp bị xóa.
@@ -50,10 +50,17 @@ export function getCartQuantityChanges(items: CartItem[], drafts: Record<number,
 export function applyCartItemPricing(items: CartItem[], now: number): CartPricedItem[] {
   return items.map((item) => {
     const sale = item.sale;
-    const hasSale = !!sale && Number.isFinite(Date.parse(sale.endsAt))
+    const hasSale = !!sale && item.saleQuantity > 0 && Number.isFinite(Date.parse(sale.endsAt))
       && !getSaleCountdown(sale.endsAt, now).expired
       && Number.isFinite(sale.salePrice) && sale.salePrice >= 0 && sale.salePrice < item.price;
-    return { ...item, effectivePrice: hasSale && sale ? sale.salePrice : item.price, hasSale };
+    const saleQuantity = hasSale ? item.saleQuantity : 0;
+    const regularQuantity = hasSale ? item.regularQuantity : item.quantity;
+    const effectivePrice = hasSale && sale ? sale.salePrice : item.price;
+    return {
+      ...item, saleQuantity, regularQuantity, effectivePrice, hasSale,
+      lineTotal: effectivePrice * saleQuantity + item.price * regularQuantity,
+      pricingPending: false,
+    };
   });
 }
 

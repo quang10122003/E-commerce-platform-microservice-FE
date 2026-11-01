@@ -25,7 +25,7 @@ export function CartItemView({ item, pending, quantityPending, selected, onToggl
   return (
     <article aria-label={`${item.productName} - ${availabilityLabel}`} className={cn("group grid grid-cols-[minmax(0,1fr)_64px] border-b border-surface-border last:border-b-0 sm:grid-cols-[minmax(0,1fr)_76px] xl:block", !isAvailable && "bg-surface-muted/70")}>
       {/* Thông tin sản phẩm giữ cùng nhịp cột với tiêu đề trên PC. */}
-      <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-3 px-3 py-4 sm:px-5 xl:grid-cols-[minmax(0,1fr)_110px_120px_110px_60px] xl:text-center">
+      <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-3 px-3 py-4 sm:px-5 xl:grid-cols-[minmax(0,1fr)_130px_120px_110px_60px] xl:text-center">
         <div className="col-span-2 flex min-w-0 items-center gap-2 text-left sm:gap-3 xl:col-span-1">
           <input type="checkbox" checked={selected} disabled={!isAvailable || pending}
             onChange={() => onToggleSelection([item])} aria-label={`Chọn ${item.productName}, mã ${item.cartItemId}`}
@@ -42,8 +42,8 @@ export function CartItemView({ item, pending, quantityPending, selected, onToggl
             {item.hasOption && item.variantOptions.length > 0 && <p className="mt-1.5 inline-flex max-w-full rounded-sm bg-slate-100 px-2 py-1 text-[11px] text-slate-600 sm:mt-1">Phân loại: {item.variantOptions.map((option) => `${option.name} ${option.value}`).join(" · ")}</p>}
           </div>
         </div>
-        {/* Đơn giá ưu đãi và giá gốc, không hiển thị thời gian còn lại. */}
-        <CartItemPriceView item={item} className="hidden justify-center text-sm xl:flex" />
+        {/* Phân bổ giá sale và giá thường theo số lượng BE trả về. */}
+        <CartItemPriceView item={item} className="hidden justify-center px-2 text-xs xl:flex" />
         {/* Căn cụm số lượng với mép trái ảnh trên mobile và tablet. */}
         <div className="ml-6 flex justify-start sm:ml-7 xl:ml-0 xl:justify-center">
           <div className={cn("flex h-8 items-center overflow-hidden rounded-sm border border-surface-border text-xs", isAvailable ? "bg-surface-card text-main" : "bg-surface-muted text-placeholder")} aria-label={`Số lượng ${item.quantity}`}>
@@ -53,8 +53,8 @@ export function CartItemView({ item, pending, quantityPending, selected, onToggl
           </div>
         </div>
         <div className="text-right xl:text-center">
-          <span className={cn("block text-[11px] xl:hidden", isAvailable ? "text-muted-foreground" : "text-placeholder")}>Đơn giá <CartItemPriceView item={item} /></span>
-          <strong className={cn("block text-xs font-semibold xl:text-sm", isAvailable ? "text-cta" : "text-placeholder")}>{formatCurrency(item.effectivePrice * item.quantity)}</strong>
+          <span className={cn("block text-xs xl:hidden", isAvailable ? "text-muted-foreground" : "text-placeholder")}><CartItemPriceView item={item} /></span>
+          <strong className={cn("block text-sm font-semibold", isAvailable ? "text-cta" : "text-placeholder")}>{item.pricingPending ? "—" : formatCurrency(item.lineTotal)}</strong>
         </div>
         <button type="button" disabled={pending} onClick={() => onDelete(item)} className="hidden cursor-pointer items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium text-danger-hover transition-colors hover:bg-danger-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger xl:inline-flex disabled:cursor-not-allowed disabled:opacity-50"><Trash2 className="h-3.5 w-3.5" aria-hidden="true" />Xóa</button>
       </div>

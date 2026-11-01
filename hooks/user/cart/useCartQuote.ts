@@ -10,7 +10,7 @@ import type { CartPricedItem } from "@/types/user/cart";
 export function useCartQuote(items: CartPricedItem[], saleExpiryVersion: number) {
   const request = { items: items.map((item) => ({ variantId: item.productVariantId, quantity: item.quantity })) };
   const requestKey = JSON.stringify(request);
-  const pricingKey = JSON.stringify({ prices: items.map((item) => item.effectivePrice), saleExpiryVersion });
+  const pricingKey = JSON.stringify({ prices: items.map((item) => [item.effectivePrice, item.price, item.saleQuantity, item.regularQuantity]), saleExpiryVersion });
   const stableKey = useDebouncedValue(`${requestKey}|${pricingKey}`, PRICE_PREVIEW_DEBOUNCE_MS);
   const waiting = stableKey !== `${requestKey}|${pricingKey}`;
   const empty = items.length === 0;

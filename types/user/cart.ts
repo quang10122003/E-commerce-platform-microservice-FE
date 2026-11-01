@@ -25,6 +25,8 @@ export interface CartItem {
   variantOptions: CartVariantOption[];
   price: number;
   quantity: number;
+  saleQuantity: number;
+  regularQuantity: number;
   stockQuantity: number;
   status: ProductStatus;
   sale: CartItemSale | null;
@@ -34,6 +36,8 @@ export interface CartItem {
 export interface CartPricedItem extends CartItem {
   effectivePrice: number;
   hasSale: boolean;
+  lineTotal: number;
+  pricingPending: boolean;
 }
 // Response GET /api/cart; giữ nguyên tên CartId theo BE.
 export interface CartResponse {
