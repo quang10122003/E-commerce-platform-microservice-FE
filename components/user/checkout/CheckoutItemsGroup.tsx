@@ -1,54 +1,14 @@
 import Image from "next/image";
-import { Store, ShieldCheck, MessageSquare } from "lucide-react";
+import { Store, ShieldCheck, MessageSquare, Package } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
-
-// Danh sách các shop và sản phẩm mock hiển thị trong trang thanh toán.
-const MOCK_CHECKOUT_SHOPS = [
-  {
-    shopId: 101,
-    shopName: "Apple Authorised Reseller",
-    isMall: true,
-    items: [
-      {
-        id: 1,
-        name: "Tai nghe không dây AirPods Pro 2 MagSafe USB-C (Chính Hãng VN/A)",
-        variant: "Màu Trắng · Cổng Type-C",
-        price: 5690000,
-        quantity: 1,
-        imageUrl: "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?auto=format&fit=crop&w=300&q=80",
-      },
-      {
-        id: 2,
-        name: "Củ sạc nhanh 20W Type-C Power Adapter hỗ trợ sạc nhanh iPhone",
-        variant: "Trắng · Chân dẹt US/VN",
-        price: 490000,
-        quantity: 1,
-        imageUrl: "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=300&q=80",
-      },
-    ],
-  },
-  {
-    shopId: 102,
-    shopName: "Anker Việt Nam Official",
-    isMall: true,
-    items: [
-      {
-        id: 3,
-        name: "Cáp sạc Anker PowerLine III Flow USB-C to Lightning Silicon Siêu Bền",
-        variant: "Xanh Mint · Dài 0.9m",
-        price: 290000,
-        quantity: 2,
-        imageUrl: "https://images.unsplash.com/photo-1585338107529-13afc5f02586?auto=format&fit=crop&w=300&q=80",
-      },
-    ],
-  },
-];
+import type { CheckoutShopGroup } from "@/types/user/checkout";
+import type { UseFormRegisterReturn } from "react-hook-form";
 
 // Hiển thị danh sách sản phẩm cần thanh toán phân theo từng gian hàng.
-export function CheckoutItemsGroup() {
+export function CheckoutItemsGroup({ groups, noteField, noteError }: { groups: CheckoutShopGroup[]; noteField: UseFormRegisterReturn<"note">; noteError?: string }) {
   return (
     <div className="space-y-4" aria-label="Danh sách kiện hàng">
-      {MOCK_CHECKOUT_SHOPS.map((shop) => (
+      {groups.map((shop) => (
         <section
           key={shop.shopId}
           className="overflow-hidden rounded-xl border border-surface-border bg-surface-card shadow-xs"
@@ -72,52 +32,58 @@ export function CheckoutItemsGroup() {
           {/* Danh sách từng mặt hàng trong Shop */}
           <div className="divide-y divide-surface-border">
             {shop.items.map((item) => (
-              <div key={item.id} className="grid grid-cols-[auto_1fr] sm:grid-cols-[auto_1fr_auto] items-center gap-3 p-4 sm:p-5">
+              <div key={item.variantId} className="grid grid-cols-[auto_minmax(0,1fr)] sm:grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 p-4 sm:p-5">
                 <div className="relative h-18 w-18 sm:h-20 sm:w-20 shrink-0 overflow-hidden rounded-lg border border-surface-border bg-slate-50">
-                  <Image
+                  {item.imageUrl ? <Image
                     src={item.imageUrl}
-                    alt={item.name}
+                    alt={item.productName}
                     fill
                     unoptimized
                     sizes="80px"
                     className="object-cover"
-                  />
+                  /> : <span className="flex h-full items-center justify-center text-muted-foreground"><Package className="h-6 w-6" aria-label="Chưa có ảnh sản phẩm" /></span>}
                 </div>
                 <div className="min-w-0 space-y-1">
                   <h3 className="line-clamp-2 text-xs sm:text-sm font-semibold text-main hover:text-primary transition-colors">
-                    {item.name}
+                    {item.productName}
                   </h3>
-                  <p className="inline-block rounded-xs bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600">
-                    Phân loại: {item.variant}
-                  </p>
-                  <div className="flex items-center gap-3 text-xs sm:hidden pt-0.5">
-                    <span className="text-muted-foreground">x{item.quantity}</span>
-                    <span className="font-bold text-cta">{formatCurrency(item.price * item.quantity)}</span>
-                  </div>
+                  {item.variantOptions.length > 0 && <p className="inline-block rounded-xs bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600">
+                    Phân loại: {item.variantOptions.map((option) => `${option.name} ${option.value}`).join(" · ")}
+                  </p>}
+                  <p className="text-xs text-muted-foreground">Số lượng: x{item.quantity}</p>
                 </div>
-                <div className="hidden sm:block text-right space-y-0.5 pl-4">
-                  <p className="text-xs text-muted-foreground">Đơn giá: {formatCurrency(item.price)}</p>
-                  <p className="text-xs text-slate-500 font-medium">Số lượng: x{item.quantity}</p>
-                  <p className="text-sm font-bold text-cta">{formatCurrency(item.price * item.quantity)}</p>
+                {/* Giá sale và giá thường cùng thuộc một sản phẩm trên mọi màn hình. */}
+                <div className="col-start-2 space-y-1 text-xs tabular-nums sm:col-start-auto sm:pl-4 sm:text-right">
+                  {item.saleQuantity > 0 && item.sale && <div className="space-y-0.5">
+                    <del className="text-muted-foreground">{formatCurrency(item.price)}</del>
+                    <p className="font-semibold text-cta">{item.saleQuantity} × {formatCurrency(item.sale.salePrice)}</p>
+                  </div>}
+                  {item.regularQuantity > 0 && <p className="text-main">{item.regularQuantity} × {formatCurrency(item.price)}</p>}
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Khu vực ghi chú đơn hàng */}
-          <div className="border-t border-surface-border bg-slate-50/60 p-4 sm:p-5 space-y-3">
-            {/* Ô nhập lời nhắn cho người bán */}
-            <div className="flex items-center gap-2 rounded-lg border border-surface-border bg-white px-3 py-2">
-              <MessageSquare className="h-4 w-4 shrink-0 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Lời nhắn cho người bán (ví dụ: giao giờ hành chính, đóng gói cẩn thận...)"
-                className="w-full bg-transparent text-xs text-main placeholder:text-placeholder outline-none"
-              />
-            </div>
-          </div>
         </section>
       ))}
+      {/* Một ghi chú chung cho toàn bộ checkout, không tách theo shop. */}
+      <section className="space-y-3 rounded-xl border border-surface-border bg-surface-card p-4 sm:p-5" aria-labelledby="checkout-note-label">
+        <label id="checkout-note-label" htmlFor="checkout-note" className="flex items-center gap-2 text-sm font-semibold text-main">
+          <MessageSquare className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+          Ghi chú cho đơn hàng
+        </label>
+        <input
+          id="checkout-note"
+          {...noteField}
+          type="text"
+          maxLength={1000}
+          aria-invalid={!!noteError}
+          aria-describedby={noteError ? "checkout-note-error" : undefined}
+          placeholder="Ví dụ: giao giờ hành chính, đóng gói cẩn thận..."
+          className="w-full rounded-lg border border-surface-border bg-white px-3 py-2 text-xs text-main placeholder:text-placeholder focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        />
+        {noteError && <p id="checkout-note-error" role="alert" className="text-xs text-danger">{noteError}</p>}
+      </section>
     </div>
   );
 }

@@ -10,13 +10,14 @@ interface CartItemViewProps {
   pending: boolean;
   quantityPending: boolean;
   selected: boolean;
+  stockError?: string;
   onToggleSelection: (items: CartItem[]) => void;
   onChangeQuantity: (item: CartItem, delta: -1 | 1) => void;
   onDelete: (item: CartItem) => void;
 }
 
 // Hiển thị một sản phẩm và các thao tác số lượng, xóa trong giỏ hàng.
-export function CartItemView({ item, pending, quantityPending, selected, onToggleSelection, onChangeQuantity, onDelete }: CartItemViewProps) {
+export function CartItemView({ item, pending, quantityPending, selected, stockError, onToggleSelection, onChangeQuantity, onDelete }: CartItemViewProps) {
   const isAvailable = isCartItemAvailable(item);
   const availabilityLabel = item.status === "INACTIVE" ? "Ngừng bán" : isAvailable ? "Còn hàng" : "Hết hàng";
   const canDecrease = isAvailable && !pending && !quantityPending && item.quantity > 1;
@@ -24,6 +25,8 @@ export function CartItemView({ item, pending, quantityPending, selected, onToggl
 
   return (
     <article aria-label={`${item.productName} - ${availabilityLabel}`} className={cn("group grid grid-cols-[minmax(0,1fr)_64px] border-b border-surface-border last:border-b-0 sm:grid-cols-[minmax(0,1fr)_76px] xl:block", !isAvailable && "bg-surface-muted/70")}>
+      {/* Báo lỗi ngay trên dòng sản phẩm để người mua biết cần giảm số lượng. */}
+      {stockError && <p role="alert" data-cart-stock-error={item.cartItemId} className="col-span-2 px-3 pt-3 text-xs text-danger sm:px-5">{stockError}</p>}
       {/* Thông tin sản phẩm giữ cùng nhịp cột với tiêu đề trên PC. */}
       <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-3 px-3 py-4 sm:px-5 xl:grid-cols-[minmax(0,1fr)_130px_120px_110px_60px] xl:text-center">
         <div className="col-span-2 flex min-w-0 items-center gap-2 text-left sm:gap-3 xl:col-span-1">

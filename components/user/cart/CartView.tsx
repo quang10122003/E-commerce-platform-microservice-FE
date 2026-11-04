@@ -17,7 +17,7 @@ interface CartViewProps {
 
 // Hiển thị dữ liệu ban đầu từ server cùng các thao tác cập nhật ở client.
 export function CartView({ initialCart, loadError }: CartViewProps) {
-  const { items, groups, summary, pending, updatingVariantIds, loadingLabel, refreshCart, changeQuantity, deleteItem, selectedItemIds, allSelected, canSelect, toggleSelection } = useCart(initialCart);
+  const { items, groups, summary, pending, updatingVariantIds, loadingLabel, refreshCart, changeQuantity, deleteItem, selectedItemIds, allSelected, canSelect, toggleSelection, cartRef, stockErrors } = useCart(initialCart);
 
   if (loadError) {
     return <CartErrorView pending={pending} onRetry={refreshCart} />;
@@ -28,7 +28,7 @@ export function CartView({ initialCart, loadError }: CartViewProps) {
   }
 
   return (
-    <div className="mx-auto max-w-[1440px] space-y-5 pb-20 sm:pb-10">
+    <div ref={cartRef} className="mx-auto max-w-[1440px] space-y-5 pb-20 sm:pb-10">
       {/* Giữ loading toàn trang cho thao tác xóa và tải lại thủ công. */}
       {pending && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-main/20 p-4 backdrop-blur-[2px]">
@@ -62,7 +62,7 @@ export function CartView({ initialCart, loadError }: CartViewProps) {
                   <p className="mt-0.5 text-[11px] text-muted-foreground">{group.items.length} sản phẩm</p>
                 </div>
               </div>
-              {group.items.map((item) => <CartItemView key={item.cartItemId} item={item} pending={pending} quantityPending={updatingVariantIds.has(item.productVariantId)} selected={selectedItemIds.has(item.cartItemId)} onToggleSelection={toggleSelection} onChangeQuantity={changeQuantity} onDelete={deleteItem} />)}
+              {group.items.map((item) => <CartItemView key={item.cartItemId} item={item} stockError={stockErrors[item.cartItemId]} pending={pending} quantityPending={updatingVariantIds.has(item.productVariantId)} selected={selectedItemIds.has(item.cartItemId)} onToggleSelection={toggleSelection} onChangeQuantity={changeQuantity} onDelete={deleteItem} />)}
             </section>
           );
         })}

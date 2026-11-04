@@ -1,37 +1,25 @@
 "use client";
 
-import { useState } from "react";
-import { CreditCard, Banknote, QrCode, Wallet, ShieldCheck, Check } from "lucide-react";
+import type { UseFormRegisterReturn } from "react-hook-form";
+import type { CheckoutPaymentMethod } from "@/types/user/checkout";
+import { CreditCard, Banknote, QrCode, ShieldCheck } from "lucide-react";
 
 // Khối lựa chọn phương thức thanh toán cho đơn hàng.
-export function CheckoutPaymentCard() {
-  const [selectedMethod, setSelectedMethod] = useState<string>("vietqr");
+export function CheckoutPaymentCard({ selectedMethod, paymentField, error }: { selectedMethod: CheckoutPaymentMethod; paymentField: UseFormRegisterReturn<"paymentMethod">; error?: string }) {
 
   const paymentOptions = [
     {
-      id: "vietqr",
-      name: "Chuyển khoản Ngân hàng (VietQR / Napas247)",
-      desc: "Quét mã QR tự động xác nhận trong 3 giây qua mọi ứng dụng ngân hàng",
+      id: "VNPAY",
+      name: "Thanh toán qua VNPAY",
+      desc: "Thanh toán trực tuyến qua cổng VNPAY",
       icon: QrCode,
       badge: "Khuyên dùng",
     },
     {
-      id: "cod",
+      id: "COD",
       name: "Thanh toán khi nhận hàng (COD)",
       desc: "Thanh toán bằng tiền mặt trực tiếp cho shipper khi nhận được kiện hàng",
       icon: Banknote,
-    },
-    {
-      id: "momo",
-      name: "Ví điện tử MoMo / ZaloPay",
-      desc: "Thanh toán một chạm qua ví điện tử liên kết bảo mật",
-      icon: Wallet,
-    },
-    {
-      id: "card",
-      name: "Thẻ Tín dụng / Ghi nợ quốc tế",
-      desc: "Hỗ trợ thẻ Visa, Mastercard, JCB, Napas nội địa",
-      icon: CreditCard,
     },
   ];
 
@@ -54,10 +42,9 @@ export function CheckoutPaymentCard() {
           const isSelected = selectedMethod === opt.id;
           const Icon = opt.icon;
           return (
-            <div
+            <label
               key={opt.id}
-              onClick={() => setSelectedMethod(opt.id)}
-              className={`flex items-center justify-between p-3.5 rounded-lg border cursor-pointer transition-all ${
+              className={`flex items-center justify-between p-3.5 rounded-lg border cursor-pointer transition-all focus-within:ring-2 focus-within:ring-primary ${
                 isSelected
                   ? "border-primary bg-primary-light/40 shadow-xs"
                   : "border-surface-border bg-white hover:border-slate-300"
@@ -83,19 +70,14 @@ export function CheckoutPaymentCard() {
                   <p className="text-[11px] text-muted-foreground">{opt.desc}</p>
                 </div>
               </div>
-              <span
-                className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
-                  isSelected
-                    ? "border-primary bg-primary text-white"
-                    : "border-slate-300 bg-white"
-                }`}
-              >
-                {isSelected && <Check className="h-2.5 w-2.5 stroke-[3]" />}
-              </span>
-            </div>
+              <input {...paymentField} type="radio" value={opt.id} checked={isSelected}
+                className="h-4 w-4 shrink-0 cursor-pointer accent-primary" aria-describedby={error ? "checkout-payment-error" : undefined} />
+            </label>
           );
         })}
       </div>
+
+      {error && <p id="checkout-payment-error" role="alert" className="text-xs text-danger">{error}</p>}
 
       {/* Cam kết an toàn thông tin thanh toán */}
       <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-[11px] text-slate-600 border border-slate-100">

@@ -3,6 +3,7 @@
 import { CART_QUANTITY_DEBOUNCE_MS } from "@/lib/constants";
 import { useCartSalePricing } from "./useCartSalePricing";
 import { useCartQuote } from "./useCartQuote";
+import { getCheckoutUrl } from "@/utils/checkout.utils";
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -10,7 +11,7 @@ import { useNotification } from "@/hooks/shared/useNotification";
 import { useRemoveCartItemMutation, useUpdateCartQuantityMutation } from "@/lib/redux/services/cart-api";
 import { getApiErrorMessage } from "@/lib/utils";
 import type { CartItem, CartResponse } from "@/types/user/cart";
-import { applyCartQuantityDrafts, getCartQuantityChanges, getCartSummary, groupCartItemsByShop, isCartItemAvailable } from "@/utils/cart.utils";
+import { applyCartQuantityDrafts, getCartQuantityChanges, getCartStockErrors, getCartSummary, groupCartItemsByShop, isCartItemAvailable } from "@/utils/cart.utils";
 
 // Quản lý thao tác giỏ hàng trên client và làm mới dữ liệu server sau khi cập nhật.
 export function useCart(initialCart: CartResponse | null) {
@@ -34,12 +35,44 @@ export function useCart(initialCart: CartResponse | null) {
   const [isRefreshing, startTransition] = useTransition();
   // Mặc định chọn sản phẩm còn hàng; ghi nhớ các dòng người dùng đã bỏ chọn.
   const [unselectedItemIds, setUnselectedItemIds] = useState(new Set<number>());
-  const { items: pricedItems, saleExpiryVersion } = useCartSalePricing(initialCart?.item);
+  // Giữ lỗi đã báo đến khi người dùng chỉnh số lượng của chính dòng đó.
+  const [stockErrors, setStockErrors] = useState<Record<number, string>>({});
+  // Giới hạn tìm kiếm vị trí lỗi trong vùng giỏ hàng hiện tại.
+  const cartRef = useRef<HTMLDivElement>(null);
+  // Chỉ cuộn sau thao tác mua hàng, không cuộn khi ẩn lỗi do chỉnh số lượng.
+  const scrollToErrorRef = useRef<number | null>(null);
+  const { items: pricedItems, saleExpiryVersion } = useCartSalePricing(initialCart?.item, () => router.refresh());
   const items = applyCartQuantityDrafts(pricedItems, draftQuantities);
   const availableItems = items.filter(isCartItemAvailable);
   const selectedItems = availableItems.filter((item) => !unselectedItemIds.has(item.cartItemId));
   const selectedItemIds = new Set(selectedItems.map((item) => item.cartItemId));
   const quote = useCartQuote(selectedItems, saleExpiryVersion);
+  const summary = getCartSummary(selectedItems);
+
+  // Báo thiếu tồn kho của sản phẩm đang chọn trước khi cho phép thanh toán.
+  const checkout = () => {
+    if (summary.stockError) {
+      const errors = getCartStockErrors(selectedItems);
+      scrollToErrorRef.current = selectedItems.find((item) => errors[item.cartItemId])?.cartItemId ?? null;
+      setStockErrors((previous) => ({ ...previous, ...errors }));
+      return;
+    }
+    if (selectedItems.length === 0 || quote.loading || quote.error || quote.total === null) return;
+    router.push(getCheckoutUrl(selectedItems.map((item) => ({ variantId: item.productVariantId, quantity: item.quantity }))));
+  };
+
+  useEffect(() => {
+    const itemId = scrollToErrorRef.current;
+    scrollToErrorRef.current = null;
+    if (itemId === null) return;
+    const error = cartRef.current?.querySelector<HTMLElement>(`[data-cart-stock-error="${itemId}"]`);
+    if (!error) return;
+    const bounds = error.getBoundingClientRect();
+    // Chừa vùng tiêu đề cố định và thanh mua hàng để thông báo không bị che.
+    if (bounds.top < 140 || bounds.bottom > window.innerHeight - 160) {
+      error.scrollIntoView({ block: "center", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+    }
+  }, [stockErrors]);
 
   // Chọn hoặc bỏ chọn theo dòng, shop hoặc toàn bộ giỏ, không tác động dữ liệu BE.
   const toggleSelection = (targetItems: CartItem[]) => {
@@ -94,6 +127,12 @@ export function useCart(initialCart: CartResponse | null) {
     const quantity = (draftRef.current[item.productVariantId] ?? item.quantity) + delta;
     if (quantity < 1 || (delta === 1 && quantity > item.stockQuantity)) return;
 
+    // Chỉnh số lượng là đủ để ẩn lỗi cũ; lần mua tiếp theo sẽ kiểm tra lại.
+    setStockErrors((previous) => {
+      const next = { ...previous };
+      delete next[item.cartItemId];
+      return next;
+    });
     draftRef.current = { ...draftRef.current, [item.productVariantId]: quantity };
     setDraftQuantities(draftRef.current);
     clearTimeout(quantityTimerRef.current.get(item.productVariantId));
@@ -122,9 +161,11 @@ export function useCart(initialCart: CartResponse | null) {
   };
 
   return {
+    cartRef,
+    stockErrors,
     items,
     groups: groupCartItemsByShop(items),
-    summary: { ...getCartSummary(selectedItems), total: quote.total, quoteLoading: quote.loading, quoteError: quote.error, onRetryQuote: quote.retry },
+    summary: { ...summary, total: quote.total, quoteLoading: quote.loading, quoteError: quote.error, onRetryQuote: quote.retry, onCheckout: checkout },
     selectedItemIds,
     allSelected: availableItems.length > 0 && selectedItems.length === availableItems.length,
     canSelect: availableItems.length > 0,

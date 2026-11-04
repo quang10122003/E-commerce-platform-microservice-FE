@@ -13,6 +13,15 @@ export function getSaleCountdown(endsAt: string | null, now: number) {
   };
 }
 
+// Tìm hạn sale gần nhất theo timestamp có offset, dùng chung cho giỏ và checkout.
+export function getNextSaleExpiry(items: readonly { sale: { endsAt: string } | null }[], now: number): number | null {
+  const deadlines = items.flatMap((item) => {
+    const deadline = item.sale ? Date.parse(item.sale.endsAt) : NaN;
+    return Number.isFinite(deadline) && deadline > now ? [deadline] : [];
+  });
+  return deadlines.length ? Math.min(...deadlines) : null;
+}
+
 // Lọc và sắp xếp bản sao, không thay đổi cache RTK Query.
 export function selectSaleItems(items: UserFlashSaleItem[], sort: FlashSaleSort, availableOnly: boolean) {
   const selected = items.filter((item) => !availableOnly || item.availability === "AVAILABLE");

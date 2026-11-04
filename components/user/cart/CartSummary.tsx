@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -10,11 +9,14 @@ interface CartSummaryProps {
   quoteLoading: boolean;
   quoteError: string | null;
   onRetryQuote: () => void;
+  stockError: string | null;
+  onCheckout: () => void;
 }
 
 // Hiển thị tổng tiền của các sản phẩm còn có thể thanh toán.
-export function CartSummary({ itemCount, quantity, total, shopCount, quoteLoading, quoteError, onRetryQuote }: CartSummaryProps) {
-  const canCheckout = itemCount > 0 && total !== null && !quoteLoading && !quoteError;
+export function CartSummary({ itemCount, quantity, total, shopCount, quoteLoading, quoteError, onRetryQuote, stockError, onCheckout }: CartSummaryProps) {
+  // Vẫn nhận thao tác mua để báo thiếu tồn kho ngay cả khi BE từ chối báo giá.
+  const canCheckout = itemCount > 0 && (!!stockError || (total !== null && !quoteLoading && !quoteError));
   return (
     <aside className="sticky bottom-0 z-20 overflow-hidden rounded-lg border border-surface-border bg-surface-card/95 backdrop-blur-md lg:bottom-auto lg:top-[86px] lg:bg-surface-card lg:backdrop-blur-none" aria-label="Tóm tắt giỏ hàng">
       {/* Khối thanh toán nằm bên phải trên PC và dưới danh sách ở màn hình nhỏ. */}
@@ -38,12 +40,9 @@ export function CartSummary({ itemCount, quantity, total, shopCount, quoteLoadin
             <p>{quoteError}</p>
             <Button type="button" variant="link" size="sm" onClick={onRetryQuote}>Thử lại</Button>
           </div>}
-          {canCheckout ? <Link
-            href="/checkout"
-            className="flex h-10 min-w-35 items-center justify-center rounded-md bg-cta px-5 text-sm font-semibold text-cta-foreground transition-all duration-200 hover:bg-cta-hover active:scale-95 lg:mt-5 lg:w-full"
-          >
+          <Button type="button" disabled={!canCheckout} onClick={onCheckout} variant="cta" className="h-10 min-w-35 rounded-md lg:mt-5 lg:w-full">
             Mua hàng
-          </Link> : <Button type="button" disabled variant="cta" className="h-10 min-w-35 rounded-md lg:mt-5 lg:w-full">Mua hàng</Button>}
+          </Button>
         </div>
       </div>
     </aside>

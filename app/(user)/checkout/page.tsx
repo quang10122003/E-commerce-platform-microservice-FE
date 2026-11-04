@@ -7,6 +7,9 @@ export const metadata: Metadata = {
 };
 
 // Trang thanh toán đơn hàng của người mua.
-export default function CheckoutPage() {
-  return <CheckoutView />;
+export default async function CheckoutPage({ searchParams }: {
+  searchParams: Promise<{ items?: string | string[] }>;
+}) {
+  const { items } = await searchParams;
+  return <CheckoutView itemsParam={items} />;
 }

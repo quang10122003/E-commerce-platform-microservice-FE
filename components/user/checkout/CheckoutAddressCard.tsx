@@ -1,11 +1,12 @@
-import { MapPin, ChevronRight, Check } from "lucide-react";
+import { MapPin, ChevronRight } from "lucide-react";
 
 interface CheckoutAddressCardProps {
   onChangeAddress?: () => void;
+  address: string | null;
 }
 
 // Khối thông tin địa chỉ nhận hàng của khách hàng theo chuẩn giao diện thương mại điện tử.
-export function CheckoutAddressCard({ onChangeAddress }: CheckoutAddressCardProps) {
+export function CheckoutAddressCard({ onChangeAddress, address }: CheckoutAddressCardProps) {
   return (
     <section className="overflow-hidden rounded-xl border border-surface-border bg-surface-card shadow-xs" aria-label="Địa chỉ nhận hàng">
       {/* Dải màu phong bì thư trang trí phong cách sàn TMĐT hiện đại */}
@@ -28,26 +29,16 @@ export function CheckoutAddressCard({ onChangeAddress }: CheckoutAddressCardProp
             onClick={onChangeAddress}
             className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-primary hover:text-primary-hover transition-colors cursor-pointer"
           >
-            <span>Thay đổi</span>
+            <span>{address ? "Thay đổi" : "Nhập địa chỉ"}</span>
             <ChevronRight className="h-4 w-4" />
           </button>
         </div>
 
-        {/* Chi tiết người nhận và địa chỉ */}
+        {/* Hiển thị địa chỉ người mua đã xác nhận. */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
           <div className="space-y-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="font-bold text-main text-sm sm:text-base">Nguyễn Văn An</span>
-              <span className="font-semibold text-slate-700 text-sm">(+84) 987 654 321</span>
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary bg-primary-light px-2 py-0.5 rounded-sm border border-indigo-200">
-                <Check className="h-3 w-3" /> Mặc định
-              </span>
-              <span className="text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded-sm border border-slate-200">
-                Văn phòng
-              </span>
-            </div>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              Tòa nhà FPT Cầu Giấy, Số 18 Ngõ 86 Phố Duy Tân, Phường Dịch Vọng Hậu, Quận Cầu Giấy, Hà Nội
+              {address ?? "Vui lòng nhập địa chỉ nhận hàng."}
             </p>
           </div>
         </div>

@@ -20,10 +20,18 @@ export function groupCartItemsByShop<T extends CartItem>(items: T[]) {
   return Array.from(groups.values());
 }
 
+// Tạo lỗi theo từng dòng để người mua chỉnh đúng sản phẩm thiếu tồn kho.
+export function getCartStockErrors(items: CartItem[]): Record<number, string> {
+  return Object.fromEntries(items
+    .filter((item) => isCartItemAvailable(item) && item.quantity > item.stockQuantity)
+    .map((item) => [item.cartItemId, `Chỉ còn ${item.stockQuantity} sản phẩm trong kho. Vui lòng giảm số lượng trước khi mua hàng.`]));
+}
+
 // Tổng kết số lượng sản phẩm có thể thanh toán; tổng tiền do API quote quyết định.
 export function getCartSummary(items: CartPricedItem[]) {
   const availableItems = items.filter(isCartItemAvailable);
   return {
+    stockError: Object.values(getCartStockErrors(availableItems))[0] ?? null,
     itemCount: availableItems.length,
     quantity: availableItems.reduce((total, item) => total + item.quantity, 0),
     shopCount: new Set(availableItems.map((item) => item.shopId)).size,
@@ -62,13 +70,4 @@ export function applyCartItemPricing(items: CartItem[], now: number): CartPriced
       pricingPending: false,
     };
   });
-}
-
-// Tìm deadline gần nhất để cả giỏ chỉ cần một timer, không cập nhật countdown mỗi giây.
-export function getNextCartSaleExpiry(items: CartItem[], now: number): number | null {
-  const deadlines = items.flatMap((item) => {
-    const deadline = item.sale ? Date.parse(item.sale.endsAt) : NaN;
-    return Number.isFinite(deadline) && deadline > now ? [deadline] : [];
-  });
-  return deadlines.length ? Math.min(...deadlines) : null;
 }
