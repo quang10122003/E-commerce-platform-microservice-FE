@@ -19,6 +19,7 @@ export interface CartItem {
   productVariantId: number;
   shopId: number;
   shopName: string | null;
+  shopLock: boolean | null;
   productName: string;
   imageUrl: string | null;
   hasOption: boolean;

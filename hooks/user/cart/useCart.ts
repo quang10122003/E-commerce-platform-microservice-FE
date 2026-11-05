@@ -123,6 +123,7 @@ export function useCart(initialCart: CartResponse | null) {
 
   // Cập nhật UI tức thời và đặt lại thời gian chờ sau mỗi lần bấm.
   const changeQuantity = (item: CartItem, delta: -1 | 1) => {
+    if (!isCartItemAvailable(item)) return;
     if (pendingAction !== null || isRefreshing || updatingVariantIdsRef.current.has(item.productVariantId)) return;
     const quantity = (draftRef.current[item.productVariantId] ?? item.quantity) + delta;
     if (quantity < 1 || (delta === 1 && quantity > item.stockQuantity)) return;

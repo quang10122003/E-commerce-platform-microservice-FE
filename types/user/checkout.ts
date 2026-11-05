@@ -46,4 +46,23 @@ export interface CreateCheckoutRequest {
 export interface CreateCheckoutResponse {
   checkoutId: number;
   status: "PROCESSING" | "DONE" | "CANCEL";
+  urlPayment: string | null;
+}
+
+export interface CheckoutSucceededResponse {
+  checkoutId: number;
+  checkoutStatus: string;
+  paymentMethod: CheckoutPaymentMethod;
+  orderIds: number[];
+  totalAmount: number;
+  occurredAt: string;
+  urlPayment: string | null;
+}
+
+export interface CheckoutFailedResponse {
+  checkoutId: number;
+  checkoutStatus: string;
+  reasonCode: string;
+  reason: string;
+  occurredAt: string;
 }

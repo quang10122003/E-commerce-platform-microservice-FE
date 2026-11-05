@@ -19,7 +19,7 @@ export function CheckoutView({ itemsParam }: { itemsParam?: string | string[] })
   const checkout = useCheckout(itemsParam);
   const addressForm = useCheckoutAddress();
   const order = useCreateCheckout(checkout.items, checkout.total, addressForm.addressText,
-    !checkout.loading && !checkout.error && !checkout.quoteLoading && !checkout.quoteError);
+    !checkout.loading && !checkout.error && !checkout.quoteLoading && !checkout.quoteError, checkout.retry);
   useSaleExpiry(checkout.items, checkout.retry, !order.locked);
 
   return (
@@ -53,7 +53,6 @@ export function CheckoutView({ itemsParam }: { itemsParam?: string | string[] })
             quoteError={checkout.quoteError} onRetry={checkout.retry}
             disabled={order.locked || checkout.loading || !!checkout.error || checkout.total === null} />
           {order.errors.root?.checkout && <p role="alert" className="mt-3 text-sm text-danger">{order.errors.root.checkout.message}</p>}
-          {order.result && <p role="status" className="mt-3 text-sm text-main">Checkout #{order.result.checkoutId}: {order.result.status === "PROCESSING" ? "Đang xử lý" : order.result.status === "DONE" ? "Hoàn tất" : "Đã hủy"}.</p>}
         </div>
       </fieldset>
       </form>
@@ -61,8 +60,11 @@ export function CheckoutView({ itemsParam }: { itemsParam?: string | string[] })
       {/* 3. Modal quản lý địa chỉ nhận hàng */}
       {addressForm.isOpen && <CheckoutAddressModal addressForm={addressForm} />}
 
-      {/* 4. Hiển thị trạng thái BE trả về, chưa suy diễn checkout đang xử lý là thành công. */}
-      {order.resultOpen && order.result && <CheckoutSuccessModal result={order.result} dialogRef={order.resultDialogRef} onClose={order.closeResult} />}
+      {/* Lớp phủ giữ nguyên checkout phía sau trong suốt quá trình gửi và chờ kết quả. */}
+      {(order.isSubmitting || order.result) && <CheckoutSuccessModal submitting={order.isSubmitting}
+        failure={order.failure} success={order.success} dialogRef={order.overlayRef}
+        streamError={order.streamError} onReconnect={order.reconnect} onConfirmFailure={order.acknowledgeFailure} />}
+
     </div>
   );
 }

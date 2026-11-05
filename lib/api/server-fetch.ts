@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { redirect } from "next/navigation";
 import { headers as requestHeaders } from "next/headers";
 import { normalizeSessionReturnPath, SESSION_RETURN_PATH_HEADER } from "@/lib/auth/session-refresh-redirect";
+import { isUserLocked } from "@/lib/auth/session-recovery-error";
 
 import {
   AUTH_TOKEN_FIELDS,
@@ -43,15 +44,19 @@ export type ServerFetchOptions = RequestInit & {
   cookieMode?: "read-only" | "read-write";
   skipAuth?: boolean;
   timeoutMs?: number;
+  responseMode?: "json" | "stream";
+  refreshSession?: boolean;
 };
 
 export type ServerFetchResult<T> = {
   payload: ApiResponse<T>;
   status: number;
+  stream?: Response;
+  sessionRefreshed?: boolean;
 };
 
 // Chỉ chia sẻ kết quả refresh giữa request cùng phiên; không chia sẻ token giữa người dùng.
-const refreshPromises = new Map<string, Promise<RefreshTokenResponse | undefined>>();
+const refreshPromises = new Map<string, Promise<RefreshTokenResponse | ServerFetchResult<RefreshTokenResponse> | undefined>>();
 
 // Chuẩn hóa path loại bỏ query string và dấu gạch chéo thừa ở 2 đầu.
 export function getEndpointPath(path: string): string {
@@ -128,7 +133,7 @@ export function buildAuthHeaders(
   skipAuth: boolean,
 ): Headers {
   const headers = new Headers(options.headers);
-  headers.set("Accept", "application/json");
+  headers.set("Accept", options.responseMode === "stream" ? "text/event-stream" : "application/json");
   headers.delete(AUTHORIZATION_HEADER);
 
   if (!skipAuth && token) {
@@ -183,7 +188,7 @@ function isValidTokenPair(value: unknown): value is RefreshTokenResponse {
 }
 
 // Refresh token trong serverFetch; response Route Handler chịu trách nhiệm ghi cookie của từng request.
-async function refreshAccessToken(refreshToken: string): Promise<RefreshTokenResponse | undefined> {
+async function refreshAccessToken(refreshToken: string): Promise<RefreshTokenResponse | ServerFetchResult<RefreshTokenResponse> | undefined> {
 
   const requestBody: RefreshTokenRequest = { refreshToken };
   const result = await serverFetch<RefreshTokenResponse>(
@@ -196,6 +201,7 @@ async function refreshAccessToken(refreshToken: string): Promise<RefreshTokenRes
     },
   );
 
+  if (isUserLocked(result.payload)) return result;
   if ([400, HTTP_STATUS.UNAUTHORIZED, 403].includes(result.status)) return undefined;
   if (result.status < HTTP_STATUS.SUCCESS_MIN || result.status >= HTTP_STATUS.SUCCESS_LIMIT
     || !result.payload.success || !isValidTokenPair(result.payload.data)) {
@@ -205,14 +211,14 @@ async function refreshAccessToken(refreshToken: string): Promise<RefreshTokenRes
 }
 
 // Single-flight theo hash refresh token; từng response tự ghi cookie trong context của nó.
-async function refreshAccessTokenSingleFlight(): Promise<RefreshTokenResponse | undefined> {
+async function refreshAccessTokenSingleFlight(): Promise<RefreshTokenResponse | ServerFetchResult<RefreshTokenResponse> | undefined> {
   const refreshToken = await getRefreshToken();
   if (!refreshToken) return undefined;
   const key = createHash("sha256").update(refreshToken).digest("hex");
   let pending = refreshPromises.get(key);
   if (!pending) {
     pending = refreshAccessToken(refreshToken).then((tokens) => {
-      if (!tokens) {
+      if (!tokens || "payload" in tokens) {
         refreshPromises.delete(key);
       } else {
         // Giữ kết quả rất ngắn để request 401 đến muộn không refresh lại token vừa được rotate.
@@ -288,7 +294,7 @@ export async function serverFetch<T>(
   path: string,
   options: ServerFetchOptions = {},
 ): Promise<ServerFetchResult<T>> {
-  const { cookieMode = "read-only", skipAuth: internalSkipAuth, timeoutMs = DEFAULT_TIMEOUT_MS, ...fetchOptions } = options;
+  const { cookieMode = "read-only", skipAuth: internalSkipAuth, timeoutMs = DEFAULT_TIMEOUT_MS, responseMode = "json", refreshSession = false, ...fetchOptions } = options;
   const endpointPath = getEndpointPath(path);
   const backendUrl = getBackendUrl(path);
 
@@ -325,7 +331,7 @@ export async function serverFetch<T>(
     refreshHeaders.delete("content-length");
     requestOptions.headers = refreshHeaders;
   }
-  const headers = buildAuthHeaders(requestOptions, token, skipAuth);
+  const headers = buildAuthHeaders({ ...requestOptions, responseMode }, token, skipAuth);
   let response = await fetchWithTimeout(
     backendUrl,
     {
@@ -336,8 +342,21 @@ export async function serverFetch<T>(
     timeoutMs,
   );
 
-  // Private 401: context render redirect, context ghi cookie refresh rồi retry một lần.
-  if (response.status === HTTP_STATUS.UNAUTHORIZED && !skipAuth) {
+  let sessionRefreshed = false;
+  const initialError = !response.ok ? await parseApiResponse<T>(response.clone()) : undefined;
+  // Khóa tài khoản phải kết thúc phiên trước khi cân nhắc refresh.
+  if (initialError && isUserLocked(initialError)) {
+    logBackendError(endpointPath, (options.method ?? "GET").toUpperCase(), response.status, initialError);
+    if (cookieMode === "read-only" && !skipAuth) {
+      const nextPath = normalizeSessionReturnPath((await requestHeaders()).get(SESSION_RETURN_PATH_HEADER));
+      redirect(`/api/auth/session?next=${encodeURIComponent(nextPath)}`);
+    }
+    if (cookieMode === "read-write") await clearAuthTokens();
+    return { payload: initialError, status: response.status };
+  }
+
+  // Private 401/403 chỉ phục hồi một lần; lỗi khóa không đi qua nhánh này.
+  if ((response.status === HTTP_STATUS.UNAUTHORIZED || response.status === 403 || refreshSession) && !skipAuth) {
     if (cookieMode === "read-only") {
       if (await getRefreshToken()) {
         const attempt = await getSessionRefreshAttempt(token);
@@ -345,7 +364,7 @@ export async function serverFetch<T>(
         // Không refresh trong render; dấu vết cùng token chặn lặp khi retry vẫn 401.
         if (!attempt) {
           const nextPath = normalizeSessionReturnPath((await requestHeaders()).get(SESSION_RETURN_PATH_HEADER));
-          redirect(`/api/auth/session?next=${encodeURIComponent(nextPath)}`);
+          redirect(`/api/auth/session?next=${encodeURIComponent(nextPath)}${response.status === 403 ? "&refresh=1" : ""}`);
         }
       }
       const payload = await parseApiResponse<T>(response);
@@ -354,12 +373,17 @@ export async function serverFetch<T>(
     }
     const refreshedTokens = await refreshAccessTokenSingleFlight();
 
-    if (!refreshedTokens) {
+    if (refreshedTokens && "payload" in refreshedTokens) {
       await clearAuthTokens();
+      return { payload: { ...refreshedTokens.payload, data: null }, status: refreshedTokens.status };
+    } else if (!refreshedTokens) {
+      await clearAuthTokens();
+      return { status: 401, payload: { success: false, data: null, message: "Phiên đăng nhập đã kết thúc.", error: { code: "UNAUTHORIZED", message: "Vui lòng đăng nhập lại." }, timestamp: new Date().toISOString() } };
     } else {
       await setAuthTokens(refreshedTokens);
+      sessionRefreshed = true;
       const retryHeaders = buildAuthHeaders(
-        requestOptions,
+        { ...requestOptions, responseMode },
         refreshedTokens.accessToken,
         false,
       );
@@ -379,7 +403,12 @@ export async function serverFetch<T>(
     }
   }
 
+  // Giữ nguyên stream sau khi orchestrator đã xử lý xác thực và refresh nếu cần.
+  if (responseMode === "stream" && response.ok && response.headers.get("content-type")?.includes("text/event-stream")) {
+    return { status: response.status, stream: response, sessionRefreshed, payload: { success: true, data: null, message: "Đã kết nối SSE.", error: null, timestamp: new Date().toISOString() } };
+  }
   const payload = await parseApiResponse<T>(response);
+  if (cookieMode === "read-write" && isUserLocked(payload)) await clearAuthTokens();
   logBackendError(
     endpointPath,
     (options.method ?? "GET").toUpperCase(),
@@ -393,7 +422,7 @@ export async function serverFetch<T>(
     } else if (response.status === HTTP_STATUS.UNAUTHORIZED || response.status === 400 || response.status === 403) {
       await clearAuthTokens();
     }
-    return { payload: { ...payload, data: null }, status: response.status };
+    return { payload: { ...payload, data: null }, status: response.status, sessionRefreshed: response.ok && payload.success };
   }
   const normalizedPayload = await handleAuthResponse(
     endpointPath,
@@ -410,5 +439,5 @@ export async function serverFetch<T>(
     await clearAuthTokens();
   }
 
-  return { payload: normalizedPayload, status: response.status };
+  return { payload: normalizedPayload, status: response.status, sessionRefreshed };
 }

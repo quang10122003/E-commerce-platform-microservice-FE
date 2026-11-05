@@ -1,9 +1,9 @@
 import type { CartItem, CartPricedItem } from "@/types/user/cart";
 import { getSaleCountdown } from "@/lib/utils/user-flash-sale.utils";
 
-// Trạng thái ngừng bán hoặc không còn tồn kho đều không thể thanh toán.
+// Shop bị khóa, sản phẩm ngừng bán hoặc hết hàng đều không thể thanh toán.
 export function isCartItemAvailable(item: CartItem): boolean {
-  return item.status === "ACTIVE" && item.stockQuantity > 0;
+  return item.status === "ACTIVE" && item.stockQuantity > 0 && item.shopLock !== true;
 }
 
 // Nhóm các dòng giỏ hàng theo cửa hàng, giữ thứ tự BE trả về.

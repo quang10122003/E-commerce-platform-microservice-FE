@@ -19,7 +19,7 @@ interface CartItemViewProps {
 // Hiển thị một sản phẩm và các thao tác số lượng, xóa trong giỏ hàng.
 export function CartItemView({ item, pending, quantityPending, selected, stockError, onToggleSelection, onChangeQuantity, onDelete }: CartItemViewProps) {
   const isAvailable = isCartItemAvailable(item);
-  const availabilityLabel = item.status === "INACTIVE" ? "Ngừng bán" : isAvailable ? "Còn hàng" : "Hết hàng";
+  const availabilityLabel = item.stockQuantity <= 0 ? "Sản phẩm này hết hàng" : !isAvailable ? "Sản phẩm này không còn khả dụng" : "Còn hàng";
   const canDecrease = isAvailable && !pending && !quantityPending && item.quantity > 1;
   const canIncrease = isAvailable && !pending && !quantityPending && item.quantity < item.stockQuantity;
 
@@ -42,6 +42,7 @@ export function CartItemView({ item, pending, quantityPending, selected, stockEr
           </div>
           <div className="min-w-0 flex-1 sm:grid sm:grid-cols-[minmax(0,1fr)_110px] sm:items-center sm:gap-3">
             <h2 className={cn("line-clamp-2 text-xs font-medium leading-snug sm:text-sm", isAvailable ? "text-main" : "text-placeholder")}>{item.productName}</h2>
+            {!isAvailable && <p className="mt-1.5 text-xs font-medium text-danger sm:col-span-2">{availabilityLabel}</p>}
             {item.hasOption && item.variantOptions.length > 0 && <p className="mt-1.5 inline-flex max-w-full rounded-sm bg-slate-100 px-2 py-1 text-[11px] text-slate-600 sm:mt-1">Phân loại: {item.variantOptions.map((option) => `${option.name} ${option.value}`).join(" · ")}</p>}
           </div>
         </div>

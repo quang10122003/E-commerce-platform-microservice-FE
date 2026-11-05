@@ -1,31 +1,43 @@
 import type { RefObject } from "react";
-import { Check, Clock, CircleX } from "lucide-react";
-import type { CreateCheckoutResponse } from "@/types/user/checkout";
+import { CircleX } from "lucide-react";
+import { Loading } from "@/components/ui/loading";
+import { CheckoutOrderSuccessView } from "./CheckoutOrderSuccessView";
+import type { CheckoutFailedResponse, CheckoutSucceededResponse } from "@/types/user/checkout";
 
 interface CheckoutSuccessModalProps {
-  result: CreateCheckoutResponse;
+  submitting: boolean;
+  failure: CheckoutFailedResponse | null;
+  success: CheckoutSucceededResponse | null;
   dialogRef: RefObject<HTMLDialogElement | null>;
-  onClose: () => void;
+  streamError: boolean;
+  onReconnect: () => void;
+  onConfirmFailure: () => void;
 }
 
-// Phản ánh trạng thái checkout thực tế, không báo hoàn tất khi BE mới tiếp nhận.
-export function CheckoutSuccessModal({ result, dialogRef, onClose }: CheckoutSuccessModalProps) {
-  const status = {
-    PROCESSING: { title: "Đã tiếp nhận yêu cầu đặt hàng", description: "Checkout của bạn đang được xử lý.", icon: Clock },
-    DONE: { title: "Đặt hàng thành công", description: "Checkout của bạn đã hoàn tất.", icon: Check },
-    CANCEL: { title: "Checkout đã bị hủy", description: "Yêu cầu đặt hàng này đã bị hủy.", icon: CircleX },
-  }[result.status];
-  const Icon = status.icon;
-
+// Phủ kính trắng mờ lên checkout, giữ focus trong trạng thái chờ hoặc kết quả nghiệp vụ.
+export function CheckoutSuccessModal({ submitting, failure, success, dialogRef, streamError, onReconnect, onConfirmFailure }: CheckoutSuccessModalProps) {
   return (
-    <dialog ref={dialogRef} onClose={onClose} aria-labelledby="checkout-result-title"
-      className="fixed inset-0 m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-lg overflow-y-auto rounded-xl border border-surface-border bg-surface-card p-6 text-center text-main shadow-xl backdrop:bg-slate-900/60 backdrop:backdrop-blur-sm">
-      {/* Kết quả trả về từ API tạo checkout. */}
-      <Icon className="mx-auto mb-4 h-10 w-10 text-primary" aria-hidden="true" />
-      <h2 id="checkout-result-title" className="text-xl font-bold">{status.title}</h2>
-      <p className="mt-2 text-sm text-muted-foreground">{status.description}</p>
-      <p className="mt-4 text-sm">Mã checkout: <strong className="text-primary">#{result.checkoutId}</strong></p>
-      <button type="button" onClick={onClose} className="mt-6 h-11 cursor-pointer rounded-lg bg-primary px-6 text-sm font-semibold text-white transition-colors hover:bg-primary-hover active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">Đóng</button>
+    <dialog ref={dialogRef} onCancel={(event) => event.preventDefault()} aria-labelledby="checkout-status-title"
+      className="fixed inset-0 m-0 h-full max-h-none w-full max-w-none overflow-y-auto border-0 bg-transparent p-4 text-main backdrop:bg-white/60 backdrop:backdrop-blur-md open:flex open:items-center open:justify-center">
+      {success ? <CheckoutOrderSuccessView result={success} /> : failure ? (
+        <section role="alert" className="w-full max-w-lg space-y-4 rounded-xl border border-surface-border bg-surface-card p-6 text-center sm:p-8">
+          <CircleX className="mx-auto h-12 w-12 text-danger" aria-hidden="true" />
+          <h2 id="checkout-status-title" className="text-xl font-bold">Không thể hoàn tất đơn hàng</h2>
+          <p className="text-sm leading-6 text-muted-foreground">{failure.reason}</p>
+          <button type="button" onClick={onConfirmFailure} autoFocus className="h-11 cursor-pointer rounded-lg bg-primary px-6 text-sm font-semibold text-white hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">Xác nhận</button>
+        </section>
+      ) : (
+        <section className="flex w-full max-w-lg flex-col items-center gap-5 px-6 py-8 text-center text-main sm:px-8" aria-live="polite" aria-busy="true">
+          <Loading dotsOnly label={submitting ? "Đang gửi yêu cầu đặt hàng" : "Đang xử lý đơn hàng"} className="[&_span]:motion-reduce:animate-none" />
+          <h2 id="checkout-status-title" className={submitting ? "sr-only" : "text-base font-semibold text-slate-700"}>
+            {submitting ? "Đang gửi yêu cầu đặt hàng" : "Đang xử lý đơn hàng, vui lòng chờ"}
+          </h2>
+          {streamError && <div className="space-y-3 text-sm">
+            <p>Kết nối nhận kết quả bị gián đoạn. Checkout vẫn đang được xử lý.</p>
+            <button type="button" onClick={onReconnect} className="h-11 cursor-pointer rounded-lg border border-surface-border bg-surface-card px-5 font-semibold text-primary hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Kết nối lại</button>
+          </div>}
+        </section>
+      )}
     </dialog>
   );
 }

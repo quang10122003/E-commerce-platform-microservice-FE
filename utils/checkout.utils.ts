@@ -1,4 +1,4 @@
-import type { CheckoutItem, CheckoutItemsRequest, CheckoutShopGroup, CheckoutPaymentMethod, CreateCheckoutRequest } from "@/types/user/checkout";
+import type { CheckoutItem, CheckoutItemsRequest, CheckoutShopGroup, CheckoutPaymentMethod, CreateCheckoutRequest, CheckoutFailedResponse, CheckoutSucceededResponse } from "@/types/user/checkout";
 
 // Chỉ giữ mã biến thể và số lượng trên URL, không mang theo giá hoặc phân bổ sale cũ.
 export function getCheckoutUrl(items: CheckoutItemsRequest["items"]): string {
@@ -49,4 +49,27 @@ export function buildCreateCheckoutRequest(items: CheckoutItem[], totalAmount: n
     totalAmount, shippingAddress, paymentMethod,
     ...(note.trim() ? { note: note.trim() } : {}),
   };
+}
+
+// Chỉ tiếp nhận kết quả đúng checkout và đúng kiểu dữ liệu trước khi cập nhật nghiệp vụ.
+export function isCheckoutStreamResult(value: unknown, checkoutId: number): value is CheckoutFailedResponse | CheckoutSucceededResponse {
+  if (!value || typeof value !== "object") return false;
+  const data = value as Record<string, unknown>;
+  if (data.checkoutId !== checkoutId || typeof data.checkoutStatus !== "string" || typeof data.occurredAt !== "string" || !Number.isFinite(Date.parse(data.occurredAt))) return false;
+  if ("reason" in data) return typeof data.reason === "string" && typeof data.reasonCode === "string";
+  return ["COD", "VNPAY"].includes(String(data.paymentMethod)) && Array.isArray(data.orderIds)
+    && data.orderIds.every((id: unknown) => typeof id === "number" && Number.isSafeInteger(id) && id > 0)
+    && typeof data.totalAmount === "number" && Number.isFinite(data.totalAmount) && data.totalAmount >= 0
+    && (data.urlPayment === null || typeof data.urlPayment === "string");
+}
+
+// Chỉ cho phép URL thanh toán HTTP(S), giữ nguyên query đã được backend ký.
+export function getCheckoutPaymentUrl(value: string | null): string | null {
+  if (!value?.trim()) return null;
+  try {
+    const url = new URL(value);
+    return ["http:", "https:"].includes(url.protocol) && !url.username && !url.password ? value.trim() : null;
+  } catch {
+    return null;
+  }
 }
