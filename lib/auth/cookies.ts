@@ -4,7 +4,7 @@ import "server-only";
 
 import { createHash } from "node:crypto";
 import { cookies } from "next/headers";
-import { createRoleCookie, readRoleCookie, ROLE_COOKIE_NAME } from "@/lib/auth/role-cookie";
+import { createRoleCookie, ROLE_COOKIE_NAME } from "@/lib/auth/role-cookie";
 import type { AccessTokenValidationResponse } from "@/types/shared/auth";
 
 const accessTokenCookieName = process.env.ACCESS_TOKEN_COOKIE_NAME ?? AUTH_COOKIE_NAMES.ACCESS_TOKEN;
@@ -32,9 +32,8 @@ export async function getRefreshToken() {
 // Lưu cặp token và đồng bộ quyền đã xác thực khi đăng nhập hoặc refresh.
 export async function setAuthTokens({ accessToken, refreshToken }: AuthTokens, user?: AccessTokenValidationResponse) {
   const cookieStore = await cookies();
-  const previousRole = readRoleCookie(cookieStore.get(ROLE_COOKIE_NAME)?.value, cookieStore.get(accessTokenCookieName)?.value, true);
-  const roleData = user ?? previousRole;
-  const roleValue = roleData ? createRoleCookie(roleData, accessToken) : undefined;
+  // Token mới cần check_token xác nhận quyền, không ký lại quyền cũ sau refresh.
+  const roleValue = user ? createRoleCookie(user, accessToken) : undefined;
   const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -64,6 +63,7 @@ export async function clearAuthTokens() {
   cookieStore.delete(accessTokenCookieName);
   cookieStore.delete(refreshTokenCookieName);
   cookieStore.delete(ROLE_COOKIE_NAME);
+  cookieStore.delete(sessionRefreshAttemptCookieName);
 }
 
 const sessionRefreshAttemptCookieName = "session-refresh-attempt";

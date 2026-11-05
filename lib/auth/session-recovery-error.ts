@@ -3,6 +3,13 @@ import { unstable_rethrow } from "next/navigation";
 // Giữ digest cũ để tương thích caller cũ; serverFetch hiện dùng redirect của Next.js.
 export const SESSION_REFRESH_REQUIRED = "SESSION_REFRESH_REQUIRED";
 
+// Nhận diện tài khoản bị khóa theo mã lỗi, không phụ thuộc thông báo backend.
+export function isUserLocked(payload: unknown): boolean {
+  return typeof payload === "object" && payload !== null && "error" in payload
+    && typeof payload.error === "object" && payload.error !== null
+    && "code" in payload.error && payload.error.code === "USER_LOCKED";
+}
+
 export class SessionRefreshRequiredError extends Error {
   readonly digest = SESSION_REFRESH_REQUIRED;
 

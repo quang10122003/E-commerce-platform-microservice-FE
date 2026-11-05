@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { setSessionRefreshAttempt } from "@/lib/auth/cookies";
 import { normalizeSessionReturnPath } from "@/lib/auth/session-refresh-redirect";
 import { getRouteAccess } from "@/lib/auth/route-access";
+import { isUserLocked } from "@/lib/auth/session-recovery-error";
 import { serverFetch } from "@/lib/api/server-client";
 import type { ApiResponse } from "@/types/shared/api";
 import type { AccessTokenValidationResponse } from "@/types/shared/auth";
@@ -22,6 +23,7 @@ export async function POST(request: Request) {
   try {
     const result = await serverFetch<AccessTokenValidationResponse>("api/auth/check_token", {
       method: "GET", cache: "no-store", cookieMode: "read-write",
+      refreshSession: request.method === "GET" && new URL(request.url).searchParams.get("refresh") === "1",
     });
     return NextResponse.json(result.payload, { status: result.status });
   } catch {
@@ -38,14 +40,21 @@ export async function GET(request: Request) {
   const nextPath = normalizeSessionReturnPath(new URL(request.url).searchParams.get("next"));
   const result = await POST(request);
   const payload = await result.json() as ApiResponse<AccessTokenValidationResponse>;
-  if (result.ok && payload.success && payload.data) {
+  const locked = isUserLocked(payload);
+  if (!locked && ((result.ok && payload.success && payload.data) || result.status === 403)) {
     await setSessionRefreshAttempt("recovered");
-  } else if (result.status !== 401) {
+  } else if (!locked && result.status !== 401) {
     // Lỗi hạ tầng vẫn giữ token; page hiển thị fallback lỗi thay vì tiếp tục redirect.
     await setSessionRefreshAttempt("failed");
   }
   const destination = new URL(nextPath, request.url);
-  if (getRouteAccess(destination.pathname) !== "public" && !(result.ok && payload.success && payload.data)) {
+  if (locked) {
+    destination.pathname = "/403";
+    destination.search = "?reason=user-locked";
+  } else if (result.status === 403) {
+    destination.pathname = "/403";
+    destination.search = "";
+  } else if (getRouteAccess(destination.pathname) !== "public" && !(result.ok && payload.success && payload.data)) {
     // Không trả lại route được bảo vệ khi recovery thất bại, tránh vòng lặp Proxy.
     if (result.status !== 401) return errorResponse(503, "SESSION_RECOVERY_FAILED", "Chưa thể kiểm tra phiên. Vui lòng thử lại.");
     destination.pathname = "/";
