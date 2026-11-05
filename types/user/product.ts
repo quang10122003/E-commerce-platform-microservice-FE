@@ -123,12 +123,12 @@ export interface UserProductVariant {
 // DTO UserProductDetailResponse; sản phẩm không có variant thì defaultVariantId là null.
 export interface UserProductDetailResponse {
   id: number;
-  shopId: number;
   name: string;
   description: string | null;
   imageUrl: string | null;
   status: ProductStatus;
   location: string | null;
+  shopLocked: boolean;
   totalSold: number;
   defaultVariantId: number | null;
   attributes: UserProductAttribute[];

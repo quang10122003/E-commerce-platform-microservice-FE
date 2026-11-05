@@ -18,7 +18,7 @@ export function ProductDetailSold() {
   return <span className="font-semibold text-main underline decoration-dotted">{formatCompactNumber(product?.totalSold ?? 0)}</span>;
 }
 
-// Hiển thị địa điểm backend; dữ liệu thiếu hoặc trống dùng thông báo cập nhật.
+// Hiển thị địa điểm từ chi tiết sản phẩm, độc lập với địa điểm shop.
 export function ProductDetailLocation() {
   const { product } = useProductDetailContext();
   return <span>{product?.location?.trim() || "Đang cập nhật"}</span>;
@@ -30,8 +30,9 @@ export function ProductDetailShopLink({ children, className, "aria-label": ariaL
   className: string;
   "aria-label"?: string;
 }) {
-  const { product } = useProductDetailContext();
-  return <Link href={`/shops/${product?.shopId ?? 1}`} prefetch={false} className={className} aria-label={ariaLabel}>{children}</Link>;
+  const { shopOverview } = useProductDetailContext();
+  if (!shopOverview) return null;
+  return <Link href={`/shops/${shopOverview.shopId}`} prefetch={false} className={className} aria-label={ariaLabel}>{children}</Link>;
 }
 
 // Nút mở cửa sổ chat với shop trên desktop và tablet.

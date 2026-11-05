@@ -14,8 +14,8 @@ export const PUBLIC_ENDPOINTS = [
   /^api\/products\/recommendations\/top-selling$/,
   // GET sản phẩm tương tự được công khai, không mở các API gợi ý cá nhân.
   /^api\/products\/recommendations\/similar\/\d+$/,
-  // GET api/products/shops/{shopId}/overview: thông tin shop công khai.
-  /^api\/products\/shops\/\d+\/overview$/,
+  // GET api/products/{productId}/shop/overview: shop sở hữu sản phẩm.
+  /^api\/products\/\d+\/shop\/overview$/,
   // GET api/products/shops/{shopId}/products: danh sách sản phẩm công khai của shop.
   /^api\/products\/shops\/\d+\/products$/,
   // GET api/products/{productId}: chi tiết sản phẩm công khai

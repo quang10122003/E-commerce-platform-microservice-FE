@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { ChevronRight, Store } from "lucide-react";
+import { ChevronRight, MapPin, Store } from "lucide-react";
 import { useProductShopOverview } from "@/hooks/user/product-detail/useProductShopOverview";
 import { formatCompactNumber } from "@/lib/utils";
 import { ProductDetailChatButton, ProductDetailShopLink } from "./ProductDetailInfoView";
@@ -37,6 +37,11 @@ export function ProductShopInfoView() {
           </div>
           <div className="min-w-0">
             <div className="font-bold text-main wrap-anywhere">{shop.shopName || "Shop"}</div>
+            {/* Địa điểm lấy từ tổng quan shop, không lấy từ sản phẩm. */}
+            <div className="mt-1 flex items-start gap-1 text-xs text-muted-foreground">
+              <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              <span className="wrap-anywhere">{shop.location?.trim() || "Đang cập nhật"}</span>
+            </div>
             {/* Trạng thái online và đánh giá vẫn giữ mock vì API chưa cung cấp. */}
             <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
               <span> Online 5 phút trước</span>

@@ -81,9 +81,9 @@ export const productApi = baseApi.injectEndpoints({
       },
     }),
 
-    // Lấy thông tin và số sản phẩm ACTIVE của shop qua BFF công khai.
-    getShopOverview: builder.query<ApiResponse<ShopOverviewResponse>, number>({
-      query: (shopId) => ({ url: `/api/products/shops/${shopId}/overview`, method: "GET" }),
+    // Lấy shop sở hữu sản phẩm qua BFF công khai.
+    getProductShopOverview: builder.query<ApiResponse<ShopOverviewResponse>, number>({
+      query: (productId) => ({ url: `/api/products/${productId}/shop/overview`, method: "GET" }),
       providesTags: ["Product"],
     }),
 
@@ -199,7 +199,7 @@ export const {
   useGetProductRecommendationsQuery,
   useGetTopSellingProductsQuery,
   useRecordProductViewMutation,
-  useGetShopOverviewQuery,
+  useGetProductShopOverviewQuery,
   useGetUserProductDetailQuery,
   useGetProductPriceRangeQuery,
   useGetVariantSaleQuery,

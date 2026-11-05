@@ -10,7 +10,7 @@ export function ProductActions({ mobileAction }: { mobileAction?: "cart" | "buy"
   const {
     attributes, selectedAttributeValueIds, selectableAttributeValueIds, selectedVariant, selectAttribute,
     quantity, isQuantityDisabled, canDecrease, canIncrease, handleDecrement, handleIncrement,
-    handleAddToCart, isAddingToCart, cartValidationMessage,
+    handleAddToCart, handleBuyNow, isAddingToCart, cartValidationMessage,
   } = useProductDetailContext();
 
   return (
@@ -99,6 +99,7 @@ export function ProductActions({ mobileAction }: { mobileAction?: "cart" | "buy"
           disabled={Boolean(cartValidationMessage)}
           title={cartValidationMessage ?? undefined}
           variant="gradient-cta"
+          onClick={handleBuyNow}
           size="lg"
           className={`flex-1 md:max-lg:flex-none ${mobileAction === "buy" ? "max-sm:flex-none max-sm:w-full" : "max-sm:hidden"}`}
           leftIcon={mobileAction ? undefined : <Zap className="h-4 w-4" />}

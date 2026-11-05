@@ -9,7 +9,7 @@ import type { SellerProductPage, SellerProductStatus } from "@/types/shop/produc
 import type { MouseEvent } from "react";
 import { ShopProductStatusToggle } from "./shop-product-status-toggle";
 
-type ShopProductsTableProps = { retry: () => void; products: SellerProductPage; productError: boolean; isPending: boolean; categoryId?: number; status?: SellerProductStatus; keyword?: string; handleLinkClick: (event: MouseEvent<HTMLAnchorElement>, href: string) => void; deletingProductId: number | null; deletingVariantId: number | null; handleDeleteProduct: (productId: number, productName: string) => Promise<void>; handleDeleteVariant: (productId: number, variantId: number, variantLabel: string) => Promise<void>; };
+type ShopProductsTableProps = { retry: () => void; products: SellerProductPage; productError: string | null; isPending: boolean; categoryId?: number; status?: SellerProductStatus; keyword?: string; handleLinkClick: (event: MouseEvent<HTMLAnchorElement>, href: string) => void; deletingProductId: number | null; deletingVariantId: number | null; handleDeleteProduct: (productId: number, productName: string) => Promise<void>; handleDeleteVariant: (productId: number, variantId: number, variantLabel: string) => Promise<void>; };
 
 export function ShopProductsTable({ retry, products, productError, isPending, categoryId, status, keyword, handleLinkClick, deletingProductId, deletingVariantId, handleDeleteProduct, handleDeleteVariant }: ShopProductsTableProps) {
   const [expandedProductId, setExpandedProductId] = useState<number | null>(null);
@@ -50,7 +50,7 @@ export function ShopProductsTable({ retry, products, productError, isPending, ca
             </table>
           </div>
         ) : productError ? (
-          <p role="alert" className="p-6 text-center text-sm text-danger">Không thể tải danh sách sản phẩm. <button type="button" onClick={retry} className="ml-2 font-semibold underline underline-offset-2">Thử lại</button></p>
+          <p role="alert" className="p-6 text-center text-sm text-danger">{productError} <button type="button" onClick={retry} className="ml-2 font-semibold underline underline-offset-2">Thử lại</button></p>
         ) : products.items.length === 0 ? (
           <p className="flex flex-1 items-center justify-center p-6 text-center text-sm text-slate-500">
             Không có sản phẩm phù hợp bộ lọc.

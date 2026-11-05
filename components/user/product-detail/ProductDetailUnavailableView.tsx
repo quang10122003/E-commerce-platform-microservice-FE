@@ -5,11 +5,11 @@ import { CloudOff, PackageX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ProductDetailUnavailableViewProps {
-  kind: "not-found" | "error";
+  kind: "unavailable" | "not-found" | "error";
   onRetry: () => void;
 }
 
-// Thay toàn bộ nội dung sản phẩm bằng trạng thái 404 hoặc lỗi tải dữ liệu, không dùng mock.
+// Thay nội dung sản phẩm khi shop bị khóa, sản phẩm đã gỡ hoặc tải lỗi.
 export function ProductDetailUnavailableView({ kind, onRetry }: ProductDetailUnavailableViewProps) {
   const notFound = kind === "not-found";
   const Icon = notFound ? PackageX : CloudOff;
@@ -21,10 +21,12 @@ export function ProductDetailUnavailableView({ kind, onRetry }: ProductDetailUna
         <Icon className="h-14 w-14" strokeWidth={1.5} aria-hidden="true" />
       </div>
       <h1 className="text-xl font-bold text-main sm:text-2xl">
-        {notFound ? "Sản phẩm này không còn tồn tại" : "Không thể tải thông tin sản phẩm"}
+        {kind === "unavailable" ? "Sản phẩm này không khả dụng" : notFound ? "Sản phẩm này không còn tồn tại" : "Không thể tải thông tin sản phẩm"}
       </h1>
       <p className="mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
-        {notFound
+        {kind === "unavailable"
+          ? "Vui lòng thử lại sau."
+          : notFound
           ? "Sản phẩm có thể đã được gỡ hoặc đường dẫn không còn hợp lệ. Bạn hãy khám phá các sản phẩm khác nhé."
           : "Có lỗi xảy ra khi tải dữ liệu. Vui lòng kiểm tra kết nối hoặc thử lại sau."}
       </p>

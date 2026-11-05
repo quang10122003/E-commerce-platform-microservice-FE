@@ -1,8 +1,5 @@
 import { notFound } from "next/navigation";
-import {
-  Star,
-  MapPin,
-} from "lucide-react";
+import { MapPin, Star } from "lucide-react";
 import { ProductDetailName, ProductDetailSold, ProductDetailLocation } from "@/components/user/product-detail/ProductDetailInfoView";
 import { ProductDetailLoadingView } from "@/components/user/product-detail/ProductDetailLoadingView";
 import { ProductImageGallery } from "@/components/user/product-detail/ProductImageGallery";
@@ -49,7 +46,7 @@ export default async function ProductDetailPage({ params, searchParams }: Produc
             {/* Tên sản phẩm. */}
             <ProductDetailName />
 
-            {/* Đánh giá tổng hợp: sao, lượt đánh giá, đã bán, khu vực. */}
+            {/* Đánh giá tổng hợp, số đã bán và địa điểm của sản phẩm. */}
             <div className="flex flex-wrap items-center gap-3 border-b border-slate-100 pb-4">
               <div className="flex items-center gap-1.5">
                 <span className="text-sm font-bold text-star underline decoration-dotted">4.9</span>
@@ -70,7 +67,7 @@ export default async function ProductDetailPage({ params, searchParams }: Produc
                 <ProductDetailSold />
               </span>
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <MapPin className="h-3 w-3" />
+                <MapPin className="h-3 w-3 shrink-0" aria-hidden="true" />
                 <ProductDetailLocation />
               </div>
             </div>

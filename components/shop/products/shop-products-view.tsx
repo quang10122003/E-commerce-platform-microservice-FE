@@ -17,7 +17,7 @@ type SellerProductsViewProps = {
   categories: ProductCategoryOption[];
   categoryError: boolean;
   products: SellerProductPage;
-  productError: boolean;
+  productError: string | null;
   overview: SellerProductOverview;
   overviewError: boolean;
   categoryId?: number;

@@ -6,6 +6,7 @@ export type ShopStorefrontTab = "home" | "products" | "about";
 export interface ShopOverviewResponse {
   shopId: number;
   shopName: string | null;
+  location: string | null;
   shopLogoUrl: string | null;
   shopDescription: string | null;
   productCount: number;

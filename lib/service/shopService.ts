@@ -4,19 +4,29 @@ import { serverFetch } from "@/lib/api/server-client";
 import { HTTP_STATUS } from "@/lib/constants";
 import type { ShopOverviewResponse, ShopProductPage, ShopProductQuery } from "@/types/user/shop";
 
-// Lấy tổng quan shop công khai trên server, giữ lỗi cho caller quyết định ẩn block.
-export async function getShopOverview(shopId: number): Promise<ShopOverviewResponse> {
-  const result = await serverFetch<ShopOverviewResponse>(`api/products/shops/${shopId}/overview`, {
+// Lấy tổng quan shop sở hữu sản phẩm, giữ lỗi cho caller quyết định ẩn block.
+export async function getProductShopOverview(productId: number): Promise<ShopOverviewResponse> {
+  const result = await serverFetch<ShopOverviewResponse>(`api/products/${productId}/shop/overview`, {
     method: "GET",
     cache: "no-store",
   });
 
   if (result.status < HTTP_STATUS.SUCCESS_MIN || result.status >= HTTP_STATUS.SUCCESS_LIMIT
-    || !result.payload.success || !result.payload.data || result.payload.data.shopId !== shopId) {
+    || !result.payload.success || !result.payload.data) {
     throw new Error("Không thể tải thông tin shop.");
   }
 
   return result.payload.data;
+}
+
+// Lấy hồ sơ gian hàng qua một sản phẩm vì overview chỉ nhận productId.
+export async function getShopOverview(shopId: number): Promise<ShopOverviewResponse | null> {
+  const products = await getShopProducts(shopId, { page: 1, size: 1, sort: "RELEVANCE" });
+  // shortcut: Shop không có sản phẩm ACTIVE chưa có hồ sơ; đổi khi BE hỗ trợ overview theo shopId.
+  if (!products.items.length) return null;
+  const shop = await getProductShopOverview(products.items[0].id);
+  if (shop.shopId !== shopId) throw new Error("Thông tin shop không khớp.");
+  return shop;
 }
 
 // Lấy sản phẩm ACTIVE của đúng shop theo bộ lọc và số trang, không tự lọc lại dữ liệu ở FE.

@@ -13,6 +13,9 @@ type GetDataForCreateProductResult = {
   brand: ResolvedFetchField<ProductBrandOption[]>;
 };
 
+// Chỉ đưa thông báo lỗi API sản phẩm ra giao diện, giữ lỗi kỹ thuật ở fallback chung.
+export class SellerProductsApiError extends Error { }
+
 export async function getProductRecommendations(query: ProductRecommendationsPageQuery): Promise<ProductRecommendationsPage> {
   const params = new URLSearchParams({ page: String(query.page), size: String(query.size) });
   const result = await serverFetch<ProductRecommendationsPage>(`api/products/recommendations?${params}`, {
@@ -72,7 +75,7 @@ export async function getSellerProducts(query: SellerProductQuery): Promise<Sell
   });
 
   if (result.status < HTTP_STATUS.SUCCESS_MIN || result.status >= HTTP_STATUS.SUCCESS_LIMIT || !result.payload.success || !result.payload.data) {
-    throw new Error("Không thể tải danh sách sản phẩm.");
+    throw new SellerProductsApiError(result.payload.error?.message || result.payload.message || "Không thể tải danh sách sản phẩm.");
   }
 
   return result.payload.data;

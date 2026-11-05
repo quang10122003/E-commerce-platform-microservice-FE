@@ -2,7 +2,7 @@ import { rethrowSessionRefreshRequired } from "@/lib/auth/session-recovery-error
 import { FIRST_PAGE, PAGE_SIZE } from "@/lib/constants";
 import { SellerProductsView } from "@/components/shop/products/shop-products-view";
 import sellerProductStatuses from "@/data/shop-product-statuses.json";
-import { getSellerProductCategories, getSellerProductOverview, getSellerProducts } from "@/lib/service/productService";
+import { getSellerProductCategories, getSellerProductOverview, getSellerProducts, SellerProductsApiError } from "@/lib/service/productService";
 import type { SellerProductOverview, SellerProductPage, SellerProductStatus } from "@/types/shop/product";
 
 type SellerProductsPageProps = {
@@ -52,7 +52,9 @@ export default async function SellerProductsPage({ searchParams }: SellerProduct
       products={productsResult.status === "fulfilled" ? productsResult.value : emptyPage}
       overview={overviewResult.status === "fulfilled" ? overviewResult.value : emptyOverview}
       overviewError={overviewResult.status === "rejected"}
-      productError={productsResult.status === "rejected"}
+      productError={productsResult.status === "rejected"
+        ? productsResult.reason instanceof SellerProductsApiError ? productsResult.reason.message : "Không thể tải danh sách sản phẩm."
+        : null}
       categoryId={categoryId}
       status={status}
       keyword={keyword}

@@ -135,8 +135,9 @@ export function getProductVariantPricing(variant: UserProductVariant | null, res
   const sale = data?.sale && Number.isFinite(Date.parse(data.sale.endsAt)) && !countdown.expired ? data.sale : null;
   return { originalPrice, price: sale?.salePrice ?? originalPrice, sale, countdown: countdown.parts };
 }
-// Phân biệt sản phẩm không tồn tại với lỗi mạng, server hoặc response không hợp lệ.
-export function getProductDetailFailureKind(error: unknown): "not-found" | "error" {
+// Phân biệt shop bị khóa, sản phẩm không tồn tại và lỗi tải dữ liệu.
+export function getProductDetailFailureKind(error: unknown, shopLocked = false): "unavailable" | "not-found" | "error" {
+  if (shopLocked) return "unavailable";
   if (error && typeof error === "object") {
     if ("status" in error && error.status === 404) return "not-found";
     if ("originalStatus" in error && error.originalStatus === 404) return "not-found";

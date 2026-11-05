@@ -4,6 +4,7 @@ import { ArrowUpRight, Flame, PackageSearch, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn, formatCurrency } from "@/lib/utils";
 import { getSaleQuotaPercent } from "@/lib/utils/user-flash-sale.utils";
+import { getCheckoutUrl } from "@/utils/checkout.utils";
 import type { UserFlashSaleItem } from "@/types/user/flash-sale";
 import styles from "./flash-sale.module.css";
 
@@ -44,12 +45,15 @@ export function FlashSaleProductCard({ item }: { item: UserFlashSaleItem }) {
             <span className="relative flex h-full items-center justify-center gap-1 text-[10px] font-semibold text-main"><Flame className="size-3 text-cta-hover" aria-hidden="true" />{available ? `Còn ${item.remainingQuantity} suất sale` : AVAILABILITY_LABELS[item.availability]}</span>
           </div>
         </div>
-        {/* Mua ngay chỉ dựng UI theo yêu cầu; chưa nối API khi backend chưa được chốt. */}
+        {/* Mua một sản phẩm theo đúng variant sale; checkout xác định lại giá và quota hiện tại. */}
         <div className="mt-2.5 grid grid-cols-2 gap-1.5">
-          <button type="button" disabled title="Chức năng mua ngay sẽ được tích hợp sau" aria-label={`Mua ngay ${item.productName} — chưa khả dụng`}
-            className={cn("flex min-h-10 cursor-not-allowed items-center justify-center gap-1 rounded-md px-1 text-[10px] font-bold sm:text-xs", available ? `${styles.buyButton} text-main` : "bg-surface-muted text-muted-foreground")}>
+          {available ? <Link href={getCheckoutUrl([{ variantId: item.variantId, quantity: 1 }])} aria-label={`Mua ngay ${item.productName}, ${item.variantLabel || "phân loại tiêu chuẩn"}`}
+            className={cn(styles.buyButton, "flex min-h-10 items-center justify-center gap-1 rounded-md px-1 text-[10px] font-bold text-main focus-visible:outline-2 focus-visible:outline-primary sm:text-xs")}>
             <Zap className="relative z-10 size-3 shrink-0 fill-current" aria-hidden="true" /><span className="relative z-10">Mua ngay</span>
-          </button>
+          </Link> : <button type="button" disabled aria-label={`Mua ngay ${item.productName} — ${AVAILABILITY_LABELS[item.availability]}`}
+            className="flex min-h-10 cursor-not-allowed items-center justify-center gap-1 rounded-md bg-surface-muted px-1 text-[10px] font-bold text-muted-foreground sm:text-xs">
+            <Zap className="size-3 shrink-0 fill-current" aria-hidden="true" />Mua ngay
+          </button>}
           <Link href={detailUrl} aria-label={`Xem chi tiết ${item.productName}, ${item.variantLabel || "phân loại tiêu chuẩn"}`}
             className={cn(styles.detailButton, "flex min-h-10 items-center justify-center gap-1 rounded-md border border-cta/30 bg-cta-light px-1 text-center text-[10px] font-semibold text-cta-hover focus-visible:outline-2 focus-visible:outline-primary sm:text-xs")}>Xem chi tiết<ArrowUpRight className="size-3 shrink-0" aria-hidden="true" /></Link>
         </div>
