@@ -44,7 +44,7 @@ export function ShopFlashSaleHistoryFilterDrawer({ query }: { query: ShopComplet
                 idPrefix="history-mobile" inDrawer error={filters.error}
               />
             </div>
-            {/* Áp dụng lựa chọn rồi đóng panel, không điều hướng khi đang chọn giờ. */}
+            {/* Áp dụng các ngày đã chọn rồi đóng panel. */}
             <footer className="shrink-0 border-t border-surface-border p-4">
               <Button type="button" onClick={() => filters.applyFilters(close)} disabled={filters.isPending}
                 variant="primary" className="w-full rounded-lg shadow-none hover:shadow-none">Áp dụng bộ lọc</Button>

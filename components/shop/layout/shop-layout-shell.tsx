@@ -5,11 +5,14 @@ import { SellerSidebar } from "@/components/shop/layout/shop-sidebar";
 import { SellerTopbar } from "@/components/shop/layout/shop-topbar";
 import { useSellerLayout } from "@/hooks/shop/layout/useShopLayout";
 import { cn } from "@/lib/utils";
+import type { SellerShopProfile } from "@/types/shop/profile";
 
 export function SellerLayoutShell({
   children,
+  shop,
 }: {
   children: React.ReactNode;
+  shop: SellerShopProfile | null;
 }) {
   const { closeSidebar, isSidebarOpen, toggleSidebar, isChatPage, isWideContentPage } = useSellerLayout();
 
@@ -31,7 +34,7 @@ export function SellerLayoutShell({
         "flex-1 flex flex-col min-w-0 lg:ml-64",
         !isChatPage && "min-h-[calc((100dvh/var(--page-zoom))-4rem)]",
       )}>
-        <SellerTopbar onToggleSidebar={toggleSidebar} />
+        <SellerTopbar onToggleSidebar={toggleSidebar} shop={shop} />
         <main
           className={cn(
             "flex-1 w-full flex flex-col",

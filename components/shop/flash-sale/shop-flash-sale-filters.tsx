@@ -2,9 +2,10 @@
 
 import { useShopFlashSaleFilters } from "@/hooks/shop/flash-sale/useShopFlashSaleFilters";
 import type { ShopFlashSaleQuery } from "@/types/shop/flash-sale";
-import { DateTimeFields } from "@/components/ui/date-time-fields";
+import { DateRangeField } from "@/components/ui/date-range-field";
+import { Button } from "@/components/ui/button";
 
-// Hiển thị lựa chọn lọc theo giờ thiết bị và lỗi khoảng thời gian.
+// Hiển thị lựa chọn lọc theo khoảng ngày và lỗi khoảng thời gian.
 export function ShopFlashSaleFilters({
   query,
   idPrefix = "sale",
@@ -16,7 +17,7 @@ export function ShopFlashSaleFilters({
   immediate?: boolean;
   onApplied?: () => void;
 }) {
-  const { draft, error, isPending, submit, change, apply } = useShopFlashSaleFilters(query);
+  const { draft, error, isPending, submit, change } = useShopFlashSaleFilters(query);
 
   return (
     <form
@@ -29,23 +30,20 @@ export function ShopFlashSaleFilters({
           : "space-y-4"
       }
     >
-      {/* Bộ chọn lịch dùng chung trên mọi kích thước màn hình */}
-      <div className="grid items-start gap-4 lg:grid-cols-3">
-        {(["from", "to"] as const).map((field) => {
-          const label = field === "from" ? "Bắt đầu từ" : "Đến thời điểm";
-          return (
-            <DateTimeFields
-              key={field}
-              id={`${idPrefix}-${field}`}
-              name={field}
-              label={label}
-              value={draft[field]}
-              disabled={isPending}
-              onChange={(value) => change(field, value, false)}
-              onConfirm={immediate ? () => apply() : undefined}
-            />
-          );
-        })}
+      {/* Chọn khoảng ngày chương trình thay cho hai lịch riêng. */}
+      <div className="grid items-start gap-4 lg:grid-cols-2">
+        <div className="min-w-0 space-y-2">
+          <span className="text-sm font-semibold text-muted-foreground">Thời gian chương trình</span>
+          <DateRangeField
+            id={`${idPrefix}-date-range`}
+            label="Chọn khoảng ngày chương trình"
+            fromDate={draft.from}
+            toDate={draft.to}
+            disabled={isPending}
+            onFromDateChange={(value) => change("from", value, false)}
+            onToDateChange={(value) => change("to", value, false)}
+          />
+        </div>
 
         <div className="min-w-0 space-y-2">
           <label
@@ -68,6 +66,8 @@ export function ShopFlashSaleFilters({
           </select>
         </div>
       </div>
+
+      {immediate && <div className="mt-4 flex justify-end"><Button type="submit" disabled={isPending} variant="primary" className="rounded-lg shadow-none hover:shadow-none">Áp dụng khoảng ngày</Button></div>}
 
       {/* Thông báo lỗi khi mốc thời gian không hợp lệ */}
       {error && (

@@ -33,7 +33,7 @@ export function ShopFlashSaleHistoryView({
     <div className="flex flex-1 flex-col gap-5 sm:gap-6" aria-busy={filters.isPending}>
       {/* Desktop giữ bộ lọc trực tiếp; tablet và mobile mở bằng icon. */}
       <div className="hidden lg:block">
-        <ShopFlashSaleHistoryFilters {...filterProps} onDatesConfirmed={() => filters.applyFilters()} error={filters.error} />
+        <ShopFlashSaleHistoryFilters {...filterProps} onApplyDateRange={() => filters.applyFilters()} isPending={filters.isPending} error={filters.error} />
       </div>
       {/* Tìm kiếm luôn ở ngoài panel; icon chỉ mở các bộ lọc thời gian. */}
       <div className="flex items-center gap-2 lg:hidden">

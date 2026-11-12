@@ -9,7 +9,7 @@ import type { ShopFlashSaleQuery } from "@/types/shop/flash-sale";
 export function useShopFlashSaleFilters(query: ShopFlashSaleQuery) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  // Lưu lựa chọn chưa áp dụng trong panel trên thiết bị nhỏ.
+  // Giữ khoảng ngày đang chọn cho đến khi người dùng áp dụng.
   const [draft, setDraft] = useState({ from: toLocalDateTimeInput(query.from), to: toLocalDateTimeInput(query.to), registration: query.registrationOpen === undefined ? "all" : query.registrationOpen ? "open" : "closed" });
   // Giữ lựa chọn mới nhất khi nhiều thao tác xảy ra trước lượt render tiếp theo.
   const latestDraft = useRef(draft);
@@ -31,13 +31,13 @@ export function useShopFlashSaleFilters(query: ShopFlashSaleQuery) {
     return true;
   }
 
-  // Desktop áp dụng ngay; panel trượt chỉ cập nhật lựa chọn chờ xác nhận.
+  // Trạng thái lọc ngay khi desktop đổi; khoảng ngày chỉ áp dụng khi gửi biểu mẫu.
   function change(field: keyof typeof draft, value: string, immediate: boolean) {
     const next = { ...latestDraft.current, [field]: value };
     latestDraft.current = next;
     setDraft(next);
     setError("");
-    if (immediate) apply(next);
+    if (immediate) apply({ ...next, from: toLocalDateTimeInput(query.from), to: toLocalDateTimeInput(query.to) });
   }
   // Đọc giá trị form tại lúc xác nhận để luôn áp dụng đúng nội dung input hiện tại.
   function submit(event: FormEvent<HTMLFormElement>, onApplied?: () => void) {

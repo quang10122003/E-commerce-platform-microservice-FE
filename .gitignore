@@ -49,8 +49,10 @@ next-env.d.ts
 
 # Tệp và thư mục hướng dẫn, cấu hình cho AI
 AGENTS.md
+AI_RULES.md
 CLAUDE.md
 GEMINI.md
+!.claude/
 .cursorrules
 .codex/
 .gemini/

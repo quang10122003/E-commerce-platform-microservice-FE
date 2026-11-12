@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   Menu,
@@ -8,16 +9,20 @@ import {
   ChevronDown,
   LogOut,
   Settings,
+  Store,
   User,
 } from "lucide-react";
 import { Button } from "@/components/ui";
 import { useShopHeader } from "@/hooks/user/header/useShopHeader";
+import type { SellerShopProfile } from "@/types/shop/profile";
 
 interface SellerTopbarProps {
   onToggleSidebar: () => void;
+  // Hồ sơ shop tải ở layout server; null khi chưa tải được thì hiện thông tin tài khoản.
+  shop: SellerShopProfile | null;
 }
 
-export function SellerTopbar({ onToggleSidebar }: SellerTopbarProps) {
+export function SellerTopbar({ onToggleSidebar, shop }: SellerTopbarProps) {
   const {
     accountMenuRef,
     isAccountMenuOpen,
@@ -76,12 +81,15 @@ export function SellerTopbar({ onToggleSidebar }: SellerTopbarProps) {
                 aria-expanded={isAccountMenuOpen}
                 aria-haspopup="menu"
               >
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-500 to-red-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-sm">
-                  {user.fullName?.charAt(0).toUpperCase() || ""}
+                {/* Logo shop; chưa có logo thì hiện chữ cái đầu tên shop (hoặc tên tài khoản khi chưa tải được shop). */}
+                <div className="relative w-9 h-9 overflow-hidden rounded-full bg-gradient-to-br from-orange-500 to-red-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-sm">
+                  {shop?.shopLogoUrl
+                    ? <Image src={shop.shopLogoUrl} alt="" fill unoptimized sizes="36px" className="object-cover" />
+                    : (shop?.shopName || user.fullName)?.charAt(0).toUpperCase() || ""}
                 </div>
                 <div className="text-left hidden sm:block">
                   <p className="text-xs font-bold text-main leading-none truncate max-w-[140px]">
-                    {user.fullName}
+                    {shop?.shopName || user.fullName}
                   </p>
                   <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1 mt-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
@@ -93,6 +101,18 @@ export function SellerTopbar({ onToggleSidebar }: SellerTopbarProps) {
 
               {isAccountMenuOpen && (
             <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl border border-slate-200 bg-white p-2 shadow-3d z-50" role="menu">
+              {/* Trang shop công khai để người bán xem shop như người mua thấy. */}
+              {shop && (
+                <Link
+                  href={`/shops/${shop.shopId}`}
+                  onClick={() => setIsAccountMenuOpen(false)}
+                  className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
+                  role="menuitem"
+                >
+                  <Store className="w-4 h-4 text-cta" />
+                  Xem trang shop
+                </Link>
+              )}
               <Link
                 href="/user/profile"
                 onClick={() => setIsAccountMenuOpen(false)}

@@ -1,7 +1,8 @@
 "use client";
 
 import { Calendar } from "lucide-react";
-import { DateTimeFields } from "@/components/ui/date-time-fields";
+import { DateRangeField } from "@/components/ui/date-range-field";
+import { Button } from "@/components/ui/button";
 import { ShopFlashSaleHistorySearch } from "./shop-flash-sale-history-search";
 
 interface ShopFlashSaleHistoryFiltersProps {
@@ -15,7 +16,8 @@ interface ShopFlashSaleHistoryFiltersProps {
   onQuickFilterSelect: (preset: string) => void;
   idPrefix?: string;
   inDrawer?: boolean;
-  onDatesConfirmed?: () => void;
+  onApplyDateRange?: () => void;
+  isPending?: boolean;
   error?: string;
 }
 
@@ -31,7 +33,8 @@ export function ShopFlashSaleHistoryFilters({
   onQuickFilterSelect,
   idPrefix = "history",
   inDrawer = false,
-  onDatesConfirmed,
+  onApplyDateRange,
+  isPending = false,
   error,
 }: ShopFlashSaleHistoryFiltersProps) {
   return (
@@ -43,28 +46,11 @@ export function ShopFlashSaleHistoryFilters({
           <ShopFlashSaleHistorySearch id={`${idPrefix}-search-keyword`} keyword={keyword} onKeywordChange={onKeywordChange} />
         </div>}
 
-        {/* Ô chọn mốc thời gian bắt đầu */}
-        <div className="lg:col-span-3">
-          <DateTimeFields
-            id={`${idPrefix}-filter-from`}
-            name="from"
-            label="Bắt đầu từ"
-            value={fromDate}
-            onChange={onFromDateChange}
-            onConfirm={onDatesConfirmed}
-          />
-        </div>
-
-        {/* Ô chọn mốc thời gian kết thúc */}
-        <div className="lg:col-span-3">
-          <DateTimeFields
-            id={`${idPrefix}-filter-to`}
-            name="to"
-            label="Đến thời điểm"
-            value={toDate}
-            onChange={onToDateChange}
-            onConfirm={onDatesConfirmed}
-          />
+        {/* Ô chọn một khoảng ngày tùy chỉnh. */}
+        <div className="space-y-1.5 lg:col-span-6">
+          <span className="block text-sm font-semibold text-muted-foreground">Khoảng ngày</span>
+          <DateRangeField id={`${idPrefix}-filter-range`} label="Chọn khoảng ngày chiến dịch" fromDate={fromDate} toDate={toDate} onFromDateChange={onFromDateChange} onToDateChange={onToDateChange} />
+          {!inDrawer && <div className="mt-2 flex justify-end"><Button type="button" onClick={onApplyDateRange} disabled={isPending} variant="primary" className="rounded-lg shadow-none hover:shadow-none">Áp dụng khoảng ngày</Button></div>}
         </div>
 
       </div>

@@ -5,7 +5,7 @@ export default function SellerShopLayout({
   modal,
 }: {
   children: ReactNode;
-  modal?: ReactNode;
+  modal: ReactNode;
 }) {
   return (
     <>

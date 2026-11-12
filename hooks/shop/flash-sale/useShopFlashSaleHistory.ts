@@ -57,16 +57,21 @@ export function useShopFlashSaleHistory(query: ShopCompletedFlashSaleQuery, imme
     startTransition(() => router.push(getShopCompletedFlashSalesUrl(nextQuery), { scroll: false }));
   }, [router, immediate]);
 
-  // Chỉ xác nhận lựa chọn trong panel khi người dùng nhấn áp dụng.
+  // Áp dụng khoảng ngày hoặc bộ lọc nhanh khi người dùng xác nhận.
   const applyFilters = useCallback((onApplied?: () => void) => {
-    const { from, to } = latestQuery.current;
+    const from = fromDate ? toDateTimeIsoValue(fromDate) : undefined;
+    const to = toDate ? toDateTimeIsoValue(toDate) : undefined;
+    if ((fromDate && !from) || (toDate && !to)) {
+      setError("Thời gian không hợp lệ.");
+      return;
+    }
     if (from && to && Date.parse(from) > Date.parse(to)) {
       setError("Thời điểm kết thúc phải lớn hơn hoặc bằng thời điểm bắt đầu.");
       return;
     }
-    navigateWithFilters({}, true);
+    navigateWithFilters({ from, to, quickFilter, page: 1 }, true);
     onApplied?.();
-  }, [navigateWithFilters]);
+  }, [fromDate, toDate, quickFilter, navigateWithFilters]);
 
   const handleKeywordChange = useCallback((value: string) => {
     setKeyword(value);
@@ -79,21 +84,21 @@ export function useShopFlashSaleHistory(query: ShopCompletedFlashSaleQuery, imme
   const handleFromDateChange = useCallback((value: string) => {
     setFromDate(value);
     setQuickFilter("custom");
-    navigateWithFilters({ from: toDateTimeIsoValue(value), quickFilter: "custom", page: 1 }, false);
-  }, [navigateWithFilters]);
+    setError("");
+  }, []);
 
   const handleToDateChange = useCallback((value: string) => {
     setToDate(value);
     setQuickFilter("custom");
-    navigateWithFilters({ to: toDateTimeIsoValue(value), quickFilter: "custom", page: 1 }, false);
-  }, [navigateWithFilters]);
+    setError("");
+  }, []);
 
   const handleQuickFilterSelect = useCallback((preset: string) => {
     setQuickFilter(preset);
     if (preset === "all") {
       setFromDate("");
       setToDate("");
-      navigateWithFilters({ from: undefined, to: undefined, quickFilter: "all", page: 1 });
+      setError("");
       return;
     }
 
@@ -109,8 +114,8 @@ export function useShopFlashSaleHistory(query: ShopCompletedFlashSaleQuery, imme
 
     setFromDate(toLocalDateTimeInput(from.toISOString()));
     setToDate(toLocalDateTimeInput(now.toISOString()));
-    navigateWithFilters({ from: from.toISOString(), to: now.toISOString(), quickFilter: preset, page: 1 });
-  }, [navigateWithFilters]);
+    setError("");
+  }, []);
 
   const handlePageChange = useCallback((page: number) => {
     navigateWithFilters({ page });
