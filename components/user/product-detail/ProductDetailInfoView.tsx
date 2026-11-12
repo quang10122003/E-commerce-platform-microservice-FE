@@ -15,7 +15,7 @@ export function ProductDetailName() {
 // Hiển thị tổng đã bán từ product, không thay đổi số sao hay lượt đánh giá mock.
 export function ProductDetailSold() {
   const { product } = useProductDetailContext();
-  return <span className="font-semibold text-main underline decoration-dotted">{formatCompactNumber(product?.totalSold ?? 0)}</span>;
+  return <span className="font-semibold text-main">{formatCompactNumber(product?.totalSold ?? 0)}</span>;
 }
 
 // Hiển thị địa điểm từ chi tiết sản phẩm, độc lập với địa điểm shop.

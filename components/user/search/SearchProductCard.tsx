@@ -12,11 +12,6 @@ type SearchProductCardProps = {
   showBestSeller?: boolean;
 };
 
-// Dữ liệu bổ sung cố định khi API chưa trả đủ thông tin hiển thị.
-const SEARCH_CARD_DEFAULTS = {
-  rating: 4.8,
-};
-
 // Thẻ sản phẩm tĩnh trong trang tìm kiếm, render phía server.
 export function SearchProductCard({ product, showBestSeller = true }: SearchProductCardProps) {
   return (
@@ -73,8 +68,8 @@ export function SearchProductCard({ product, showBestSeller = true }: SearchProd
         {/* Đánh giá sao và địa điểm xuất kho trên cùng một hàng. */}
         <div className="mt-auto flex min-w-0 items-center justify-between gap-2 border-t border-slate-100 pt-2 text-[10px] text-muted-foreground">
           <div className="flex shrink-0 items-center gap-1">
-            <Star className="h-3 w-3 fill-star text-star" />
-            <span className="font-bold text-slate-700">{SEARCH_CARD_DEFAULTS.rating}</span>
+            <Star className="h-3 w-3 fill-star text-star" aria-hidden="true" />
+            <span className="font-bold text-slate-700" aria-label={`Đánh giá ${product.ratingAverage.toFixed(1)} trên 5`}>{product.ratingAverage.toFixed(1)}</span>
           </div>
           {/* Địa điểm xuất kho từ API, báo rõ khi người bán chưa cập nhật. */}
           <div className="flex min-w-0 items-center gap-1 text-slate-400">

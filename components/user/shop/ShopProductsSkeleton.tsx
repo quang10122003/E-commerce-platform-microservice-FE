@@ -1,9 +1,9 @@
-// Giữ tỷ lệ card và số cột giống lưới shop trong lúc server đang tải kết quả mới.
-export function ShopProductsSkeleton() {
+// Giữ tỷ lệ card và số cột giống lưới shop; visible khi đang gọi API, còn không thì chỉ hiện lúc đang chuyển URL bộ lọc.
+export function ShopProductsSkeleton({ visible = false, count = 10, className = "lg:grid-cols-3 xl:grid-cols-5" }: { visible?: boolean; count?: number; className?: string }) {
   return (
-    <div role="status" aria-busy="true" aria-label="Đang tải sản phẩm của shop" className="hidden grid-cols-2 gap-2.5 group-has-[[data-shop-products-pending=true]]/catalog:grid sm:grid-cols-3 sm:gap-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-5">
+    <div role="status" aria-busy="true" aria-label="Đang tải sản phẩm của shop" className={`${visible ? "grid" : "hidden group-has-[[data-shop-products-pending=true]]/catalog:grid"} grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 md:grid-cols-4 ${className}`}>
       <span className="sr-only">Đang tải sản phẩm…</span>
-      {Array.from({ length: 10 }, (_, index) => (
+      {Array.from({ length: count }, (_, index) => (
         <div key={index} aria-hidden="true" className="overflow-hidden rounded-xl border border-surface-border bg-surface-card">
           <div className="skeleton-shimmer aspect-square" />
           <div className="space-y-3 p-3 sm:p-3.5">

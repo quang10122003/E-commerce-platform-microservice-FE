@@ -19,10 +19,12 @@ export interface ProductCatalogItem {
   // Mức giảm cao nhất trong các variant có sale hợp lệ, không dùng để tính giá card.
   maxDiscountPercent?: number | null;
   totalSold: number;
+  // Điểm đánh giá trung bình 1–5; sản phẩm chưa có đánh giá BE trả 5.
+  ratingAverage: number;
 }
 
 // Cách sắp xếp kết quả catalog công khai.
-export type ProductSortOption = "RELEVANCE" | "MOST_SOLD";
+export type ProductSortOption = "RELEVANCE" | "MOST_SOLD" | "HIGHEST_RATED";
 
 // Điều kiện lọc và cursor dùng để tải thêm kết quả tìm kiếm.
 export interface ProductCatalogQuery {

@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDownUp, Filter } from "lucide-react";
+import { ArrowDownUp, Filter, Star, type LucideIcon } from "lucide-react";
 
 import type { ProductSortOption } from "@/types/user/product";
 
@@ -11,6 +11,12 @@ type SearchSortBarProps = {
   onSortChange: (sort: ProductSortOption) => void;
   onOpenMobileFilter: () => void;
 };
+
+const SORT_OPTIONS: Array<{ value: ProductSortOption; label: string; icon?: LucideIcon }> = [
+  { value: "RELEVANCE", label: "Liên quan" },
+  { value: "MOST_SOLD", label: "Bán chạy", icon: ArrowDownUp },
+  { value: "HIGHEST_RATED", label: "Đánh giá cao", icon: Star },
+];
 
 // Thanh sắp xếp kết quả và nút kích hoạt bộ lọc trên mobile.
 export function SearchSortBar({
@@ -27,33 +33,23 @@ export function SearchSortBar({
         <span className="mr-1 text-xs font-medium text-slate-600 sm:text-sm">
           Sắp xếp theo
         </span>
-        <button
-          type="button"
-          onClick={() => onSortChange("RELEVANCE")}
-          disabled={isPending}
-          aria-pressed={sort === "RELEVANCE"}
-          className={`h-9 rounded-md px-3 sm:px-4 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm ${
-            sort === "RELEVANCE"
-              ? "bg-cta text-white font-semibold"
-              : "bg-slate-50 text-slate-800 hover:bg-slate-100 hover:text-cta"
-          }`}
-        >
-          Liên quan
-        </button>
-        <button
-          type="button"
-          onClick={() => onSortChange("MOST_SOLD")}
-          disabled={isPending}
-          aria-pressed={sort === "MOST_SOLD"}
-          className={`flex h-9 items-center gap-1.5 rounded-md px-3 sm:px-4 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm ${
-            sort === "MOST_SOLD"
-              ? "bg-cta text-white font-semibold"
-              : "bg-slate-50 text-slate-800 hover:bg-slate-100 hover:text-cta"
-          }`}
-        >
-          <ArrowDownUp className="h-3.5 w-3.5" />
-          Bán chạy
-        </button>
+        {SORT_OPTIONS.map(({ value, label, icon: Icon }) => (
+          <button
+            key={value}
+            type="button"
+            onClick={() => onSortChange(value)}
+            disabled={isPending}
+            aria-pressed={sort === value}
+            className={`flex h-9 items-center gap-1.5 rounded-md px-3 sm:px-4 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm ${
+              sort === value
+                ? "bg-cta text-white font-semibold"
+                : "bg-slate-50 text-slate-800 hover:bg-slate-100 hover:text-cta"
+            }`}
+          >
+            {Icon && <Icon className="h-3.5 w-3.5" aria-hidden="true" />}
+            {label}
+          </button>
+        ))}
       </div>
 
       {/* Thông báo đang cập nhật và nút mở bộ lọc mobile */}

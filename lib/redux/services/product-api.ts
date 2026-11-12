@@ -1,7 +1,8 @@
 import { fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { ApiResponse } from "@/types/shared/api";
-import type { ShopOverviewResponse } from "@/types/user/shop";
+import type { ShopOverviewResponse, ShopProductPage, ShopProductQuery } from "@/types/user/shop";
 import type {
+  ProductCatalogItem,
   ProductCatalogPage,
   ProductCatalogQuery,
   ProductRecommendationItem,
@@ -43,6 +44,18 @@ function buildProductCatalogQuery(query: ProductCatalogQuery): string {
 // Quản lý các endpoint API sản phẩm cho Kênh Người Bán và Người Mua.
 export const productApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    // Sản phẩm ACTIVE của shop theo bộ lọc trên URL trang shop.
+    getShopProducts: builder.query<ApiResponse<ShopProductPage>, { shopId: number; query: ShopProductQuery }>({
+      query: ({ shopId, query }) => ({ url: `/api/products/shops/${shopId}/products`, method: "GET", params: query }),
+      providesTags: ["Product"],
+    }),
+
+    // 10 sản phẩm nổi bật của shop: bán chạy nhất, rồi điểm đánh giá, rồi số đánh giá.
+    getShopTopProducts: builder.query<ApiResponse<ProductCatalogItem[]>, number>({
+      query: (shopId) => ({ url: `/api/products/shops/${shopId}/top-products`, method: "GET" }),
+      providesTags: ["Product"],
+    }),
+
     // Gợi ý tương tự có thể ẩn khi lỗi, không làm gián đoạn phiên hay trang chi tiết.
     getSimilarProducts: builder.query<ApiResponse<ProductRecommendationItem[]>, UserProductDetailParams>({
       async queryFn({ productId }, api, extraOptions) {
@@ -195,6 +208,8 @@ export const productApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useGetShopProductsQuery,
+  useGetShopTopProductsQuery,
   useGetSimilarProductsQuery,
   useGetProductRecommendationsQuery,
   useGetTopSellingProductsQuery,

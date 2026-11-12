@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation";
-import { MapPin, Star } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { ProductDetailName, ProductDetailSold, ProductDetailLocation } from "@/components/user/product-detail/ProductDetailInfoView";
 import { ProductDetailLoadingView } from "@/components/user/product-detail/ProductDetailLoadingView";
 import { ProductImageGallery } from "@/components/user/product-detail/ProductImageGallery";
 import { ProductPriceView } from "@/components/user/product-detail/ProductPriceView";
 import { ProductPurchaseSection } from "@/components/user/product-detail/ProductPurchaseSection";
-import { ProductReviews } from "@/components/user/product-detail/ProductReviews";
+import { ProductRatingSummary, ProductReviews } from "@/components/user/product-detail/ProductReviews";
 import { ProductShopInfoView } from "@/components/user/product-detail/ProductShopInfoView";
 import { ProductDescription } from "@/components/user/product-detail/ProductDescription";
 import { ProductSimilarProductsView } from "@/components/user/product-detail/ProductSimilarProductsView";
@@ -15,7 +15,7 @@ type ProductDetailPageProps = {
   searchParams: Promise<{ variantId?: string | string[] }>;
 };
 
-// Trang chi tiết sản phẩm; dữ liệu thật được gắn ở component client, các phần chưa có API giữ mock.
+// Trang chi tiết sản phẩm; dữ liệu thật được gắn ở component client.
 export default async function ProductDetailPage({ params, searchParams }: ProductDetailPageProps) {
   const [{ productId }, { variantId }] = await Promise.all([params, searchParams]);
   const initialVariantId = typeof variantId === "string" ? variantId : undefined;
@@ -48,20 +48,7 @@ export default async function ProductDetailPage({ params, searchParams }: Produc
 
             {/* Đánh giá tổng hợp, số đã bán và địa điểm của sản phẩm. */}
             <div className="flex flex-wrap items-center gap-3 border-b border-slate-100 pb-4">
-              <div className="flex items-center gap-1.5">
-                <span className="text-sm font-bold text-star underline decoration-dotted">4.9</span>
-                <div className="flex items-center gap-0.5">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} className="h-3.5 w-3.5 fill-star text-star" />
-                  ))}
-                </div>
-              </div>
-              <span className="h-4 w-px bg-slate-200" />
-              <span className="text-sm text-muted-foreground">
-                <span className="font-semibold text-main underline decoration-dotted">1.000</span>{" "}
-                Đánh giá
-              </span>
-              <span className="h-4 w-px bg-slate-200" />
+              <ProductRatingSummary productId={parsedProductId} />
               <span className="text-sm text-muted-foreground">
                 Đã bán{" "}
                 <ProductDetailSold />
@@ -89,7 +76,7 @@ export default async function ProductDetailPage({ params, searchParams }: Produc
       <ProductShopInfoView />
 
       {/* ── BLOCK MÔ TẢ VÀ ĐÁNH GIÁ phía dưới ── */}
-      <ProductDetailTabs />
+      <ProductDetailTabs productId={parsedProductId} />
 
       {/* Gợi ý sản phẩm hiển thị sau phần đánh giá. */}
       <ProductSimilarProductsView productId={parsedProductId} />
@@ -99,7 +86,7 @@ export default async function ProductDetailPage({ params, searchParams }: Produc
 }
 
 // Phần mô tả sản phẩm và đánh giá người mua – Server Component bao bọc client bên trong.
-function ProductDetailTabs() {
+function ProductDetailTabs({ productId }: { productId: number }) {
   return (
     <div className="space-y-4">
       {/* Card mô tả chi tiết sản phẩm. */}
@@ -112,16 +99,8 @@ function ProductDetailTabs() {
         </div>
       </div>
 
-      {/* Card đánh giá của người mua thực tế. */}
-      <div className="rounded-xl border border-surface-border bg-white">
-        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-          <h2 className="text-base font-bold text-main">Đánh giá sản phẩm</h2>
-          <span className="text-xs text-muted-foreground">1.000 đánh giá</span>
-        </div>
-        <div className="p-6">
-          <ProductReviews />
-        </div>
-      </div>
+      {/* Card đánh giá của người mua, tự ẩn khi API đánh giá lỗi. */}
+      <ProductReviews productId={productId} />
     </div>
   );
 }

@@ -4,9 +4,9 @@ import { getCategories } from "@/lib/service/categoryService";
 import { rethrowSessionRefreshRequired } from "@/lib/auth/session-recovery-error";
 import type { CategoryResponse } from "@/types/shared/category";
 import { notFound } from "next/navigation";
-import { getShopOverview, getShopProducts } from "@/lib/service/shopService";
+import { getShopOverview } from "@/lib/service/shopService";
 import { ShopStorefrontAbout } from "@/components/user/shop/ShopStorefrontAbout";
-import { getShopStorefrontTab, parseShopProductQuery } from "@/utils/shop-products.utils";
+import { getShopStorefrontTab } from "@/utils/shop-products.utils";
 
 export const metadata = { title: "SmartX Official Store | Gian hàng" };
 
@@ -22,12 +22,10 @@ export default async function ShopStorefrontPage({ params, searchParams }: {
   const shopId = Number(id);
   if (!/^\d+$/.test(id) || !Number.isSafeInteger(shopId) || shopId <= 0) notFound();
 
-  const query = parseShopProductQuery(filters);
   const initialTab = getShopStorefrontTab(filters.tab, !!filters.keyword || !!filters.categoryId || !!filters.sort || !!filters.page);
-  const [categoriesResult, shopResult, productsResult] = await Promise.allSettled([
-    getCategories(), getShopOverview(shopId), getShopProducts(shopId, query),
-  ]);
-  for (const result of [categoriesResult, shopResult, productsResult]) {
+  // Sản phẩm của shop tải phía client qua Redux nên server chỉ lấy danh mục và hồ sơ shop.
+  const [categoriesResult, shopResult] = await Promise.allSettled([getCategories(), getShopOverview(shopId)]);
+  for (const result of [categoriesResult, shopResult]) {
     if (result.status === "rejected") rethrowSessionRefreshRequired(result.reason);
   }
   const categories: CategoryResponse[] = categoriesResult.status === "fulfilled" ? categoriesResult.value : [];
@@ -41,10 +39,10 @@ export default async function ShopStorefrontPage({ params, searchParams }: {
       {/* Các panel dùng chung một vị trí, không điều hướng bằng anchor xuống trang. */}
       <div className="grid min-w-0 overflow-hidden">
         <div id="shop-panel-home" aria-label="Trang chủ shop" className={`${panelClass} group-has-[#shop-tab-home:checked]/shop:visible group-has-[#shop-tab-home:checked]/shop:grid-rows-[1fr] group-has-[#shop-tab-home:checked]/shop:translate-x-0 group-has-[#shop-tab-home:checked]/shop:opacity-100`}>
-          <div className="min-h-0 overflow-hidden"><ShopStorefrontFeatured /></div>
+          <div className="min-h-0 overflow-hidden"><ShopStorefrontFeatured shopId={shopId} /></div>
         </div>
         <div id="shop-panel-products" aria-label="Tất cả sản phẩm" className={`${panelClass} group-has-[#shop-tab-products:checked]/shop:visible group-has-[#shop-tab-products:checked]/shop:grid-rows-[1fr] group-has-[#shop-tab-products:checked]/shop:translate-x-0 group-has-[#shop-tab-products:checked]/shop:opacity-100`}>
-          <div className="min-h-0 overflow-hidden"><ShopStorefrontCatalog categories={categories} shopId={shopId} query={query} data={productsResult.status === "fulfilled" ? productsResult.value : null} /></div>
+          <div className="min-h-0 overflow-hidden"><ShopStorefrontCatalog categories={categories} shopId={shopId} /></div>
         </div>
 
         {/* Giới thiệu dùng lại dữ liệu overview đã tải trên server. */}

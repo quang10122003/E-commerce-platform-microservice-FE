@@ -54,7 +54,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const parsedCategoryId = categoryId && /^\d+$/.test(categoryId) ? Number(categoryId) : undefined;
   const normalizedCategoryId = parsedCategoryId !== undefined && Number.isSafeInteger(parsedCategoryId) && parsedCategoryId > 0
     ? parsedCategoryId : undefined;
-  const normalizedSort = sort === "MOST_SOLD" ? "MOST_SOLD" : "RELEVANCE";
+  const normalizedSort = sort === "MOST_SOLD" || sort === "HIGHEST_RATED" ? sort : "RELEVANCE";
   const normalizedBrandIds = parseBrandParams(brandIds ?? brandId);
   const normalizedLocations = parseLocationParams(locations);
   const normalizedMinPrice = parsePriceParam(minPrice);
