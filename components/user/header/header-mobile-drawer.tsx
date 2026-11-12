@@ -2,6 +2,7 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import { LogOut, ShieldCheck, Store, User, X } from "lucide-react";
 import { Button } from "@/components/ui";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import type { AuthTab } from "@/types/user/auth";
 import type { AuthenticatedUser } from "@/types/shared/auth";
@@ -69,8 +70,10 @@ export function HeaderMobileDrawer({ mounted, isMobileMenuOpen, isAuthChecking, 
                     {isAuthChecking ? (
                       <div className="skeleton-shimmer h-10 w-10 rounded-full" />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-indigo-700 text-white flex items-center justify-center shadow-md shadow-primary/20">
-                        <User className="w-5 h-5" />
+                      <div className="relative w-10 h-10 overflow-hidden rounded-full bg-gradient-to-br from-primary to-indigo-700 text-white flex items-center justify-center shadow-md shadow-primary/20">
+                        {user?.avatarUrl
+                          ? <Image src={user.avatarUrl} alt="" fill unoptimized sizes="40px" className="object-cover" />
+                          : <User className="w-5 h-5" />}
                       </div>
                     )}
                     <div>

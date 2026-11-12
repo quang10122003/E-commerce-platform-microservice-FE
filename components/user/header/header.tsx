@@ -18,6 +18,7 @@ import {
   Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { AuthModal } from "@/components/auth/auth-modal";
 import { useShopHeader } from "@/hooks/user/header/useShopHeader";
@@ -80,8 +81,11 @@ export function ShopHeader() {
                     aria-expanded={isAccountMenuOpen}
                     aria-haspopup="menu"
                   >
-                    <div className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center font-bold text-xs shadow-xs">
-                      {user.fullName ? user.fullName[0].toUpperCase() : "U"}
+                    {/* Chưa có avatar thì hiện chữ cái đầu của tên. */}
+                    <div className="relative w-7 h-7 overflow-hidden rounded-full bg-primary text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                      {user.avatarUrl
+                        ? <Image src={user.avatarUrl} alt="" fill unoptimized sizes="28px" className="object-cover" />
+                        : user.fullName ? user.fullName[0].toUpperCase() : "U"}
                     </div>
                     <span className="text-xs font-bold text-slate-800 max-w-[100px] truncate">
                       {user.fullName ?? "Tài khoản"}

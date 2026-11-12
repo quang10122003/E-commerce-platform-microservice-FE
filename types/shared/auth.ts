@@ -33,6 +33,8 @@ export interface AccessTokenValidationResponse {
   userId: number;
   email: string;
   fullName: string;
+  // Ảnh đại diện hiện tại; null khi user chưa đặt avatar.
+  avatarUrl: string | null;
   role: UserRole[];
 }
 
@@ -47,6 +49,7 @@ export interface AuthResponse {
   userId: number;
   email: string;
   fullName: string;
+  avatarUrl: string | null;
 }
 
 // Dữ liệu được phép trả về client sau khi token đã được lưu vào cookie.

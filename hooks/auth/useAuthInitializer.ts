@@ -53,6 +53,7 @@ export function useAuthInitializer(hasAuthTokens: boolean) {
           userId: data.data.userId,
           email: data.data.email,
           fullName: data.data.fullName,
+          avatarUrl: data.data.avatarUrl ?? null,
           role: data.data.role,
         }));
       } else {
