@@ -15,7 +15,6 @@ import {
   Package,
   MessageCircle,
   LogOut,
-  Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui";
 import Image from "next/image";
@@ -106,16 +105,12 @@ export function ShopHeader() {
                           <MessageCircle className="w-4 h-4 text-primary" />
                           <span>Tin nhắn</span>
                         </div>
-                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-cta text-white">1</span>
                       </Link>
                       {canAccessSellerChannel && (
                         <Link href="/shop" onClick={() => setIsAccountMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50" role="menuitem">
                           <Store className="w-4 h-4 text-cta" /> Kênh người bán
                         </Link>
                       )}
-                      <Link href="/user/settings" onClick={() => setIsAccountMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50" role="menuitem">
-                        <Settings className="w-4 h-4 text-slate-500" /> Cài đặt
-                      </Link>
                       <div className="my-1 border-t border-slate-100" />
                       <button type="button" onClick={handleLogout} disabled={isLogoutLoading} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60" role="menuitem">
                         <LogOut className="w-4 h-4" /> Đăng xuất

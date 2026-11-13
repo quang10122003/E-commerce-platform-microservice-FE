@@ -7,3 +7,9 @@ export interface SellerShopProfile {
   shopDescription: string | null;
   shopCreatedAt: string | null;
 }
+
+// Các trường hồ sơ shop được phép sửa; mô tả để chuỗi rỗng khi không có.
+export interface UpdateShopProfileForm {
+  shopName: string;
+  shopDescription: string;
+}

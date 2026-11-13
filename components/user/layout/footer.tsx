@@ -42,7 +42,6 @@ export function ShopFooter() {
             Chăm Sóc Khách Hàng
           </h4>
           <ul className="space-y-2 text-slate-400">
-            <li><Link href="/help" className="hover:text-white transition-colors">Trung tâm trợ giúp</Link></li>
             <li><Link href="#" className="hover:text-white transition-colors">Hướng dẫn mua hàng</Link></li>
             <li><Link href="#" className="hover:text-white transition-colors">Chính sách vận chuyển</Link></li>
             <li><Link href="#" className="hover:text-white transition-colors">Trả hàng & Hoàn tiền</Link></li>

@@ -8,7 +8,6 @@ import {
   Bell,
   ChevronDown,
   LogOut,
-  Settings,
   Store,
   User,
 } from "lucide-react";
@@ -58,7 +57,6 @@ export function SellerTopbar({ onToggleSidebar, shop }: SellerTopbarProps) {
           className="relative text-slate-600 hover:text-main h-9 w-9 rounded-xl border-slate-200"
         >
           <Bell className="w-4 h-4" />
-          <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-cta animate-pulse"></span>
         </Button>
 
         <div className="h-5 w-px bg-slate-200" />
@@ -114,22 +112,13 @@ export function SellerTopbar({ onToggleSidebar, shop }: SellerTopbarProps) {
                 </Link>
               )}
               <Link
-                href="/user/profile"
+                href="/shop/profile"
                 onClick={() => setIsAccountMenuOpen(false)}
                 className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
                 role="menuitem"
               >
                 <User className="w-4 h-4 text-primary" />
                 Tài khoản của tôi
-              </Link>
-              <Link
-                href="/user/settings"
-                onClick={() => setIsAccountMenuOpen(false)}
-                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
-                role="menuitem"
-              >
-                <Settings className="w-4 h-4 text-slate-500" />
-                Cài đặt
               </Link>
               <div className="my-1 border-t border-slate-100" />
               <button

@@ -4,6 +4,7 @@ export function getRouteAccess(pathname: string): "public" | "authenticated" | "
   if (pathname === "/cart" || pathname.startsWith("/cart/")) return "authenticated";
   if (pathname === "/checkout" || pathname.startsWith("/checkout/")) return "authenticated";
   if (pathname === "/user/orders" || pathname.startsWith("/user/orders/")) return "authenticated";
+  if (pathname === "/user/profile") return "authenticated";
   if (pathname === "/recommendations" || pathname.startsWith("/recommendations/")) return "authenticated";
   return "public";
 }

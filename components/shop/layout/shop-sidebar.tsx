@@ -8,7 +8,6 @@ import {
   Package,
   ShoppingCart,
   Zap,
-  Settings,
   Store,
   ChevronRight,
   X,
@@ -23,51 +22,36 @@ const sellerNavigation = [
     title: "Tổng quan Shop",
     href: "/shop",
     icon: LayoutDashboard,
-    badge: null,
   },
   {
     title: "Quản lý Sản phẩm",
     href: "/shop/products",
     icon: Package,
-    badge: "142 sp",
   },
   {
     title: "Quản lý Đơn hàng",
     href: "/shop/orders",
     icon: ShoppingCart,
-    badge: "8 mới",
-    badgeColor: "bg-gradient-to-r from-orange-500 to-red-600",
   },
   {
     title: "Doanh thu & Tài chính",
     href: "/shop/analytics",
     icon: BarChart3,
-    badge: null,
   },
   {
     title: "Đăng ký Flash Sale",
     href: "/shop/flash-sales",
     icon: Zap,
-    badge: null,
   },
   {
     title: "Lịch sử Flash Sale của tôi",
     href: "/shop/flash-sales/history",
     icon: History,
-    badge: null,
   },
   {
     title: "Tin nhắn & Chat",
     href: "/shop/chat",
     icon: MessagesSquare,
-    badge: "2",
-    badgeColor: "bg-primary",
-  },
-  {
-    title: "Hồ sơ & Cài đặt",
-    href: "/shop/settings",
-    icon: Settings,
-    badge: null,
   },
 ];
 
@@ -180,16 +164,6 @@ export function SellerSidebar({ isOpen, onClose }: SellerSidebarProps) {
                     <span>{item.title}</span>
                   </div>
 
-                  {item.badge && (
-                    <span
-                      className={cn(
-                        "text-[10px] font-black px-2 py-0.5 rounded-full text-white shadow-xs",
-                        item.badgeColor || "bg-slate-700"
-                      )}
-                    >
-                      {item.badge}
-                    </span>
-                  )}
                 </Link>
               );
             })}

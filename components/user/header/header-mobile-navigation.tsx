@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronRight, HelpCircle, MessageCircle, Package, Settings, User } from "lucide-react";
+import { ChevronRight, MessageCircle, Package, User } from "lucide-react";
 
 export function HeaderMobileNavigation({ closeMenu, showMessages }: { closeMenu: () => void; showMessages: boolean }) {
   return (
@@ -21,20 +21,6 @@ export function HeaderMobileNavigation({ closeMenu, showMessages }: { closeMenu:
                         <User className="w-4 h-4" />
                       </div>
                       <span className="text-sm font-semibold">Tài khoản của tôi</span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
-                  </Link>
-
-                  <Link
-                    href="/user/settings"
-                    onClick={closeMenu}
-                    className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 text-main transition-colors border border-surface-border/60"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center">
-                        <Settings className="w-4 h-4" />
-                      </div>
-                      <span className="text-sm font-semibold">Cài đặt</span>
                     </div>
                     <ChevronRight className="w-4 h-4 text-slate-400" />
                   </Link>
@@ -71,26 +57,10 @@ export function HeaderMobileNavigation({ closeMenu, showMessages }: { closeMenu:
                         <span className="text-sm font-semibold">Tin nhắn</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-cta text-white">1</span>
                         <ChevronRight className="w-4 h-4 text-slate-400" />
                       </div>
                     </Link>
                   )}
-
-                  {/* Trợ giúp */}
-                  <Link
-                    href="/help"
-                    onClick={closeMenu}
-                    className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 text-main transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center">
-                        <HelpCircle className="w-4 h-4" />
-                      </div>
-                      <span className="text-sm font-medium">Trung Tâm Trợ Giúp</span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
-                  </Link>
                 </nav>
     </>
   );
