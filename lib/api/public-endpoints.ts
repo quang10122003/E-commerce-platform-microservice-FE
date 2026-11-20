@@ -5,7 +5,7 @@
 // Danh sách endpoint công khai không cần đính kèm Authorization header.
 export const PUBLIC_ENDPOINTS = [
   // Giữ chính sách auth hiện tại: mọi method và đường dẫn con đều công khai.
-  { method: "*", path: /^api\/auth\/(login|register|forgot-password|refresh_token|logout)(?:\/.*)?$/ },
+  { method: "*", path: /^api\/auth\/(login|register|forgot-password|refresh_token|logout|oauth2)(?:\/.*)?$/ },
   { method: "GET", path: "api/products" },
   // Chỉ công khai GET danh sách Flash Sale và top bán chạy.
   { method: "GET", path: /^api\/user\/flash-sales\/items(?:\/top-selling)?$/ },

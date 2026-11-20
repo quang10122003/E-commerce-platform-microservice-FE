@@ -7,7 +7,10 @@ export interface UserProfile {
   avatarUrl: string | null;
   roles: UserRole[];
   createdAt: string | null;
+  provider: AuthProvider;
 }
+
+export type AuthProvider = "LOCAL" | "GOOGLE" | "LOCAL_GOOGLE";
 
 // Các trường hồ sơ được phép sửa; thêm trường mới vào đây và vào PROFILE_FIELDS.
 export type UpdateProfileForm = Pick<UserProfile, "fullName">;

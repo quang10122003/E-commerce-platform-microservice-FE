@@ -1,4 +1,4 @@
-import type { CheckoutItem, CheckoutItemsRequest, CheckoutShopGroup, CheckoutPaymentMethod, CreateCheckoutRequest, CheckoutFailedResponse, CheckoutSucceededResponse } from "@/types/user/checkout";
+import type { CheckoutItem, CheckoutItemsRequest, CheckoutShopGroup, CheckoutPaymentMethod, CreateCheckoutRequest, CheckoutFailedResponse, CheckoutSucceededResponse, CreateCheckoutResponse } from "@/types/user/checkout";
 
 // Chỉ giữ mã biến thể và số lượng trên URL, không mang theo giá hoặc phân bổ sale cũ.
 export function getCheckoutUrl(items: CheckoutItemsRequest["items"]): string {
@@ -61,6 +61,15 @@ export function isCheckoutStreamResult(value: unknown, checkoutId: number): valu
     && data.orderIds.every((id: unknown) => typeof id === "number" && Number.isSafeInteger(id) && id > 0)
     && typeof data.totalAmount === "number" && Number.isFinite(data.totalAmount) && data.totalAmount >= 0
     && (data.urlPayment === null || typeof data.urlPayment === "string");
+}
+
+export function isCheckoutResultResponse(value: unknown, checkoutId: number): value is CreateCheckoutResponse {
+  if (!value || typeof value !== "object") return false;
+  const data = value as Record<string, unknown>;
+  return data.checkoutId === checkoutId && ["PROCESSING", "DONE", "CANCEL"].includes(String(data.status))
+    && (data.paymentMethod === null || ["COD", "VNPAY"].includes(String(data.paymentMethod)))
+    && Array.isArray(data.orderIds) && data.orderIds.every((id: unknown) => typeof id === "number" && Number.isSafeInteger(id) && id > 0)
+    && (data.urlPayment === null || typeof data.urlPayment === "string") && (data.reason === null || typeof data.reason === "string");
 }
 
 // Chỉ cho phép URL thanh toán HTTP(S), giữ nguyên query đã được backend ký.

@@ -1,13 +1,10 @@
 import type { RefObject } from "react";
 import { CircleX } from "lucide-react";
 import { Loading } from "@/components/ui/loading";
-import { CheckoutOrderSuccessView } from "./CheckoutOrderSuccessView";
-import type { CheckoutFailedResponse, CheckoutSucceededResponse } from "@/types/user/checkout";
 
 interface CheckoutSuccessModalProps {
   submitting: boolean;
-  failure: CheckoutFailedResponse | null;
-  success: CheckoutSucceededResponse | null;
+  failureReason: string | null;
   dialogRef: RefObject<HTMLDialogElement | null>;
   streamError: boolean;
   onReconnect: () => void;
@@ -15,15 +12,15 @@ interface CheckoutSuccessModalProps {
 }
 
 // Phủ kính trắng mờ lên checkout, giữ focus trong trạng thái chờ hoặc kết quả nghiệp vụ.
-export function CheckoutSuccessModal({ submitting, failure, success, dialogRef, streamError, onReconnect, onConfirmFailure }: CheckoutSuccessModalProps) {
+export function CheckoutSuccessModal({ submitting, failureReason, dialogRef, streamError, onReconnect, onConfirmFailure }: CheckoutSuccessModalProps) {
   return (
     <dialog ref={dialogRef} onCancel={(event) => event.preventDefault()} aria-labelledby="checkout-status-title"
       className="fixed inset-0 m-0 h-full max-h-none w-full max-w-none overflow-y-auto border-0 bg-transparent p-4 text-main backdrop:bg-white/60 backdrop:backdrop-blur-md open:flex open:items-center open:justify-center">
-      {success ? <CheckoutOrderSuccessView result={success} /> : failure ? (
+      {failureReason ? (
         <section role="alert" className="w-full max-w-lg space-y-4 rounded-xl border border-surface-border bg-surface-card p-6 text-center sm:p-8">
           <CircleX className="mx-auto h-12 w-12 text-danger" aria-hidden="true" />
           <h2 id="checkout-status-title" className="text-xl font-bold">Không thể hoàn tất đơn hàng</h2>
-          <p className="text-sm leading-6 text-muted-foreground">{failure.reason}</p>
+          <p className="text-sm leading-6 text-muted-foreground">{failureReason}</p>
           <button type="button" onClick={onConfirmFailure} autoFocus className="h-11 cursor-pointer rounded-lg bg-primary px-6 text-sm font-semibold text-white hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">Xác nhận</button>
         </section>
       ) : (

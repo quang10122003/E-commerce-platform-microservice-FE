@@ -12,6 +12,10 @@ export const checkoutApi = baseApi.injectEndpoints({
         headers: { "Idempotency-Key": idempotencyKey },
       }),
     }),
+    getCheckout: builder.query<ApiResponse<CreateCheckoutResponse>, number>({
+      query: (checkoutId) => ({ url: `/api/checkouts/${checkoutId}` }),
+      keepUnusedDataFor: 0,
+    }),
     getCheckoutItems: builder.query<ApiResponse<CheckoutItemsResponse>, CheckoutItemsRequest>({
       query: (body) => ({ url: "/api/checkouts/items", method: "POST", body }),
       keepUnusedDataFor: 0,
@@ -23,4 +27,4 @@ export const checkoutApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useGetCheckoutItemsQuery, useGetCheckoutQuoteQuery, useCreateCheckoutMutation } = checkoutApi;
+export const { useGetCheckoutItemsQuery, useGetCheckoutQuoteQuery, useCreateCheckoutMutation, useLazyGetCheckoutQuery } = checkoutApi;

@@ -39,8 +39,6 @@ export const SUGGESTIONS_INITIAL_COUNT = 20;
 export const SUGGESTIONS_LOAD_MORE_COUNT = 5;
 export const SUGGESTIONS_LOAD_MORE_DELAY_MS = 600;
 
-export const DEFAULT_TIMEOUT_MS = 15_000;
-
 // Tên header chuẩn gửi access token đến backend.
 export const AUTHORIZATION_HEADER = "Authorization";
 

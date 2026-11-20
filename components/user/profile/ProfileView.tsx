@@ -90,7 +90,8 @@ export function ProfileView({ profile }: { profile: UserProfile | null }) {
                     </Link>
                   </li>
                 ))}
-                <li><ChangePasswordAction /></li>
+                {/* Tài khoản chỉ đăng nhập bằng Google không có mật khẩu để đổi. */}
+                {profile.provider !== "GOOGLE" && <li><ChangePasswordAction /></li>}
               </ul>
             </section>
           </div>

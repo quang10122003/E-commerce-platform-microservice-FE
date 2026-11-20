@@ -1,4 +1,4 @@
-import { AUTHORIZATION_HEADER, HTTP_STATUS, DEFAULT_TIMEOUT_MS } from "@/lib/constants";
+import { AUTHORIZATION_HEADER, HTTP_STATUS } from "@/lib/constants";
 import "server-only";
 import { createHash } from "node:crypto";
 import { redirect } from "next/navigation";
@@ -43,7 +43,6 @@ export type ServerFetchUnauthorizedContext = {
 export type ServerFetchOptions = RequestInit & {
   cookieMode?: "read-only" | "read-write";
   skipAuth?: boolean;
-  timeoutMs?: number;
   responseMode?: "json" | "stream";
   refreshSession?: boolean;
 };
@@ -143,40 +142,22 @@ export function buildAuthHeaders(
   return headers;
 }
 
-// Thực hiện fetch kèm timeout và lắng nghe AbortSignal từ caller.
-export async function fetchWithTimeout(
+// Gọi backend và ghi log lỗi kết nối qua logger chung.
+async function fetchBackend(
   url: string,
   options: RequestInit,
-  timeoutMs = DEFAULT_TIMEOUT_MS,
 ): Promise<Response> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => {
-    controller.abort(new Error("Request timeout sau " + timeoutMs + "ms."));
-  }, timeoutMs);
-
-  const abortHandler = () => controller.abort(options.signal?.reason);
-  if (options.signal?.aborted) {
-    controller.abort(options.signal.reason);
-  }
-  options.signal?.addEventListener("abort", abortHandler, { once: true });
-
   try {
-    return await fetch(url, {
-      ...options,
-      signal: controller.signal,
-    });
+    return await fetch(url, options);
   } catch (cause) {
     // Log lỗi kết nối một lần bằng logger chung, không đưa headers/token vào log.
-    const message = controller.signal.aborted ? "Request backend bị hủy hoặc hết thời gian chờ." : "Không thể kết nối backend.";
+    const message = options.signal?.aborted ? "Request backend bị hủy." : "Không thể kết nối backend.";
     logBackendError(getEndpointPath(new URL(url).pathname), (options.method ?? "GET").toUpperCase(), 502, {
       success: false, data: null, message,
-      error: { code: controller.signal.aborted ? "REQUEST_ABORTED" : "NETWORK_ERROR", message },
+      error: { code: options.signal?.aborted ? "REQUEST_ABORTED" : "NETWORK_ERROR", message },
       timestamp: new Date().toISOString(),
     });
     throw cause;
-  } finally {
-    clearTimeout(timeoutId);
-    options.signal?.removeEventListener("abort", abortHandler);
   }
 }
 
@@ -242,7 +223,8 @@ async function handleAuthResponse<T>(
 ): Promise<ApiResponse<T>> {
   const isAuthEndpoint =
     endpointPath === "api/auth/login" ||
-    endpointPath === "api/auth/register";
+    endpointPath === "api/auth/register" ||
+    endpointPath === "api/auth/oauth2/exchange";
 
   if (!isAuthEndpoint || !response.ok || !payload.success || !payload.data) {
     return payload;
@@ -294,7 +276,7 @@ export async function serverFetch<T>(
   path: string,
   options: ServerFetchOptions = {},
 ): Promise<ServerFetchResult<T>> {
-  const { cookieMode = "read-only", skipAuth: internalSkipAuth, timeoutMs = DEFAULT_TIMEOUT_MS, responseMode = "json", refreshSession = false, ...fetchOptions } = options;
+  const { cookieMode = "read-only", skipAuth: internalSkipAuth, responseMode = "json", refreshSession = false, ...fetchOptions } = options;
   const endpointPath = getEndpointPath(path);
   const backendUrl = getBackendUrl(path);
 
@@ -303,7 +285,7 @@ export async function serverFetch<T>(
   }
 
   // Các thao tác thay đổi phiên chỉ được thực hiện trong context được phép ghi cookie.
-  if (cookieMode === "read-only" && ["api/auth/login", "api/auth/register", "api/auth/logout"].includes(endpointPath)) {
+  if (cookieMode === "read-only" && ["api/auth/login", "api/auth/register", "api/auth/logout", "api/auth/oauth2/exchange"].includes(endpointPath)) {
     throw new Error("Thao tác xác thực phải được gọi qua Route Handler hoặc Server Action.");
   }
   const isPublic = isPublicEndpoint(endpointPath, options.method);
@@ -332,14 +314,13 @@ export async function serverFetch<T>(
     requestOptions.headers = refreshHeaders;
   }
   const headers = buildAuthHeaders({ ...requestOptions, responseMode }, token, skipAuth);
-  let response = await fetchWithTimeout(
+  let response = await fetchBackend(
     backendUrl,
     {
       ...requestOptions,
       headers,
       body: requestOptions.body,
     },
-    timeoutMs,
   );
 
   let sessionRefreshed = false;
@@ -387,14 +368,13 @@ export async function serverFetch<T>(
         refreshedTokens.accessToken,
         false,
       );
-      response = await fetchWithTimeout(
+      response = await fetchBackend(
         backendUrl,
         {
           ...requestOptions,
           headers: retryHeaders,
           body: requestOptions.body,
         },
-        timeoutMs,
       );
 
       if (response.status === HTTP_STATUS.UNAUTHORIZED) {

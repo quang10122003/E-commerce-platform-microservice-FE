@@ -1,10 +1,20 @@
-import Link from "next/link";
-import styles from "./CheckoutOrderSuccessView.module.css";
-import { ArrowRight, Check, House, PackageCheck, Sparkles, Star } from "lucide-react";
-import type { CheckoutSucceededResponse } from "@/types/user/checkout";
+"use client";
 
-// Xác nhận COD trong khối động; người mua có thể về trang chủ trước khi hết 5 giây.
-export function CheckoutOrderSuccessView({ result }: { result: CheckoutSucceededResponse }) {
+import { useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import styles from "./CheckoutOrderSuccessView.module.css";
+import { ArrowRight, Check, PackageCheck, ReceiptText, Sparkles, Star } from "lucide-react";
+import { TIME } from "@/lib/constants";
+
+// Người mua có thể xem đơn hàng trước khi hết 5 giây.
+export function CheckoutOrderSuccessView({ orderIds }: { orderIds: number[] }) {
+  const router = useRouter();
+  useEffect(() => {
+    const timer = window.setTimeout(() => router.replace("/user/orders"), 5 * TIME.SECOND_MS);
+    return () => window.clearTimeout(timer);
+  }, [router]);
+
   return (
     <section role="status" className={`${styles.card} relative w-full max-w-lg overflow-hidden rounded-xl border border-white/80 bg-gradient-to-br from-emerald-50 via-surface-card to-indigo-50 px-6 py-8 text-center shadow-xl shadow-slate-900/10 sm:px-8`}>
       {/* Cụm biểu tượng kiện hàng và dấu xác nhận tạo điểm nhấn cho kết quả thành công. */}
@@ -21,16 +31,16 @@ export function CheckoutOrderSuccessView({ result }: { result: CheckoutSucceeded
           <span className="absolute -left-3 bottom-5 h-2.5 w-2.5 rounded-full bg-cta/60" />
         </div>
         {/* Nội dung xác nhận không hiển thị mã checkout nội bộ. */}
-        <h2 id="checkout-status-title" className="text-2xl font-bold leading-tight tracking-tight text-main sm:text-3xl">Đặt hàng thành công!</h2>
+        <h1 className="text-2xl font-bold leading-tight tracking-tight text-main sm:text-3xl">Đặt hàng thành công!</h1>
         <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-muted-foreground">Đơn hàng của bạn đã được xác nhận.<br />Cảm ơn bạn đã chọn mua sắm cùng chúng tôi.</p>
         <div className="mt-5 flex flex-wrap items-center justify-center gap-2 text-xs font-medium text-emerald-800">
-          {result.orderIds.map((id) => <span key={id} className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-1.5">Đơn hàng #{id}</span>)}
+          {orderIds.map((id) => <span key={id} className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-1.5">Đơn hàng #{id}</span>)}
         </div>
         {/* Điều hướng ngay hoặc tự động trở về sau khoảng chờ hiện có. */}
-        <Link href="/" replace className="mx-auto mt-6 inline-flex min-h-12 items-center justify-center gap-3 rounded-lg bg-primary px-7 text-sm font-semibold text-white transition-colors hover:bg-primary-hover active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4">
-          <House className="h-4 w-4" aria-hidden="true" />Về trang chủ<ArrowRight className="h-4 w-4" aria-hidden="true" />
+        <Link href="/user/orders" replace className="mx-auto mt-6 inline-flex min-h-12 items-center justify-center gap-3 rounded-lg bg-primary px-7 text-sm font-semibold text-white transition-colors hover:bg-primary-hover active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4">
+          <ReceiptText className="h-4 w-4" aria-hidden="true" />Xem đơn hàng<ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Link>
-        <p className="mt-4 text-xs leading-6 text-muted-foreground">Tự động trở về trang chủ sau 5 giây.</p>
+        <p className="mt-4 text-xs leading-6 text-muted-foreground">Tự động chuyển đến đơn hàng của bạn sau 5 giây.</p>
       </div>
     </section>
   );

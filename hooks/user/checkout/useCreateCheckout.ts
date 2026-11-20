@@ -4,13 +4,14 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useNotification } from "@/hooks/shared/useNotification";
 import { useSse } from "@/hooks/shared/useSse";
+import { useCheckoutResultFallback } from "./useCheckoutResultFallback";
 import { useForm, useWatch } from "react-hook-form";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
-import { PRICE_PREVIEW_DEBOUNCE_MS, TIME } from "@/lib/constants";
+import { PRICE_PREVIEW_DEBOUNCE_MS } from "@/lib/constants";
 import { useCreateCheckoutMutation } from "@/lib/redux/services/checkout-api";
 import { getApiErrorMessage } from "@/lib/utils";
 import { buildCreateCheckoutRequest, getCheckoutPaymentUrl, isCheckoutStreamResult } from "@/utils/checkout.utils";
-import type { CheckoutItem, CheckoutPaymentMethod, CreateCheckoutResponse, CheckoutFailedResponse, CheckoutSucceededResponse } from "@/types/user/checkout";
+import type { CheckoutItem, CheckoutPaymentMethod, CreateCheckoutResponse } from "@/types/user/checkout";
 
 interface CheckoutOrderFields {
   note: string;
@@ -31,9 +32,7 @@ export function useCreateCheckout(items: CheckoutItem[], total: number | null, s
   // Giữ phản hồi checkout đã được BE tiếp nhận để chặn tạo lại sau khi đóng thông báo.
   const [result, setResult] = useState<CreateCheckoutResponse | null>(null);
   // Giữ lỗi nghiệp vụ đến khi người mua xác nhận tải lại dữ liệu.
-  const [failure, setFailure] = useState<CheckoutFailedResponse | null>(null);
-  // Giữ kết quả COD để hiển thị xác nhận trong 5 giây trước khi về trang chủ.
-  const [success, setSuccess] = useState<CheckoutSucceededResponse | null>(null);
+  const [failureReason, setFailureReason] = useState<string | null>(null);
   // Dừng stream sau khi có kết quả cuối cùng được xử lý.
   const [streamComplete, setStreamComplete] = useState(false);
   // Cho phép nối lại stream mà không tạo lại checkout khi mất kết nối.
@@ -52,12 +51,6 @@ export function useCreateCheckout(items: CheckoutItem[], total: number | null, s
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = previousOverflow; };
   }, [overlayOpen]);
-
-  useEffect(() => {
-    if (!success) return;
-    const timer = window.setTimeout(() => router.replace("/"), 5 * TIME.SECOND_MS);
-    return () => window.clearTimeout(timer);
-  }, [success, router]);
 
   useEffect(() => {
     // Sửa nội dung đơn là một lần đặt hàng mới, kể cả khi quay lại giá trị cũ.
@@ -108,7 +101,28 @@ export function useCreateCheckout(items: CheckoutItem[], total: number | null, s
     }
   })(event);
 
-  // COD hiển thị xác nhận; VNPAY chuyển trình duyệt đến URL thanh toán trong event.
+  const finishCheckout = () => {
+    terminalRef.current = true;
+    setStreamComplete(true);
+  };
+  const failCheckout = (reason: string) => {
+    finishCheckout();
+    setFailureReason(reason);
+  };
+  // COD sang trang thành công; VNPAY chuyển trình duyệt đến URL thanh toán. Trả false khi URL thanh toán không hợp lệ.
+  const completeCheckout = (method: CheckoutPaymentMethod, orderIds: number[], urlPayment: string | null) => {
+    if (method === "COD") {
+      finishCheckout();
+      router.replace(orderIds.length ? `/checkout/success?orderIds=${orderIds.join(",")}` : "/user/orders");
+      return true;
+    }
+    const paymentUrl = getCheckoutPaymentUrl(urlPayment);
+    if (!paymentUrl) return false;
+    finishCheckout();
+    window.location.assign(paymentUrl);
+    return true;
+  };
+
   const handleEvent = (name: string, value: unknown) => {
     if (!result || terminalRef.current) return;
     if (!isCheckoutStreamResult(value, result.checkoutId)) {
@@ -117,39 +131,35 @@ export function useCreateCheckout(items: CheckoutItem[], total: number | null, s
       return;
     }
     if (name === "CHECKOUT_FAILED" && "reason" in value) {
-      terminalRef.current = true;
-      setStreamComplete(true);
-      setFailure(value);
-    } else if (name === "CHECKOUT_SUCCEEDED" && "paymentMethod" in value && value.paymentMethod === "COD") {
-      terminalRef.current = true;
-      setStreamComplete(true);
-      setSuccess(value);
-    } else if (name === "CHECKOUT_SUCCEEDED" && "paymentMethod" in value && value.paymentMethod === "VNPAY") {
-      const paymentUrl = getCheckoutPaymentUrl(value.urlPayment);
-      if (!paymentUrl) {
-        setStreamError(true);
-        notifyError("Đường dẫn thanh toán không hợp lệ. Vui lòng kết nối lại để nhận kết quả checkout.");
-        return;
-      }
-      window.location.assign(paymentUrl);
-      terminalRef.current = true;
-      setStreamComplete(true);
+      failCheckout(value.reason);
+    } else if (name === "CHECKOUT_SUCCEEDED" && "paymentMethod" in value && !completeCheckout(value.paymentMethod, value.orderIds, value.urlPayment)) {
+      setStreamError(true);
+      notifyError("Đường dẫn thanh toán không hợp lệ. Vui lòng kết nối lại để nhận kết quả checkout.");
+    }
+  };
+  const applyCheckoutResult = (data: CreateCheckoutResponse) => {
+    if (!result || terminalRef.current || data.checkoutId !== result.checkoutId) return;
+    if (data.status === "CANCEL") {
+      failCheckout(data.reason || "Không thể tiếp tục checkout.");
+    } else if (data.status === "DONE" && data.paymentMethod && !completeCheckout(data.paymentMethod, data.orderIds, data.urlPayment)) {
+      notifyError("Đường dẫn thanh toán không hợp lệ. Vui lòng kiểm tra lại trong danh sách đơn hàng.");
     }
   };
   const handleStreamError = () => {
     setStreamError(true);
     notifyError("Mất kết nối nhận kết quả checkout. Hệ thống sẽ kết nối lại, không cần đặt hàng lại.");
   };
-  const { reconnect } = useSse(result && !streamComplete ? `/api/notifications/checkouts/${result.checkoutId}/stream` : null,
+  useCheckoutResultFallback(result, result !== null && !streamComplete, applyCheckoutResult);
+  const { reconnect } = useSse(result?.status === "PROCESSING" && !streamComplete ? `/api/notifications/checkouts/${result.checkoutId}/stream` : null,
     CHECKOUT_EVENTS, handleEvent, handleStreamError, () => setStreamError(false));
 
   // Chỉ tải lại sản phẩm và báo giá sau khi người mua xác nhận lỗi nghiệp vụ.
   const acknowledgeFailure = () => {
-    if (!failure) return;
+    if (!failureReason) return;
     acceptedRef.current = false;
     terminalRef.current = false;
     attemptRef.current = null;
-    setFailure(null);
+    setFailureReason(null);
     setResult(null);
     setStreamComplete(false);
     setStreamError(false);
@@ -157,7 +167,7 @@ export function useCreateCheckout(items: CheckoutItem[], total: number | null, s
   };
 
   return {
-    submit, noteField, paymentField, paymentMethod, result, failure, success, overlayRef, streamError, reconnect, acknowledgeFailure,
+    submit, noteField, paymentField, paymentMethod, result, failureReason, overlayRef, streamError, reconnect, acknowledgeFailure,
     isSubmitting: form.formState.isSubmitting,
     locked: form.formState.isSubmitting || result !== null,
     errors: form.formState.errors,

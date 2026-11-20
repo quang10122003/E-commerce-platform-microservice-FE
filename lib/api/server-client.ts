@@ -4,7 +4,6 @@
 export {
   serverFetch,
   buildAuthHeaders,
-  fetchWithTimeout,
   getBackendUrl,
   getEndpointPath,
   parseApiResponse,

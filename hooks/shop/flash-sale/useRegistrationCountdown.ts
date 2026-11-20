@@ -10,9 +10,12 @@ export function useRegistrationCountdown(initialNow: number) {
   const [now, setNow] = useState(initialNow);
 
   useEffect(() => {
-    setNow(Date.now());
+    const initialTick = window.setTimeout(() => setNow(Date.now()), 0);
     const timer = window.setInterval(() => setNow(Date.now()), TIME.SECOND_MS);
-    return () => window.clearInterval(timer);
+    return () => {
+      window.clearTimeout(initialTick);
+      window.clearInterval(timer);
+    };
   }, []);
 
   return now;

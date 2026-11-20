@@ -32,9 +32,12 @@ export function useShopProfileForm(shop: SellerShopProfile) {
   };
 
   const save = form.handleSubmit(async (values) => {
-    // Không đổi gì thì chỉ thoát chế độ sửa, không gọi API.
-    if (!form.formState.isDirty) return setEditing(new Set());
     const body: UpdateShopProfileForm = { shopName: values.shopName.trim(), shopDescription: values.shopDescription.trim() };
+    const current = toForm(shop);
+    // Chỉ bỏ qua request khi payload không đổi so với hồ sơ shop hiện tại.
+    if (body.shopName === current.shopName.trim() && body.shopDescription === current.shopDescription.trim()) {
+      return setEditing(new Set());
+    }
     try {
       const saved = (await updateShopProfile(body).unwrap()).data;
       form.reset(saved ? toForm(saved) : body);

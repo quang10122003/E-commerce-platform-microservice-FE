@@ -32,9 +32,9 @@ export function useProfileForm(profile: UserProfile) {
   };
 
   const save = form.handleSubmit(async (values) => {
-    // Không đổi gì thì chỉ thoát chế độ sửa, không gọi API.
-    if (!form.formState.isDirty) return setEditing(new Set());
     const body: UpdateProfileForm = { fullName: values.fullName.trim() };
+    // Chỉ bỏ qua request khi payload không đổi so với hồ sơ hiện tại.
+    if (body.fullName === profile.fullName) return setEditing(new Set());
     try {
       const saved = (await updateProfile(body).unwrap()).data ?? { ...profile, ...body };
       form.reset(toForm(saved));

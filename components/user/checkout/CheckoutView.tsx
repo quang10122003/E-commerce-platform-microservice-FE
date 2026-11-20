@@ -62,7 +62,7 @@ export function CheckoutView({ itemsParam }: { itemsParam?: string | string[] })
 
       {/* Lớp phủ giữ nguyên checkout phía sau trong suốt quá trình gửi và chờ kết quả. */}
       {(order.isSubmitting || order.result) && <CheckoutSuccessModal submitting={order.isSubmitting}
-        failure={order.failure} success={order.success} dialogRef={order.overlayRef}
+        failureReason={order.failureReason} dialogRef={order.overlayRef}
         streamError={order.streamError} onReconnect={order.reconnect} onConfirmFailure={order.acknowledgeFailure} />}
 
     </div>
