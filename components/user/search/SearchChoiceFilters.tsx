@@ -1,9 +1,7 @@
 import { SEARCH_VISIBLE_LOCATIONS } from "@/lib/constants";
 import { ChevronDown } from "lucide-react";
-import administrativeUnits from "@/data/vietnam-administrative-units.json";
+import { useProvinces } from "@/hooks/shared/useProvinces";
 import type { ProductBrandOption } from "@/types/shared/product";
-
-const provinces = Object.entries(administrativeUnits.provinceNameMap);
 
 type ChoiceFilterProps = {
   mobile: boolean;
@@ -33,13 +31,16 @@ export function BrandFilter({ mobile, isPending, className, checkboxClassName, b
   );
 }
 
-export function ProvinceFilter({ mobile, isPending, className, checkboxClassName, locations, onChange }: ChoiceFilterProps & {
-  locations: string[];
-  onChange: (location: string) => void;
+export function ProvinceFilter({ mobile, isPending, className, checkboxClassName, locationCodes, onChange }: ChoiceFilterProps & {
+  locationCodes: number[];
+  onChange: (code: number) => void;
 }) {
+  const { provinces } = useProvinces();
+  // Không có danh sách từ API thì ẩn bộ lọc vì tên tỉnh khác nguồn sẽ không khớp location sản phẩm.
+  if (!provinces) return null;
   const sectionClass = mobile ? "border-t border-slate-200 pt-4 space-y-2" : "border-t border-slate-200/90 pt-4";
-  const renderProvince = ([name, value]: [string, string]) => (
-    <label key={name} className={className}><input type="checkbox" value={value} checked={locations.includes(value)} onChange={() => onChange(value)} disabled={isPending} className={checkboxClassName} /><span className="truncate">{name}</span></label>
+  const renderProvince = ({ name, code }: { name: string; code: number }) => (
+    <label key={code} className={className}><input type="checkbox" value={code} checked={locationCodes.includes(code)} onChange={() => onChange(code)} disabled={isPending} className={checkboxClassName} /><span className="truncate">{name}</span></label>
   );
   return (
     <div className={sectionClass}>

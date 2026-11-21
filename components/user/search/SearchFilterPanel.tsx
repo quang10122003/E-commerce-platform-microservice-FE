@@ -4,7 +4,7 @@ import { BrandFilter, ProvinceFilter } from "./SearchChoiceFilters";
 type SearchFilterPanelProps = {
   matchedBrands: ProductBrandOption[];
   brandIds: number[];
-  locations: string[];
+  locationCodes: number[];
   isPending: boolean;
   minPriceInput: string;
   maxPriceInput: string;
@@ -17,13 +17,13 @@ type SearchFilterPanelProps = {
   onPriceSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   onBrandChange: (id: number) => void;
   onClearBrands: () => void;
-  onLocationChange: (location: string) => void;
+  onLocationChange: (code: number) => void;
   onClearFilters: () => void;
 };
 
 // Nội dung bộ lọc dùng chung cho sidebar desktop và drawer mobile.
 export function SearchFilterPanel({
-  matchedBrands, brandIds, locations, isPending, minPriceInput, maxPriceInput,
+  matchedBrands, brandIds, locationCodes, isPending, minPriceInput, maxPriceInput,
   priceError, hasActiveFilters, mobile = false, onMinPriceChange, onMaxPriceChange,
   onPriceSubmit, onBrandChange, onClearBrands, onLocationChange, onClearFilters,
 }: SearchFilterPanelProps) {
@@ -57,7 +57,7 @@ export function SearchFilterPanel({
       </form>
       {/* Danh sách thương hiệu và địa điểm dùng chung cho desktop/mobile. */}
       <BrandFilter mobile={mobile} isPending={isPending} className={choiceClass} checkboxClassName={checkboxClass} brands={matchedBrands} selectedIds={brandIds} onChange={onBrandChange} onClear={onClearBrands} />
-      <ProvinceFilter mobile={mobile} isPending={isPending} className={choiceClass} checkboxClassName={checkboxClass} locations={locations} onChange={onLocationChange} />
+      <ProvinceFilter mobile={mobile} isPending={isPending} className={choiceClass} checkboxClassName={checkboxClass} locationCodes={locationCodes} onChange={onLocationChange} />
     </div>
   );
 }

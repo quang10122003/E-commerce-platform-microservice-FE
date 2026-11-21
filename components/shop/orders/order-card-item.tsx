@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Check, Copy, FileText, Mail, MessageSquare, Package, User, XCircle } from "lucide-react";
+import { Check, Copy, FileText, MessageSquare, Package, Phone, User, XCircle } from "lucide-react";
 import { Badge, Button } from "@/components/ui";
 import { OrderTimeView } from "@/components/user/orders/OrderTimeView";
 import { formatCurrency } from "@/lib/utils";
@@ -45,8 +45,8 @@ export function OrderCardItem({ order, onOpenDetail }: OrderCardItemProps) {
           <span className="text-[11px] font-medium text-slate-500">Đặt lúc: <OrderTimeView value={order.createdAt} /></span>
           <div className="flex items-center gap-1.5 text-xs text-slate-600">
             <User className="h-3.5 w-3.5 text-slate-400" />
-            <span className="font-semibold text-slate-800">{order.buyer.fullName}</span>
-            <span className="hidden items-center gap-1 text-[11px] text-slate-400 sm:inline-flex"><Mail className="h-3 w-3" />{order.buyer.email}</span>
+            <span className="font-semibold text-slate-800">{order.buyer.recipientName ?? "—"}</span>
+            {order.buyer.phone && <span className="hidden items-center gap-1 text-[11px] text-slate-400 sm:inline-flex"><Phone className="h-3 w-3" />{order.buyer.phone}</span>}
           </div>
         </div>
         <div className="flex items-center gap-2">

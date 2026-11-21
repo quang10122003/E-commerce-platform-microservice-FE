@@ -8,7 +8,7 @@ import type { ProductSortOption } from "@/types/user/product";
 type UseProductSearchFiltersOptions = {
   sort: ProductSortOption;
   brandIds?: number[];
-  locations?: string[];
+  locationCodes?: number[];
   minPrice?: number;
   maxPrice?: number;
 };
@@ -16,7 +16,7 @@ type UseProductSearchFiltersOptions = {
 type FilterUpdates = {
   sort?: ProductSortOption;
   brandIds?: number[];
-  locations?: string[];
+  locationCodes?: number[];
   minPrice?: number;
   maxPrice?: number;
 };
@@ -39,7 +39,7 @@ function parsePriceInput(value: string): number | undefined {
 export function useProductSearchFilters({
   sort,
   brandIds = [],
-  locations = [],
+  locationCodes = [],
   minPrice,
   maxPrice,
 }: UseProductSearchFiltersOptions) {
@@ -83,10 +83,10 @@ export function useProductSearchFilters({
       }
       nextSearchParams.delete("brandId");
 
-      if ("locations" in updates) {
-        nextSearchParams.delete("locations");
-        updates.locations?.forEach((location) => {
-          nextSearchParams.append("locations", location);
+      if ("locationCodes" in updates) {
+        nextSearchParams.delete("locationCodes");
+        updates.locationCodes?.forEach((location) => {
+          nextSearchParams.append("locationCodes", String(location));
         });
       }
 
@@ -129,13 +129,13 @@ export function useProductSearchFilters({
 
   // Bật hoặc tắt một tỉnh/thành và đồng bộ danh sách lên URL.
   const handleLocationChange = useCallback(
-    (nextLocation: string) => {
-      const nextLocations = locations.includes(nextLocation)
-        ? locations.filter((location) => location !== nextLocation)
-        : [...locations, nextLocation];
-      navigateWithFilters({ locations: nextLocations });
+    (nextLocation: number) => {
+      const nextLocations = locationCodes.includes(nextLocation)
+        ? locationCodes.filter((location) => location !== nextLocation)
+        : [...locationCodes, nextLocation];
+      navigateWithFilters({ locationCodes: nextLocations });
     },
-    [locations, navigateWithFilters],
+    [locationCodes, navigateWithFilters],
   );
 
   // Áp dụng khoảng giá sau khi kiểm tra điều kiện tối thiểu và tối đa.
@@ -181,7 +181,7 @@ export function useProductSearchFilters({
     navigateWithFilters({
       sort: "RELEVANCE",
       brandIds: [],
-      locations: [],
+      locationCodes: [],
       minPrice: undefined,
       maxPrice: undefined,
     });
@@ -195,7 +195,7 @@ export function useProductSearchFilters({
 
   return {
     brandIds,
-    locations,
+    locationCodes,
     handleBrandChange,
     handleClearBrands,
     handleClearFilters,

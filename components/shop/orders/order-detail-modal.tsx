@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect } from "react";
-import { Mail, MapPin, Package, User, Wallet, X } from "lucide-react";
+import { House, Mail, MapPin, Package, Phone, User, Wallet, X } from "lucide-react";
 import { Badge, Button } from "@/components/ui";
 import { OrderTimelineView } from "@/components/user/orders/OrderTimelineView";
 import { OrderTimeView } from "@/components/user/orders/OrderTimeView";
@@ -58,9 +58,10 @@ export function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2 rounded-xl border border-slate-200 bg-white p-4 text-xs">
               <div className="flex items-center gap-2 font-bold text-slate-800"><MapPin className="h-4 w-4 text-cta" /> Thông tin nhận hàng</div>
-              <div className="flex items-center gap-1.5 font-semibold text-slate-800"><User className="h-3.5 w-3.5 text-slate-400" />{order.buyer.fullName}</div>
+              <div className="flex items-center gap-1.5 font-semibold text-slate-800"><User className="h-3.5 w-3.5 text-slate-400" />{order.buyer.recipientName ?? "—"}</div>
               <div className="flex items-center gap-1.5 text-slate-600"><Mail className="h-3.5 w-3.5 text-slate-400" />{order.buyer.email}</div>
-              <div className="leading-relaxed text-slate-600">{order.buyer.shippingAddress}</div>
+              {order.buyer.phone && <div className="flex items-center gap-1.5 text-slate-600"><Phone className="h-3.5 w-3.5 text-slate-400" />{order.buyer.phone}</div>}
+              <div className="flex items-start gap-1.5 leading-relaxed text-slate-600"><House className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400" />{order.buyer.shippingAddress}</div>
             </div>
             <div className="space-y-2 rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-700">
               <div className="flex items-center gap-2 font-bold text-slate-800"><Wallet className="h-4 w-4 text-primary" /> Thanh toán</div>

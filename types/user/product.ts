@@ -31,7 +31,7 @@ export interface ProductCatalogQuery {
   keyword?: string;
   categoryId?: number;
   brandIds?: number[];
-  locations?: string[];
+  locationCodes?: number[];
   minPrice?: number;
   maxPrice?: number;
   sort?: ProductSortOption;

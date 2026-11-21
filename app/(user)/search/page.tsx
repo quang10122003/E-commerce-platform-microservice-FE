@@ -13,7 +13,7 @@ type SearchPageProps = {
     brandId?: string;
     minPrice?: string;
     maxPrice?: string;
-    locations?: string | string[];
+    locationCodes?: string | string[];
   }>;
 };
 
@@ -25,8 +25,8 @@ function parsePriceParam(value?: string): number | undefined {
   return Number.isFinite(parsedValue) && parsedValue >= 0 ? parsedValue : undefined;
 }
 
-// Chuẩn hóa brandId từ query string trước khi gửi đến backend.
-function parseBrandParams(value?: string | string[]): number[] {
+// Chuẩn hóa danh sách id (thương hiệu, mã tỉnh) từ query string trước khi gửi đến backend.
+function parseIdParams(value?: string | string[]): number[] {
   const values = Array.isArray(value) ? value : value ? [value] : [];
   return [...new Set(
     values
@@ -35,28 +35,18 @@ function parseBrandParams(value?: string | string[]): number[] {
       .filter((item) => Number.isInteger(item) && item > 0),
   )];
 }
-// Chuẩn hóa danh sách tỉnh/thành từ query string trước khi gửi đến backend.
-function parseLocationParams(value?: string | string[]): string[] {
-  const values = Array.isArray(value) ? value : value ? [value] : [];
-  return [...new Set(
-    values
-      .flatMap((item) => item.split(","))
-      .map((item) => item.trim())
-      .filter(Boolean),
-  )];
-}
 
 // Hiển thị batch đầu từ server để trang tìm kiếm tải nhanh và có thể lập chỉ mục.
 export default async function SearchPage({ searchParams }: SearchPageProps) {
-  const { keyword = "", categoryId, sort, brandIds, brandId, minPrice, maxPrice, locations } = await searchParams;
+  const { keyword = "", categoryId, sort, brandIds, brandId, minPrice, maxPrice, locationCodes } = await searchParams;
   const normalizedKeyword = keyword.trim();
   // Chỉ gửi mã danh mục là số nguyên dương an toàn, không nhận query sai định dạng.
   const parsedCategoryId = categoryId && /^\d+$/.test(categoryId) ? Number(categoryId) : undefined;
   const normalizedCategoryId = parsedCategoryId !== undefined && Number.isSafeInteger(parsedCategoryId) && parsedCategoryId > 0
     ? parsedCategoryId : undefined;
   const normalizedSort = sort === "MOST_SOLD" || sort === "HIGHEST_RATED" ? sort : "RELEVANCE";
-  const normalizedBrandIds = parseBrandParams(brandIds ?? brandId);
-  const normalizedLocations = parseLocationParams(locations);
+  const normalizedBrandIds = parseIdParams(brandIds ?? brandId);
+  const normalizedLocations = parseIdParams(locationCodes);
   const normalizedMinPrice = parsePriceParam(minPrice);
   const normalizedMaxPrice = parsePriceParam(maxPrice);
   // Giá trị dự phòng giúp UI vẫn hiển thị khi Elasticsearch tạm thời không phản hồi.
@@ -74,7 +64,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         categoryId: normalizedCategoryId,
         sort: normalizedSort,
         brandIds: normalizedBrandIds,
-        locations: normalizedLocations,
+        locationCodes: normalizedLocations,
         minPrice: normalizedMinPrice,
         maxPrice: normalizedMaxPrice,
         size: PAGE_SIZE.PRODUCT_SEARCH,
@@ -92,7 +82,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       categoryId={normalizedCategoryId}
       sort={normalizedSort}
       brandIds={normalizedBrandIds}
-      locations={normalizedLocations}
+      locationCodes={normalizedLocations}
       minPrice={normalizedMinPrice}
       maxPrice={normalizedMaxPrice}
     />
