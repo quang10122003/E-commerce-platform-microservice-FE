@@ -1,14 +1,11 @@
 // Hiển thị trạng thái chờ trong lúc Server Component tải đơn hàng.
 export default function OrdersLoading() {
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-5" role="status" aria-label="Đang tải đơn hàng">
-      {/* Header Skeleton */}
-      <div className="space-y-2">
-        <div className="skeleton-shimmer h-4 w-32 rounded-md" />
-        <div className="flex items-center justify-between">
-          <div className="skeleton-shimmer h-7 w-48 rounded-lg" />
-          <div className="skeleton-shimmer hidden h-9 w-64 rounded-xl sm:block" />
-        </div>
+    <div className="w-full space-y-5" role="status" aria-label="Đang tải đơn hàng">
+      {/* Thanh tổng đơn và tìm kiếm */}
+      <div className="flex items-center justify-between gap-2 rounded-2xl border border-slate-200/90 bg-white p-1.5">
+        <div className="skeleton-shimmer h-9.5 w-36 rounded-xl" />
+        <div className="skeleton-shimmer hidden h-9.5 w-80 rounded-xl sm:block" />
       </div>
 
       {/* Tabs Skeleton */}

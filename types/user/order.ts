@@ -54,4 +54,14 @@ export interface CancelOrderForm {
 
 export interface UserOrderQuery {
   status: OrderStatus | null;
+  keyword: string | null;
+  page: number;
+}
+
+export interface UserOrderPage {
+  items: UserOrder[];
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
 }

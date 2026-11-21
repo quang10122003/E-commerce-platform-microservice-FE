@@ -5,6 +5,7 @@ export const PAGE_SIZE = {
   PRODUCT_SEARCH: 20,
   SHOP_FLASH_SALES: 10,
   SHOP_FLASH_SALE_HISTORY: 10,
+  USER_ORDERS: 10,
 } as const;
 export const PAGINATION_VISIBLE_PAGES = 5;
 

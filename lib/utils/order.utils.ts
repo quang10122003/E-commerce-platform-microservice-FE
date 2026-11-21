@@ -1,3 +1,4 @@
+import { FIRST_PAGE } from "@/lib/constants";
 import { formatSellerProductDate } from "@/lib/utils/shop-product.utils";
 import { toLocalDateTimeInput } from "@/utils/date-time.utils";
 import type { OrderCancelReason, OrderCancelScope, OrderPaymentStatus, OrderStatus, UserOrder, UserOrderQuery } from "@/types/user/order";
@@ -70,14 +71,24 @@ export function formatVariantAttributes(value: string | null): string | null {
 }
 
 // Chuẩn hóa searchParams từ URL; giá trị lạ quay về mặc định để không gửi query sai cho BE.
-export function parseOrderQuery(params: { status?: string | string[] }): UserOrderQuery {
+// Khớp giới hạn độ dài từ khóa của BE.
+export const ORDER_KEYWORD_MAX_LENGTH = 100;
+
+export function parseOrderQuery(params: { status?: string | string[]; keyword?: string | string[]; page?: string | string[] }): UserOrderQuery {
   const status = ORDER_STATUS_TABS.find((tab) => tab.status !== null && tab.status === params.status)?.status ?? null;
-  return { status };
+  const keyword = typeof params.keyword === "string" ? params.keyword.trim().slice(0, ORDER_KEYWORD_MAX_LENGTH) || null : null;
+  const page = typeof params.page === "string" && /^\d{1,6}$/.test(params.page) ? Math.max(FIRST_PAGE, Number(params.page)) : FIRST_PAGE;
+  return { status, keyword, page };
 }
 
 // Dựng URL trang đơn hàng giữ trạng thái đang lọc.
-export function getOrdersUrl({ status }: UserOrderQuery): string {
-  return status ? `/user/orders?status=${status}` : "/user/orders";
+export function getOrdersUrl({ status, keyword = null, page = FIRST_PAGE }: { status: OrderStatus | null; keyword?: string | null; page?: number }): string {
+  const params = new URLSearchParams();
+  if (status) params.set("status", status);
+  if (keyword) params.set("keyword", keyword);
+  if (page > FIRST_PAGE) params.set("page", String(page));
+  const search = params.toString();
+  return search ? `/user/orders?${search}` : "/user/orders";
 }
 
 // Đổi OffsetDateTime từ BE sang giờ trình duyệt theo định dạng dùng chung; chỉ gọi phía client.
