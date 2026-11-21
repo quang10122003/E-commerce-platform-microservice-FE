@@ -1,7 +1,15 @@
 import { ISO_DATE_LENGTH, FIRST_PAGE, PAGINATION_VISIBLE_PAGES } from "@/lib/constants";
-import type { SellerProductItem } from "@/types/shop/product";
+import type { SellerProductItem, SellerProductStatus } from "@/types/shop/product";
 
 export const PRODUCT_PRICE_ERROR = "Giá bán phải từ 1.000đ trở lên.";
+
+// Thứ tự dùng cho cả ô chọn trạng thái và các thẻ thống kê; value rỗng là "tất cả".
+export const SELLER_PRODUCT_STATUS_OPTIONS: ReadonlyArray<{ value: SellerProductStatus | ""; label: string }> = [
+  { value: "", label: "Tất cả trạng thái" },
+  { value: "ACTIVE", label: "Đang bán" },
+  { value: "OUT_OF_STOCK", label: "Hết hàng" },
+  { value: "INACTIVE", label: "Tạm ẩn" },
+];
 
 // Dùng chung giới hạn giá cho form tạo mới và cập nhật sản phẩm.
 export function isValidProductPrice(price: number) {

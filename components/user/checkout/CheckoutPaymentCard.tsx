@@ -2,7 +2,7 @@
 
 import type { UseFormRegisterReturn } from "react-hook-form";
 import type { CheckoutPaymentMethod } from "@/types/user/checkout";
-import { CreditCard, Banknote, QrCode, ShieldCheck } from "lucide-react";
+import { CreditCard, Banknote, QrCode } from "lucide-react";
 
 // Khối lựa chọn phương thức thanh toán cho đơn hàng.
 export function CheckoutPaymentCard({ selectedMethod, paymentField, error }: { selectedMethod: CheckoutPaymentMethod; paymentField: UseFormRegisterReturn<"paymentMethod">; error?: string }) {
@@ -33,7 +33,6 @@ export function CheckoutPaymentCard({ selectedMethod, paymentField, error }: { s
           </span>
           <span>Phương Thức Thanh Toán</span>
         </div>
-        <span className="text-xs text-muted-foreground font-medium">Bảo mật chuẩn PCI-DSS</span>
       </div>
 
       {/* Danh sách lựa chọn hình thức thanh toán */}
@@ -79,11 +78,6 @@ export function CheckoutPaymentCard({ selectedMethod, paymentField, error }: { s
 
       {error && <p id="checkout-payment-error" role="alert" className="text-xs text-danger">{error}</p>}
 
-      {/* Cam kết an toàn thông tin thanh toán */}
-      <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-[11px] text-slate-600 border border-slate-100">
-        <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
-        <span>Mọi thông tin giao dịch của bạn đều được mã hóa đầu cuối và bảo vệ theo tiêu chuẩn ngân hàng.</span>
-      </div>
     </section>
   );
 }

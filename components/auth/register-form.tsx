@@ -2,6 +2,7 @@ import { Lock, Mail, User, UserPlus } from "lucide-react";
 import { Button, Input } from "@/components/ui";
 import type { RegisterRequest } from "@/types/shared/auth";
 import type { UseFormReturn } from "react-hook-form";
+import { GoogleLoginButton } from "./google-login-button";
 
 type RegisterFormProps = {
   form: UseFormReturn<RegisterRequest>;
@@ -19,6 +20,7 @@ export function RegisterForm({ form, onSubmit, error, isLoading, showPassword }:
       <div className="space-y-1"><label className="text-xs font-bold text-main">Mật khẩu</label><Input type={showPassword ? "text" : "password"} placeholder="Tối thiểu 6 ký tự" leftIcon={<Lock className="w-4 h-4" />} {...form.register("password", { required: "Mật khẩu là bắt buộc.", minLength: { value: 6, message: "Mật khẩu phải có ít nhất 6 ký tự." } })} error={form.formState.errors.password?.message} className="h-10.5" /></div>
       <Button type="submit" variant="gradient-cta" size="lg" fullWidth isLoading={isLoading} leftIcon={<UserPlus className="w-4 h-4" />} className="rounded-xl font-bold shadow-glow-cta mt-2">Đăng Ký Thành Viên</Button>
       {error && <p className="text-center text-xs font-semibold text-rose-600 bg-rose-50 p-2 rounded-xl border border-rose-200" role="alert">{error}</p>}
+      <GoogleLoginButton />
     </form>
   );
 }

@@ -4,10 +4,9 @@ import Link from "next/link";
 import { AlertOctagon, CheckCircle2, EyeOff, Filter, Package, Search } from "lucide-react";
 
 import { Card, Input, Loading } from "@/components/ui";
-import sellerProductStatuses from "@/data/shop-product-statuses.json";
 import { useSellerProductFilters } from "@/hooks/shop/products/useShopProductFilters";
 import { useDeleteSellerProduct } from "@/hooks/shop/products/useDeleteShopProduct";
-import { getSellerProductsUrl } from "@/lib/utils/shop-product.utils";
+import { SELLER_PRODUCT_STATUS_OPTIONS, getSellerProductsUrl } from "@/lib/utils/shop-product.utils";
 import type { ProductCategoryOption } from "@/types/shop/product";
 import type { SellerProductOverview, SellerProductPage, SellerProductStatus } from "@/types/shop/product";
 import { ShopProductsTable } from "./shop-products-table";
@@ -64,7 +63,7 @@ export function SellerProductsView({
             disabled={isPending}
             className="h-10 min-w-0 rounded-lg border border-slate-200 bg-white px-2 text-xs font-medium text-slate-700 sm:px-3"
           >
-            {sellerProductStatuses.map((item) => (
+            {SELLER_PRODUCT_STATUS_OPTIONS.map((item) => (
               <option key={item.value || "all"} value={item.value}>{item.label}</option>
             ))}
           </select>
@@ -87,7 +86,7 @@ export function SellerProductsView({
       </header>
       {/* Các thẻ trạng thái dẫn tới bộ lọc; chỉ trạng thái đang xem có số lượng từ API. */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-        {sellerProductStatuses.map((item, index) => {
+        {SELLER_PRODUCT_STATUS_OPTIONS.map((item, index) => {
           const Icon = statusIcons[index];
           const isSelected = (status ?? "") === item.value;
           const count = item.value === "" ? overview.totalProducts
