@@ -18,7 +18,7 @@ import { CheckoutSuccessModal } from "./CheckoutSuccessModal";
 export function CheckoutView({ itemsParam }: { itemsParam?: string | string[] }) {
   const checkout = useCheckout(itemsParam);
   const addressForm = useCheckoutAddress();
-  const order = useCreateCheckout(checkout.items, checkout.total, addressForm.addressText,
+  const order = useCreateCheckout(checkout.items, checkout.total, addressForm.shippingAddress, addressForm.addressRecipientName, addressForm.addressPhone,
     !checkout.loading && !checkout.error && !checkout.quoteLoading && !checkout.quoteError, checkout.retry);
   useSaleExpiry(checkout.items, checkout.retry, !order.locked);
 
@@ -46,8 +46,8 @@ export function CheckoutView({ itemsParam }: { itemsParam?: string | string[] })
           <CheckoutPaymentCard selectedMethod={order.paymentMethod} paymentField={order.paymentField} error={order.errors.paymentMethod?.message} />
         </div>
 
-        {/* Cột phải: Bảng tóm tắt đơn hàng và CTA Đặt Hàng */}
-        <div className="min-w-0">
+        {/* Ghim theo header trên PC, ghim đáy màn hình ở mobile/tablet như giỏ hàng. */}
+        <div className="sticky bottom-0 z-20 min-w-0 lg:bottom-auto lg:top-[86px]">
           <CheckoutOrderSummary isSubmitting={order.isSubmitting}
             total={checkout.total} itemCount={checkout.itemCount} quoteLoading={checkout.quoteLoading}
             quoteError={checkout.quoteError} onRetry={checkout.retry}

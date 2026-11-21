@@ -1,4 +1,6 @@
 import type { ApiResponse } from "@/types/shared/api";
+import type { CreateAddressRequest, UserAddress } from "@/types/user/address";
+import type { CreateShopRequestRequest, ShopRequest } from "@/types/user/shop-request";
 import type { ChangePasswordForm, UpdateProfileForm, UserProfile } from "@/types/user/profile";
 
 import type { SellerShopProfile, UpdateShopProfileForm } from "@/types/shop/profile";
@@ -28,10 +30,43 @@ export const userApi = baseApi.injectEndpoints({
     changePassword: builder.mutation<void, ChangePasswordForm>({
       query: (body) => ({ url: "/api/users/me/password", method: "PUT", body }),
     }),
+    // Địa chỉ mặc định đứng đầu danh sách.
+    getMyAddresses: builder.query<ApiResponse<UserAddress[]>, void>({
+      query: () => "/api/users/me/addresses",
+      providesTags: ["Address"],
+    }),
+    createAddress: builder.mutation<ApiResponse<UserAddress>, CreateAddressRequest>({
+      query: (body) => ({ url: "/api/users/me/addresses", method: "POST", body }),
+      invalidatesTags: ["Address"],
+    }),
+    // Thành công BE trả 204 không có body.
+    deleteAddress: builder.mutation<void, number>({
+      query: (id) => ({ url: `/api/users/me/addresses/${id}`, method: "DELETE" }),
+      invalidatesTags: ["Address"],
+    }),
+    // data null khi tài khoản chưa từng nộp đơn mở shop.
+    getMyLatestShopRequest: builder.query<ApiResponse<ShopRequest | null>, void>({
+      query: () => "/api/users/me/shop-requests/latest",
+      providesTags: ["ShopRequest"],
+    }),
+    createShopRequest: builder.mutation<ApiResponse<ShopRequest>, CreateShopRequestRequest>({
+      query: (body) => ({ url: "/api/users/me/shop-requests", method: "POST", body }),
+      invalidatesTags: ["ShopRequest"],
+    }),
+    cancelShopRequest: builder.mutation<ApiResponse<ShopRequest>, number>({
+      query: (id) => ({ url: `/api/users/me/shop-requests/${id}/cancel`, method: "POST" }),
+      invalidatesTags: ["ShopRequest"],
+    }),
+    setDefaultAddress: builder.mutation<ApiResponse<UserAddress>, number>({
+      query: (id) => ({ url: `/api/users/me/addresses/${id}/default`, method: "PUT" }),
+      invalidatesTags: ["Address"],
+    }),
   }),
 });
 
 export const {
   useUploadAvatarMutation, useUploadShopLogoMutation, useUpdateShopProfileMutation, useUpdateProfileMutation,
-  useChangePasswordMutation,
+  useChangePasswordMutation, useGetMyAddressesQuery, useCreateAddressMutation,
+  useDeleteAddressMutation, useSetDefaultAddressMutation, useGetMyLatestShopRequestQuery,
+  useCreateShopRequestMutation, useCancelShopRequestMutation,
 } = userApi;

@@ -7,7 +7,9 @@ import { Camera, ChevronRight, Loader2, MessageSquare, Package, RefreshCw, Store
 import { useAvatarUpload } from "@/hooks/user/profile/useAvatarUpload";
 import type { UserRole } from "@/types/shared/auth";
 import type { UserProfile } from "@/types/user/profile";
+import { AddressBookAction } from "./AddressBookAction";
 import { ChangePasswordAction } from "./ChangePasswordAction";
+import { ShopRequestAction } from "./ShopRequestAction";
 import { ProfileInfoForm } from "./ProfileInfoForm";
 
 const ROLE_LABELS: Record<UserRole, string> = { ROLE_USER: "Người mua", ROLE_SHOP: "Người bán", ROLE_ADMIN: "Quản trị viên" };
@@ -90,6 +92,9 @@ export function ProfileView({ profile }: { profile: UserProfile | null }) {
                     </Link>
                   </li>
                 ))}
+                <li><AddressBookAction /></li>
+                {/* Tài khoản đã có quyền shop thì không cần đăng ký mở shop. */}
+                {!profile.roles.includes("ROLE_SHOP") && <li><ShopRequestAction /></li>}
                 {/* Tài khoản chỉ đăng nhập bằng Google không có mật khẩu để đổi. */}
                 {profile.provider !== "GOOGLE" && <li><ChangePasswordAction /></li>}
               </ul>

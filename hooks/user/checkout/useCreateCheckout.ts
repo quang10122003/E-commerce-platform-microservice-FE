@@ -21,7 +21,7 @@ interface CheckoutOrderFields {
 const CHECKOUT_EVENTS = ["CHECKOUT_SUCCEEDED", "CHECKOUT_FAILED"] as const;
 
 // Gửi đúng dữ liệu đang hiển thị, không gọi lại API sản phẩm hoặc báo giá.
-export function useCreateCheckout(items: CheckoutItem[], total: number | null, shippingAddress: string | null, ready: boolean, reloadCheckout: () => void) {
+export function useCreateCheckout(items: CheckoutItem[], total: number | null, shippingAddress: string | null, recipientName: string | null, phone: string | null, ready: boolean, reloadCheckout: () => void) {
   const router = useRouter();
   const { notifyError } = useNotification();
   const [createCheckout] = useCreateCheckoutMutation();
@@ -72,7 +72,7 @@ export function useCreateCheckout(items: CheckoutItem[], total: number | null, s
   const submit = (event: FormEvent<HTMLFormElement>) => form.handleSubmit(async (values) => {
     if (submittingRef.current || acceptedRef.current) return;
     form.clearErrors("root");
-    if (!shippingAddress) {
+    if (!shippingAddress || !recipientName || !phone) {
       form.setError("root.address", { message: "Vui lòng nhập và xác nhận địa chỉ nhận hàng." });
       return;
     }
@@ -80,7 +80,7 @@ export function useCreateCheckout(items: CheckoutItem[], total: number | null, s
       form.setError("root.checkout", { message: "Chưa có đủ sản phẩm và tổng tiền hợp lệ để đặt hàng." });
       return;
     }
-    const body = buildCreateCheckoutRequest(items, total, shippingAddress, values.paymentMethod, values.note);
+    const body = buildCreateCheckoutRequest(items, total, shippingAddress, recipientName, phone, values.paymentMethod, values.note);
     const payload = JSON.stringify(body);
     if (attemptRef.current?.payload !== payload) attemptRef.current = { payload, key: crypto.randomUUID(), note: values.note, paymentMethod: values.paymentMethod };
     const idempotencyKey = attemptRef.current.key;

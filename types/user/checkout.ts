@@ -39,6 +39,8 @@ export interface CreateCheckoutRequest {
   items: { variantId: number; quantity: number; sale: boolean }[];
   paymentMethod: CheckoutPaymentMethod;
   shippingAddress: string;
+  recipientName: string;
+  phone: string;
   totalAmount: number;
   note?: string;
 }

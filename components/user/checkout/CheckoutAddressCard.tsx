@@ -29,7 +29,7 @@ export function CheckoutAddressCard({ onChangeAddress, address }: CheckoutAddres
             onClick={onChangeAddress}
             className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-primary hover:text-primary-hover transition-colors cursor-pointer"
           >
-            <span>{address ? "Thay đổi" : "Nhập địa chỉ"}</span>
+            <span>Chỉnh sửa địa chỉ</span>
             <ChevronRight className="h-4 w-4" />
           </button>
         </div>

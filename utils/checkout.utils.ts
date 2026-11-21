@@ -38,7 +38,7 @@ export function groupCheckoutItems(items: CheckoutItem[]): CheckoutShopGroup[] {
 }
 
 // Giữ nguyên phân bổ và tổng tiền đang hiển thị, không tính lại giá hoặc sale khi đặt hàng.
-export function buildCreateCheckoutRequest(items: CheckoutItem[], totalAmount: number, shippingAddress: string, paymentMethod: CheckoutPaymentMethod, note: string): CreateCheckoutRequest {
+export function buildCreateCheckoutRequest(items: CheckoutItem[], totalAmount: number, shippingAddress: string, recipientName: string, phone: string, paymentMethod: CheckoutPaymentMethod, note: string): CreateCheckoutRequest {
   return {
     items: items.flatMap((item) => {
       const lines: CreateCheckoutRequest["items"] = [];
@@ -46,7 +46,7 @@ export function buildCreateCheckoutRequest(items: CheckoutItem[], totalAmount: n
       if (item.regularQuantity > 0) lines.push({ variantId: item.variantId, quantity: item.regularQuantity, sale: false });
       return lines;
     }),
-    totalAmount, shippingAddress, paymentMethod,
+    totalAmount, shippingAddress, recipientName, phone, paymentMethod,
     ...(note.trim() ? { note: note.trim() } : {}),
   };
 }
