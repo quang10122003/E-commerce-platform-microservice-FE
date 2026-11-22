@@ -9,6 +9,8 @@ import type { AccessTokenValidationResponse } from "@/types/shared/auth";
 
 const accessTokenCookieName = process.env.ACCESS_TOKEN_COOKIE_NAME ?? AUTH_COOKIE_NAMES.ACCESS_TOKEN;
 const refreshTokenCookieName = process.env.REFRESH_TOKEN_COOKIE_NAME ?? AUTH_COOKIE_NAMES.REFRESH_TOKEN;
+// Mặc định luôn Secure; chỉ tắt khi chạy HTTP bằng địa chỉ khác localhost, vì trình duyệt bỏ cookie Secure trên HTTP.
+const secureCookie = process.env.AUTH_COOKIE_SECURE !== "false";
 
 export type AuthTokens = {
   accessToken: string;
@@ -36,7 +38,7 @@ export async function setAuthTokens({ accessToken, refreshToken }: AuthTokens, u
   const roleValue = user ? createRoleCookie(user, accessToken) : undefined;
   const cookieOptions = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: secureCookie,
     sameSite: "lax",
     path: "/",
   } as const;
@@ -52,7 +54,7 @@ export async function setAuthRole(user: AccessTokenValidationResponse) {
   const accessToken = await getAccessToken();
   if (!accessToken) return;
   (await cookies()).set(ROLE_COOKIE_NAME, createRoleCookie(user, accessToken), {
-    httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/",
+    httpOnly: true, secure: secureCookie, sameSite: "lax", path: "/",
   });
 }
 
@@ -86,6 +88,6 @@ export async function getSessionRefreshAttempt(accessToken?: string) {
 export async function setSessionRefreshAttempt(status: "recovered" | "failed") {
   const cookieStore = await cookies();
   cookieStore.set(sessionRefreshAttemptCookieName, `${status}:${getSessionRefreshFingerprint(await getAccessToken())}`, {
-    httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: 30,
+    httpOnly: true, secure: secureCookie, sameSite: "lax", path: "/", maxAge: 30,
   });
 }

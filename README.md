@@ -18,6 +18,7 @@ Mẫu đầy đủ nằm trong `.env.example`.
 | `BACKEND_PUBLIC_URL` | chạy (server) | URL Gateway trình duyệt truy cập được, dùng cho đăng nhập Google; mặc định bằng `BACKEND_API_URL` |
 | `AUTH_ROLE_COOKIE_SECRET` | chạy (server) | Secret ký cookie quyền, tối thiểu 32 ký tự |
 | `ACCESS_TOKEN_COOKIE_NAME`, `REFRESH_TOKEN_COOKIE_NAME`, `ROLE_COOKIE_NAME` | chạy (server) | Tên cookie; có giá trị mặc định nếu bỏ trống |
+| `AUTH_COOKIE_SECURE` | chạy (server) | Mặc định `true`: cookie đăng nhập có cờ `Secure`. Đặt `false` khi mở FE qua HTTP bằng địa chỉ khác `localhost` (IP LAN, tên máy); nếu không, trình duyệt bỏ cookie và không giữ được phiên đăng nhập |
 | `NEXT_PUBLIC_CHAT_WS_URL` | build (local) / chạy (Docker) | URL WebSocket của Gateway cho trình duyệt. Chạy local thì được nhúng lúc `pnpm build`; image Docker thay giá trị khi container khởi động |
 
 ## Chạy local
