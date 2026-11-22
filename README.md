@@ -53,27 +53,24 @@ pnpm start               # http://localhost:3000
 
 Docker dùng chung file `.env` với `pnpm dev`, không cần file env riêng.
 
-**1. Chuẩn bị `.env`** như phần chạy local, giữ nguyên `localhost:8080`.
+**1. Chạy backend trước** bằng Docker (`docker compose up -d --build` trong repo `E-commerce-platform-microservice`). Backend tạo mạng `ecommerce-net` mà FE sẽ tham gia.
 
-Trong container, `localhost` là chính container. Vì vậy khi khởi động, container tự đổi `localhost`/`127.0.0.1` trong `BACKEND_API_URL` thành `host.docker.internal` để server Next gọi được Gateway trên máy host. `BACKEND_PUBLIC_URL` và `NEXT_PUBLIC_CHAT_WS_URL` do trình duyệt dùng nên giữ nguyên `localhost`. Nếu không khai báo `BACKEND_PUBLIC_URL`, nó nhận giá trị `localhost` gốc của `BACKEND_API_URL`.
+**2. Chuẩn bị `.env`** như phần chạy local, giữ nguyên `localhost:8080`. `docker-compose.yml` tự ghi đè hai biến cho môi trường Docker:
 
-**2. Build image** (không cần tham số):
+- `BACKEND_API_URL=http://gateway:8080`: server Next gọi thẳng Gateway trong mạng Docker, không vòng qua cổng của máy host (cách vòng qua `host.docker.internal` bị nghẽn kết nối khi nhiều người dùng).
+- `BACKEND_PUBLIC_URL=http://localhost:8080`: trình duyệt dùng URL này khi chuyển sang đăng nhập Google.
 
-```sh
-docker build -t ecommerce-fe .
-```
-
-**3. Chạy container** với file env:
+**3. Build và chạy:**
 
 ```sh
-docker run -d --name ecommerce-fe -p 3000:3000 --env-file .env ecommerce-fe
+docker compose up -d --build
 ```
 
 Mở `http://localhost:3000`.
 
 Lưu ý:
 
-- Trên Linux (không có Docker Desktop), thêm `--add-host=host.docker.internal:host-gateway` vào lệnh `docker run`.
-- Gateway chạy trong cùng mạng Docker thì đặt `BACKEND_API_URL` theo tên service, ví dụ `http://gateway:8080`, và thêm `--network <tên mạng>` khi chạy; giá trị không phải `localhost` được giữ nguyên.
-- Mọi biến, kể cả `NEXT_PUBLIC_CHAT_WS_URL`, đều đọc khi container khởi động. Đổi `.env` chỉ cần `docker rm -f ecommerce-fe` rồi `docker run` lại, không phải build lại image.
-- Xem log: `docker logs -f ecommerce-fe`. Dừng: `docker rm -f ecommerce-fe`.
+- Mọi biến, kể cả `NEXT_PUBLIC_CHAT_WS_URL`, đều đọc khi container khởi động. Đổi `.env` chỉ cần `docker compose up -d` lại, không phải build lại image.
+- Cảnh báo `network ecommerce-net ... was not created for project` là bình thường: mạng do backend tạo, FE chỉ dùng chung.
+- Container giới hạn 1 GB RAM để FE không chiếm hết bộ nhớ của máy khi tải cao.
+- Xem log: `docker compose logs -f`. Dừng: `docker compose down`.

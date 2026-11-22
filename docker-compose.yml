@@ -1,0 +1,28 @@
+# Chạy FE trong mạng ecommerce-net của backend (gateway phải đang chạy): docker compose up -d --build
+services:
+  fe-user:
+    build:
+      context: .
+    image: ecommerce/fe-user:latest
+    container_name: ecom-fe
+    env_file: .env
+    environment:
+      # Server Next gọi thẳng gateway trong mạng Docker, không vòng qua cổng của máy host vì lớp chuyển tiếp đó nghẽn khi tải cao.
+      BACKEND_API_URL: http://gateway:8080
+      # Trình duyệt dùng URL này khi chuyển sang đăng nhập Google nên vẫn là cổng public trên máy host.
+      BACKEND_PUBLIC_URL: http://localhost:8080
+    ports:
+      - "3000:3000"
+    networks:
+      - ecommerce-net
+    deploy:
+      resources:
+        limits:
+          # Chặn Next chiếm hết RAM của máy khi tải cao, tránh kéo sập các container khác.
+          memory: 1g
+    restart: on-failure
+
+networks:
+  ecommerce-net:
+    name: ecommerce-net
+    driver: bridge
