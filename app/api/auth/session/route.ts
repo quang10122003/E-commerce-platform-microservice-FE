@@ -4,6 +4,7 @@ import { normalizeSessionReturnPath } from "@/lib/auth/session-refresh-redirect"
 import { getRouteAccess } from "@/lib/auth/route-access";
 import { isUserLocked } from "@/lib/auth/session-recovery-error";
 import { serverFetch } from "@/lib/api/server-client";
+import { getRequestOrigin } from "@/lib/utils/request-origin.utils";
 import type { ApiResponse } from "@/types/shared/api";
 import type { AccessTokenValidationResponse } from "@/types/shared/auth";
 
@@ -17,7 +18,7 @@ function errorResponse(status: number, code: string, message: string) {
 // Dùng endpoint kiểm tra token sẵn có; serverFetch tự refresh và ghi cookie tại Route Handler.
 export async function POST(request: Request) {
   const origin = request.headers.get("origin");
-  if (origin && origin !== new URL(request.url).origin) {
+  if (origin && origin !== getRequestOrigin(request)) {
     return errorResponse(403, "INVALID_ORIGIN", "Nguồn request không hợp lệ.");
   }
   try {
@@ -34,7 +35,7 @@ export async function POST(request: Request) {
 // Server page đi qua cùng flow POST để refresh/ghi cookie rồi trở lại URL ban đầu.
 export async function GET(request: Request) {
   const origin = request.headers.get("origin");
-  if (request.headers.get("sec-fetch-site") === "cross-site" || (origin && origin !== new URL(request.url).origin)) {
+  if (request.headers.get("sec-fetch-site") === "cross-site" || (origin && origin !== getRequestOrigin(request))) {
     return errorResponse(403, "INVALID_ORIGIN", "Nguồn request không hợp lệ.");
   }
   const nextPath = normalizeSessionReturnPath(new URL(request.url).searchParams.get("next"));
@@ -47,7 +48,7 @@ export async function GET(request: Request) {
     // Lỗi hạ tầng vẫn giữ token; page hiển thị fallback lỗi thay vì tiếp tục redirect.
     await setSessionRefreshAttempt("failed");
   }
-  const destination = new URL(nextPath, request.url);
+  const destination = new URL(nextPath, getRequestOrigin(request));
   if (locked) {
     destination.pathname = "/403";
     destination.search = "?reason=user-locked";

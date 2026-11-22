@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { serverFetch } from "@/lib/api/server-client";
+import { getRequestOrigin } from "@/lib/utils/request-origin.utils";
 import type { AuthenticatedUser } from "@/types/shared/auth";
 
 // BE chỉ gửi mã dùng một lần qua URL; đổi mã lấy token tại server để token chỉ nằm trong cookie httpOnly.
@@ -23,7 +24,7 @@ export async function GET(request: Request) {
     }
   }
 
-  const destination = new URL("/", request.url);
+  const destination = new URL("/", getRequestOrigin(request));
   if (errorCode) {
     destination.searchParams.set("login", "required");
     destination.searchParams.set("oauth_error", errorCode);
